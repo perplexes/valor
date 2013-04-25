@@ -1,12 +1,23 @@
 {-
-/Users/colin/.cabal/share/Elm-0.7.2/elm-runtime-0.7.2.js
-modify to have devicePixelRatio.. just copy into here and symlink?
-tell evan about the issue with latest Elm and this code, try to narrow down to smallest case
-latest elm-lang doesn't run on latest elm
-error messages are shit
-typing functions is awkward
-how do I have a debug method/call out to console.log?!
-
+- [x] modify to have devicePixelRatio
+- [ ] tell evan about the issue with latest Elm and this code, try to narrow down to smallest case
+- [ ] latest elm-lang doesn't run on latest elm
+- [ ] error messages are shit
+- [ ] typing functions is awkward and there is no syntax help to do it
+- [ ] how do I have a debug method/call out to console.log?!
+- [ ] I want a non-signal rand
+- [ ] I want a spriteMap function that can crop into a sprite map
+- [ ] I want list comprehensions. Or better understand partial application.
+- [ ] Split into modules
+- [ ] Include dotproduct assets as a dependency? Copy assets with attribution?
+- [ ] Have someone make new hi-res Subspace assets
+- [ ] JSON for settings to get all the consts out
+- [ ] Star tiles
+- [ ] map tiles
+- [ ] Ship moving around map (animations, etc)
+- [ ] Animations for ship angles
+- [ ] HUD
+- [ ] collision detection
 -}
 module Subspace where
 
