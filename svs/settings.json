@@ -1,0 +1,197 @@
+{
+  "game":
+  {
+    "killPoints": 20
+  },
+
+  "network":
+  {
+    "sendPositionDelay": 10,
+    "fastSendPositionDelay": 3
+  },
+
+  "map":
+  {
+    "width": 1024,
+    "height": 1024,
+    "spawnRadius": 500
+  },
+
+  "prize": {
+    "decayTime": 18000,
+    "count": 50,
+    "radius": 128,
+    "weights": [0, 6, 5, 8, 0]
+  },
+
+  "ships":
+  [
+    {
+      "name ": "Warbird",
+      "xRadius": 14,
+      "yRadius": 14,
+      "bounceFactor": 0.727,
+      "rotationRadiansPerTick": 0.051836,
+      "speedPixelsPerTick": 3.250,
+      "maxEnergy": 1400,
+      "accelerationPerTick": 0.019,
+      "afterburnerMaxSpeed": 6,
+      "afterburnerAcceleration": 0.05,
+      "afterburnerEnergy": 3,
+      "rechargeRate": 1.15,
+      "respawnDelay": 500,
+      "bullet": {
+        "fireEnergy": 20,
+        "speed": 2,
+        "fireDelay": 25,
+        "lifetime": 550,
+        "damage": 200,
+        "damageUpgrade": 100,
+        "maxLevel": 2,
+        "bounces": false
+      },
+      "bomb": {
+        "fireEnergy": 200,
+        "fireEnergyUpgrade": 0,
+        "speed": 4,
+        "fireDelay": 150,
+        "lifetime": 6000,
+        "damage": 750,
+        "damageUpgrade": 50,
+        "maxLevel": 0,
+        "blastRadius": 80,
+        "blastRadiusUpgrade": 80,
+        "proxRadius": 56,
+        "proxRadiusUpgrade": 19,
+        "bounceCount": 0,
+        "recoilAcceleration": 0.5
+      }
+    },
+
+    {
+      "name": "Javelin",
+      "xRadius": 14,
+      "yRadius": 14,
+      "bounceFactor": 0.727,
+      "rotationRadiansPerTick": 0.036128,
+      "speedPixelsPerTick": 6,
+      "maxEnergy": 1700,
+      "accelerationPerTick": 0.017,
+      "afterburnerMaxSpeed": 6,
+      "afterburnerAcceleration": 0.05,
+      "afterburnerEnergy": 3,
+      "rechargeRate": 1.5,
+      "respawnDelay": 500,
+      "bullet": {
+        "fireEnergy": 20,
+        "speed": 2,
+        "fireDelay": 25,
+        "lifetime": 550,
+        "damage": 200,
+        "damageUpgrade": 100,
+        "maxLevel": 2,
+        "bounces": false
+      },
+      "bomb": {
+        "fireEnergy": 300,
+        "fireEnergyUpgrade": 0,
+        "speed": 2,
+        "fireDelay": 150,
+        "lifetime": 6000,
+        "damage": 750,
+        "damageUpgrade": 50,
+        "maxLevel": 1,
+        "blastRadius": 80,
+        "blastRadiusUpgrade": 80,
+        "proxRadius": 56,
+        "proxRadiusUpgrade": 19,
+        "bounceCount": 1,
+        "recoilAcceleration": 0.5
+      }
+    },
+
+    {
+      "name": "Leviathan",
+      "xRadius": 14,
+      "yRadius": 14,
+      "bounceFactor": 0.727,
+      "rotationRadiansPerTick": 0.033772,
+      "speedPixelsPerTick": 3.250,
+      "maxEnergy": 2000,
+      "accelerationPerTick": 0.017,
+      "afterburnerMaxSpeed": 6,
+      "afterburnerAcceleration": 0.05,
+      "afterburnerEnergy": 3,
+      "rechargeRate": 1.15,
+      "respawnDelay": 500,
+      "bullet": {
+        "fireEnergy": 20,
+        "speed": 2,
+        "fireDelay": 25,
+        "lifetime": 550,
+        "damage": 200,
+        "damageUpgrade": 100,
+        "maxLevel": 2,
+        "bounces": false
+      },
+      "bomb": {
+        "fireEnergy": 300,
+        "fireEnergyUpgrade": 0,
+        "speed": 1.75,
+        "fireDelay": 75,
+        "lifetime": 6000,
+        "damage": 750,
+        "damageUpgrade": 50,
+        "maxLevel": 2,
+        "blastRadius": 80,
+        "blastRadiusUpgrade": 80,
+        "proxRadius": 56,
+        "proxRadiusUpgrade": 19,
+        "bounceCount": 0,
+        "recoilAcceleration": 0.5
+      }
+    },
+
+    {
+      "name": "Shark",
+      "xRadius": 14,
+      "yRadius": 14,
+      "bounceFactor": 0.727,
+      "rotationRadiansPerTick": 0.036128,
+      "speedPixelsPerTick": 3.250,
+      "maxEnergy": 200,
+      "accelerationPerTick": 0.017,
+      "afterburnerMaxSpeed": 6,
+      "afterburnerAcceleration": 0.05,
+      "afterburnerEnergy": 3,
+      "rechargeRate": 3,
+      "respawnDelay": 500,
+      "bullet": {
+        "fireEnergy": 20,
+        "fireEnergyUpgrade": 0,
+        "speed": 2,
+        "fireDelay": 25,
+        "lifetime": 550,
+        "damage": 200,
+        "damageUpgrade": 100,
+        "maxLevel": 2,
+        "bounces": false
+      },
+      "bomb": {
+        "fireEnergy": 300,
+        "speed": 2,
+        "fireDelay": 150,
+        "lifetime": 6000,
+        "damage": 750,
+        "damageUpgrade": 50,
+        "maxLevel": -1,
+        "blastRadius": 80,
+        "blastRadiusUpgrade": 80,
+        "proxRadius": 56,
+        "proxRadiusUpgrade": 19,
+        "bounceCount": 0,
+        "recoilAcceleration": 0.5
+      }
+    }
+  ]
+}
