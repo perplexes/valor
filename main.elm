@@ -5,23 +5,29 @@
 - [ ] error messages are shit
 - [ ] typing functions is awkward and there is no syntax help to do it
 - [ ] how do I have a debug method/call out to console.log?!
-- [ ] I want a non-signal rand
+- [x] I want a non-signal rand
 - [ ] I want a spriteMap function that can crop into a sprite map
 - [ ] I want list comprehensions. Or better understand partial application.
 - [ ] Split into modules
 - [ ] Include dotproduct assets as a dependency? Copy assets with attribution?
 - [ ] Have someone make new hi-res Subspace assets
 - [ ] JSON for settings to get all the consts out
-- [ ] Star tiles
+- [x] Star tiles
 - [ ] map tiles
 - [ ] Ship moving around map (animations, etc)
 - [ ] Animations for ship angles
 - [ ] HUD
 - [ ] collision detection
-- [ ] paintTiles should take viewport dimensions (x,y,w,h) cause they can change on resize
+- [x] paintTiles should take viewport dimensions (x,y,w,h) cause they can change on resize
+- [ ] move rect painting to fillRect when we can -
+      a lot of objects are getting created/gc'd for the star field (which isn't necessary)
+      possible work around is to blit (expose bliting?)
+      ..better than just drawing the points all the time
+- [ ] moar keys, keyb mappings
 -}
 module Subspace where
 
+-- Override standard clamp to take floats
 clamp min max x =
   if | x < min -> min
      | x < max -> x
@@ -43,9 +49,9 @@ userInput =
 
 data Input = Input Float UserInput
 
-data GameState = GameState { x :: Float, y :: Float, angle :: Float, dx :: Float, dy :: Float }
+data GameState = GameState { x :: Float, y :: Float, angle :: Float, dx :: Float, dy :: Float, t :: Float }
 
-defaultGame = GameState { x=100.0, y=100.0, angle=0.0, dx=0.0, dy=0.0 }
+defaultGame = GameState { x=100.0, y=100.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
 
 stepGame (Input t (UserInput ui)) (GameState gs) =
   let {x,y,angle,dx,dy} = gs in
@@ -53,7 +59,8 @@ stepGame (Input t (UserInput ui)) (GameState gs) =
                  , dy <- clamp (0-100) 100 (dy + toFloat ui.y * 2 * cos angle * (0-1))
                  , angle <- angle + t * 3 * toFloat ui.x
                  , x <- clamp (shipW/2) (mapW - shipW/2) $ x + t * dx
-                 , y <- clamp (shipH/2) (mapH - shipH/2) $ y + t * dy}
+                 , y <- clamp (shipH/2) (mapH - shipH/2) $ y + t * dy
+                 , t <- t}
 
 {- Display -}
 {- For map tiles -}
@@ -109,12 +116,15 @@ starLayers (vx,vy,vw,vh) =
       top = floor $ (vy - vh) / (toFloat starTilesize)
       right = floor $ (vx + vw) / (toFloat starTilesize)
       bottom = floor $ (vy + vh) / (toFloat starTilesize)
+      ltr = [left..right]
+      ttb = [top..bottom]
       st (c,r) = starTile (c,r) (vx,vy,vw,vh)
-  in foldl (\c a ->
-       foldl (\r a2 ->
+  in (left,top,right,bottom,ltr,ttb,
+    foldl (\r a ->
+       foldl (\c a2 ->
          a2 ++ st (c,r)
-       ) a [left..right]
-     ) [] [top..bottom]
+       ) a ltr
+     ) [] ttb)
 
 starTile (c,r) (vx,vy,vw,vh) =
   let dx1 x = (c * starTilesize + x - vx + vw) / 2
@@ -126,8 +136,6 @@ starTile (c,r) (vx,vy,vw,vh) =
      map (\(x,y) -> star l2color (dx2 x, dy2 y)) starsLevel2
 
 background w h = filled black (rect w h (w/2,h/2))
---background w h = textured "hubble.jpg" (rect w h (0,0))
---ship x y angle = rotate (0.08 + (angle / (2 * pi))) (filled black (ngon 3 10 (x,y)))
 ship vw vh angle =
   rotate (angle / (2 * pi)) $
     sprite "ship2.png" shipW shipH (vw/2 - shipW/2, vh/2 - shipH/2)
@@ -140,27 +148,26 @@ viewPort w h x y =
 whiteTextForm string =
   text . Text.color white $ toText string
 
+debug key value =
+  whiteTextForm $ key ++ ": " ++ show value
+
 display (width,height) (GameState gameState) =
-  let sl = starLayers $ viewPort width height gameState.x gameState.y
+  let vp = viewPort width height gameState.x gameState.y
+      (left,top,right,bottom,ltr,ttb,sl) = starLayers vp
       w = floor width
       h = floor height
-      layers = [ background w h ] ++ sl ++ [ ship w h gameState.angle ] ++ [whiteTextForm $ "hello"]
-  in container w h topLeft $ collage w h layers
-  --in container w h topLeft $ collage w h $ [whiteTextForm $ show st] ++ [background w h] ++ st
-  --in asText $ show (w,h,(viewPort width height gameState.x gameState.y),sl)
-  --in asText $ show (background w h)
-    --  --, text . Text.color
-    --]
-    --asText $ show gameState,
-    --asText $ show (w,h)
-  --]
-
---display (w,h) (GameState gameState) =
---  let vx = gameState.x - (toFloat w)/2
---      vy = gameState.y - (toFloat h)/2
---  in show $ randstar
+      displayLayers = [ background w h ] ++ sl ++ [ ship w h gameState.angle ]
+  in container w h topLeft $ layers [
+    collage w h displayLayers,
+    flow down [
+      debug "Viewport" vp,
+      debug "Stars" (left,top,right,bottom,ltr,ttb),
+      debug "gameState" gameState
+    ]
+  ]
 
 delta = lift inSeconds (fps 30)
+avgFPS = average 10 delta
 input = sampleOn delta (lift2 Input delta userInput)
 
 gameState = foldp stepGame defaultGame input
