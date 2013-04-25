@@ -18,6 +18,7 @@
 - [ ] Animations for ship angles
 - [ ] HUD
 - [ ] collision detection
+- [ ] paintTiles should take viewport dimensions (x,y,w,h) cause they can change on resize
 -}
 module Subspace where
 
