@@ -14,18 +14,25 @@ starsLevel1 = starPoints -- closer
 starsLevel2 = starPoints -- farther
 l1color = rgb 184 184 184
 l2color = rgb 96 96 96
+--(vw,vh,sx,sy)
+type ViewPort = (Float,Float,Float,Float)
+viewPort (vw,vh,sx,sy) = (toFloat vw, toFloat vh, sx, sy)
 
-starLayers (iVw,iVh,sx,sy) =
-  let vw = toFloat iVw
-      vh = toFloat iVh
-      -- We pad by half a viewport width/height on each side
-      left = floor <| (sx - vw) / (toFloat starTilesize)
-      top = floor <| (sy - vh) / (toFloat starTilesize)
-      right = floor <| (sx + vw) / (toFloat starTilesize)
-      bottom = floor <| (sy + vh) / (toFloat starTilesize)
+--starLayers (vw,iVh,sx,sy) =
+--  map (\tile -> starTile tile(iVw,iVh,sx,sy,starTilesize)) tiles
+
+starLayers : ViewPort -> (Int,Int,Int,Int,[Int],[Int],[Form])
+starLayers vp =
+  -- We pad by half a viewport width/height on each side
+  let (vw,vh,sx,sy) = vp
+      starTilesize' = toFloat starTilesize
+      left = floor <| (sx - vw) / starTilesize'
+      top = floor <| (sy - vh) / starTilesize'
+      right = floor <| (sx + vw) / starTilesize'
+      bottom = floor <| (sy + vh) / starTilesize'
       ltr = [left..right]
       ttb = [top..bottom]
-      st (c,r) = starTile (c,r) (vw,vh,sx,sy)
+      st = starTile vp
   in (left,top,right,bottom,ltr,ttb,
     foldl (\r a ->
        foldl (\c a2 ->
@@ -33,9 +40,10 @@ starLayers (iVw,iVh,sx,sy) =
        ) a ltr
      ) [] ttb)
 
-starTile (c,r) (vw,vh,sx,sy) =
-  let absX x = toFloat <| c * starTilesize + x
-      absY y = toFloat <| r * starTilesize + y
+starTile : ViewPort -> (Int, Int) -> [Form]
+starTile (vw,vh,sx,sy) (c,r)  =
+  let absX x = c * starTilesize + x
+      absY y = r * starTilesize + y
       dx1 x = ((absX x) - sx) / 2
       dy1 y = ((absY y) - sy) / 2
       dx2 x = ((absX x) - sx) / 3
@@ -96,16 +104,19 @@ whiteTextForm string =
 debug key value =
   whiteTextForm <| key ++ ": " ++ (show value)
 
+display : (Int,Int) -> GameState -> Element
 display (w,h) (GameState gameState) =
-  let (left,top,right,bottom,ltr,ttb,sl) = starLayers (w,h,gameState.x,gameState.y)
+  let vp = viewPort (w,h,gameState.x,gameState.y)
+      (left,top,right,bottom,ltr,ttb,sl) = starLayers vp
+      --displayLayers = [ background w h] ++ sl ++ [ ship w h gameState.angle ]
       displayLayers = [ background w h] ++ sl ++ [ ship w h gameState.angle ]
       --displayLayers = [ ship w h gameState.angle ]
   in container w h topLeft <| layers [
     collage w h displayLayers
     , flow down [
-      debug "Stars" (left,top,right,bottom,ltr,ttb),
-      debug "gameState" gameState
-      --debug "Startile" (starTile (0,0) (w,h,gameState.x,gameState.y))
+      debug "Stars" (left,top,right,bottom,ltr,ttb)
+      ,debug "gameState" gameState
+      --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
     ]
   ]
   --in asText <| show (displayLayers)
