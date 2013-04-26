@@ -1,0 +1,144 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="UTF-8"><title>Subspace</title><script type="text/javascript" src="elm-runtime.js"></script><script type="text/javascript">
+Elm.Starfield = function(elm){
+ var N = Elm.Native, _N = N.Utils(elm), _L = N.List(elm), _E = N.Error(elm), _str = N.JavaScript(elm).toString;
+ var $op = {};
+ var _ = Elm.Graphics.Text(elm); var Graphics = Graphics||{};Graphics.Text = _; var hiding={link:1, color:1, height:1}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Prelude(elm); var Prelude = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Signal(elm); var Signal = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.List(elm); var List = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Maybe(elm); var Maybe = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Time(elm); var Time = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Graphics.Element(elm); var Graphics = Graphics||{};Graphics.Element = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Graphics.Color(elm); var Graphics = Graphics||{};Graphics.Color = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Graphics.Collage(elm); var Graphics = Graphics||{};Graphics.Collage = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Graphics.Geometry(elm); var Graphics = Graphics||{};Graphics.Geometry = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Random(elm); var Random = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var e, case0, starTilesize_0, starDensity_1, randstar_2, starPoints_3, starsLevel1_4, starsLevel2_5, l1color_6, l2color_7, starLayers_8, left_15, top_16, right_17, bottom_18, ltr_19, ttb_20, st_21, starTile_9, dx1_35, dy1_36, dx2_37, dy2_38, shape_39, filledRect_40, moved_41, star_42;
+ randstar_2 = function(__10){
+  return A2(rangeSync, 0, starTilesize_0);};
+ starLayers_8 = function(_26000_12){
+  return (e=_26000_12.ctor==='Tuple2'?(left_15 = floor(((0-_26000_12._0)/toFloat(starTilesize_0))), top_16 = floor(((0-_26000_12._1)/toFloat(starTilesize_0))), right_17 = floor((_26000_12._0/toFloat(starTilesize_0))), bottom_18 = floor((_26000_12._1/toFloat(starTilesize_0))), ltr_19 = _L.range(left_15,right_17), ttb_20 = _L.range(top_16,bottom_18), st_21 = function(_20000_22){
+   return (e=_20000_22.ctor==='Tuple2'?A2(starTile_9, {ctor:"Tuple2", _0:_20000_22._0, _1:_20000_22._1}, {ctor:"Tuple2", _0:_26000_12._0, _1:_26000_12._1}):null,e!==null?e:_E.Case('Line 20, Column 18'));}, {ctor:"Tuple7", _0:left_15, _1:top_16, _2:right_17, _3:bottom_18, _4:ltr_19, _5:ttb_20, _6:A3(foldl, function(r_25){
+   return function(a_26){
+    return A3(foldl, function(c_27){
+     return function(a2_28){
+      return _L.append(a2_28,st_21({ctor:"Tuple2", _0:c_27, _1:r_25}));};}, a_26, ltr_19);};}, _L.Nil, ttb_20)}):null,e!==null?e:_E.Case('Line 14, Column 3'));};
+ starTile_9 = F2(function(_38001_29, _38000_30){
+  return (e=_38001_29.ctor==='Tuple2'?(e=_38000_30.ctor==='Tuple2'?(shape_39 = A2(rect, 1, 1), dx1_35 = function(x_43){
+   return ((((_38001_29._0*starTilesize_0)+x_43)-_38000_30._0)/2);}, dy1_36 = function(y_44){
+   return ((((_38001_29._1*starTilesize_0)+y_44)-_38000_30._1)/2);}, dx2_37 = function(x_45){
+   return ((((_38001_29._0*starTilesize_0)+x_45)/3)+(_38000_30._0/2));}, dy2_38 = function(y_46){
+   return ((((_38001_29._1*starTilesize_0)+y_46)/3)+(_38000_30._1/2));}, filledRect_40 = function(color_47){
+   return A2(filled, color_47, shape_39);}, moved_41 = F2(function(color_48, _35000_49){
+   return (e=_35000_49.ctor==='Tuple2'?A3(move, _35000_49._0, _35000_49._1, filledRect_40(color_48)):null,e!==null?e:_E.Case('Line 35, Column 27'));}), star_42 = F2(function(color_52, _36000_53){
+   return (e=_36000_53.ctor==='Tuple2'?A2(moved_41, color_52, {ctor:"Tuple2", _0:_36000_53._0, _1:_36000_53._1}):null,e!==null?e:_E.Case('Line 36, Column 26'));}), _L.append(A2(map, function(_0_56){
+   return (e=_0_56.ctor==='Tuple2'?A2(star_42, l1color_6, {ctor:"Tuple2", _0:dx1_35(_0_56._0), _1:dy1_36(_0_56._1)}):null,e!==null?e:_E.Case('Line 37, Column 21'));}, starsLevel1_4),A2(map, function(_0_59){
+   return (e=_0_59.ctor==='Tuple2'?A2(star_42, l2color_7, {ctor:"Tuple2", _0:dx2_37(_0_59._0), _1:dy2_38(_0_59._1)}):null,e!==null?e:_E.Case('Line 38, Column 21'));}, starsLevel2_5))):null,e!==null?e:_E.Case('Line 29, Column 3')):null,e!==null?e:_E.Case('Line 29, Column 3'));});
+ starTilesize_0 = 1024;
+ starDensity_1 = 31;
+ starPoints_3 = A2(map, function(x_11){
+  return {ctor:"Tuple2", _0:randstar_2(x_11), _1:randstar_2(x_11)};}, _L.range(0,starDensity_1));
+ starsLevel1_4 = starPoints_3;
+ starsLevel2_5 = starPoints_3;
+ l1color_6 = A3(rgb, 184, 184, 184);
+ l2color_7 = A3(rgb, 96, 96, 96);
+ elm.Native = elm.Native||{};
+ var _ = elm.Native.Starfield||{};
+ _.$op = {};
+ _.starTilesize = starTilesize_0;
+ _.starDensity = starDensity_1;
+ _.randstar = randstar_2;
+ _.starPoints = starPoints_3;
+ _.starsLevel1 = starsLevel1_4;
+ _.starsLevel2 = starsLevel2_5;
+ _.l1color = l1color_6;
+ _.l2color = l2color_7;
+ _.starLayers = starLayers_8;
+ _.starTile = starTile_9
+ return elm.Starfield = _;
+ };
+Elm.Subspace = function(elm){
+ var N = Elm.Native, _N = N.Utils(elm), _L = N.List(elm), _E = N.Error(elm), _str = N.JavaScript(elm).toString;
+ var $op = {};
+ var _ = Elm.Graphics.Text(elm); var Graphics = Graphics||{};Graphics.Text = _; var hiding={link:1, color:1, height:1}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Prelude(elm); var Prelude = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Signal(elm); var Signal = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.List(elm); var List = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Maybe(elm); var Maybe = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Time(elm); var Time = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Graphics.Element(elm); var Graphics = Graphics||{};Graphics.Element = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Graphics.Color(elm); var Graphics = Graphics||{};Graphics.Color = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Graphics.Collage(elm); var Graphics = Graphics||{};Graphics.Collage = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Graphics.Geometry(elm); var Graphics = Graphics||{};Graphics.Geometry = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Keyboard(elm); var Keyboard = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var _ = Elm.Window(elm); var Window = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var T = Elm.Graphics.Text(elm);
+ var _ = Elm.Starfield(elm); var Starfield = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+ var e, case0, clamp_0, mapW_1, mapH_2, shipW_3, shipH_4, userInput_6, defaultGame_9, stepGame_10, _34000_29, x_30, y_31, angle_32, dx_33, dy_34, background_11, ship_12, whiteTextForm_13, debug_14, display_15, _57000_48, left_49, top_50, right_51, bottom_52, ltr_53, ttb_54, sl_55, displayLayers_56, delta_16, avgFPS_17, input_18, gameState_19, main_20;
+ UserInput_5 = function(a1){
+  return {ctor:"UserInput", _0:a1};};
+ Input_7 = F2(function(a1, a2){
+  return {ctor:"Input", _0:a1, _1:a2};});
+ GameState_8 = function(a1){
+  return {ctor:"GameState", _0:a1};};
+ clamp_0 = F3(function(min_21, max_22, x_23){
+  return ((_N.cmp(x_23,min_21).ctor==='LT') ? min_21 : ((_N.cmp(x_23,max_22).ctor==='LT') ? x_23 : max_22));});
+ stepGame_10 = F2(function(_40001_24, _40000_25){
+  return (e=_40001_24.ctor==='Input'?(e=_40001_24._1.ctor==='UserInput'?(e=_40000_25.ctor==='GameState'?(_34000_29 = _40000_25._0, x_30 = _34000_29.x, y_31 = _34000_29.y, angle_32 = _34000_29.angle, dx_33 = _34000_29.dx, dy_34 = _34000_29.dy, GameState_8(_N.replace([['dx',A3(clamp_0, (0-100), 100, (dx_33+((toFloat(_40001_24._1._0.y)*2)*sin(angle_32))))],['dy',A3(clamp_0, (0-100), 100, (dy_34+(((toFloat(_40001_24._1._0.y)*2)*cos(angle_32))*(0-1))))],['angle',(angle_32+((_40001_24._0*3)*toFloat(_40001_24._1._0.x)))],['x',A2(clamp_0, (shipW_3/2), (mapW_1-(shipW_3/2)))((x_30+(_40001_24._0*dx_33)))],['y',A2(clamp_0, (shipH_4/2), (mapH_2-(shipH_4/2)))((y_31+(_40001_24._0*dy_34)))],['t',_40001_24._0]], _40000_25._0))):null,e!==null?e:_E.Case('Line 34, Column 3')):null,e!==null?e:null):null,e!==null?e:_E.Case('Line 34, Column 3'));});
+ background_11 = F2(function(w_35, h_36){
+  return A2(move, 0, 0)(A2(filled, black, A2(rect, w_35, h_36)));});
+ ship_12 = F3(function(vw_37, vh_38, angle_39){
+  return scale(0.25)(rotate(angle_39)(A4(sprite, shipW_3, shipH_4, {ctor:"Tuple2", _0:0, _1:0}, _str('ship2.png'))));});
+ whiteTextForm_13 = function(string_40){
+  return function(x){
+   return text(A2(T.color, white, x));}(toText(string_40));};
+ debug_14 = F2(function(key_41, value_42){
+  return whiteTextForm_13(_L.append(key_41,_L.append(_str(': '),show(value_42))));});
+ display_15 = F2(function(_67001_43, _67000_44){
+  return (e=_67001_43.ctor==='Tuple2'?(e=_67000_44.ctor==='GameState'?(_57000_48 = A2(Starfield.starLayers, _67001_43._0, _67001_43._1), left_49 = (e=_57000_48.ctor==='Tuple7'?_57000_48._0:null,e!==null?e:_E.Case('Line 57, Column 44')), top_50 = (e=_57000_48.ctor==='Tuple7'?_57000_48._1:null,e!==null?e:_E.Case('Line 57, Column 44')), right_51 = (e=_57000_48.ctor==='Tuple7'?_57000_48._2:null,e!==null?e:_E.Case('Line 57, Column 44')), bottom_52 = (e=_57000_48.ctor==='Tuple7'?_57000_48._3:null,e!==null?e:_E.Case('Line 57, Column 44')), ltr_53 = (e=_57000_48.ctor==='Tuple7'?_57000_48._4:null,e!==null?e:_E.Case('Line 57, Column 44')), ttb_54 = (e=_57000_48.ctor==='Tuple7'?_57000_48._5:null,e!==null?e:_E.Case('Line 57, Column 44')), sl_55 = (e=_57000_48.ctor==='Tuple7'?_57000_48._6:null,e!==null?e:_E.Case('Line 57, Column 44')), displayLayers_56 = _L.Cons(A2(background_11, w, h),_L.append(sl_55,_L.Cons(A3(ship_12, _67001_43._0, _67001_43._1, _67000_44._0.angle),_L.Nil))), A3(container, w, h, topLeft)(layers(_L.Cons(A3(collage, w, h, displayLayers_56),_L.Cons(A2(flow, down, _L.Cons(A2(debug_14, _str('Viewport'), vp),_L.Cons(A2(debug_14, _str('Stars'), {ctor:"Tuple6", _0:left_49, _1:top_50, _2:right_51, _3:bottom_52, _4:ltr_53, _5:ttb_54}),_L.Cons(A2(debug_14, _str('gameState'), _67000_44._0),_L.Nil)))),_L.Nil))))):null,e!==null?e:_E.Case('Line 57, Column 3')):null,e!==null?e:_E.Case('Line 57, Column 3'));});
+ mapW_1 = 6400;
+ mapH_2 = 4800;
+ shipW_3 = 170;
+ shipH_4 = 166;
+ userInput_6 = A2(lift, UserInput_5, arrows);
+ defaultGame_9 = GameState_8({
+   _:{
+   },
+   angle:0.0,
+   dx:0.0,
+   dy:0.0,
+   t:0.0,
+   x:100.0,
+   y:100.0});
+ delta_16 = A2(lift, inSeconds, fps(30));
+ avgFPS_17 = A2(average, 10, delta_16);
+ input_18 = A2(sampleOn, delta_16, A3(lift2, Input_7, delta_16, userInput_6));
+ gameState_19 = A3(foldp, stepGame_10, defaultGame_9, input_18);
+ main_20 = A3(lift2, display_15, constant({ctor:"Tuple2", _0:640, _1:480}), gameState_19);
+ elm.Native = elm.Native||{};
+ var _ = elm.Native.Subspace||{};
+ _.$op = {};
+ _.clamp = clamp_0;
+ _.mapW = mapW_1;
+ _.mapH = mapH_2;
+ _.shipW = shipW_3;
+ _.shipH = shipH_4;
+ _.UserInput = UserInput_5;
+ _.userInput = userInput_6;
+ _.Input = Input_7;
+ _.GameState = GameState_8;
+ _.defaultGame = defaultGame_9;
+ _.stepGame = stepGame_10;
+ _.background = background_11;
+ _.ship = ship_12;
+ _.whiteTextForm = whiteTextForm_13;
+ _.debug = debug_14;
+ _.display = display_15;
+ _.delta = delta_16;
+ _.avgFPS = avgFPS_17;
+ _.input = input_18;
+ _.gameState = gameState_19;
+ _.main = main_20
+ return elm.Subspace = _;
+ };</script></head><body><script type="text/javascript">Elm.init(Elm.Subspace)</script><noscript><p>ship2.png</p><p>: </p><p>Viewport</p><p>Stars</p><p>gameState</p></noscript></body></html>

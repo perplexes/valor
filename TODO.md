@@ -19,3 +19,6 @@
       possible work around is to blit (expose bliting?)
       ..better than just drawing the points all the time
 - [ ] moar keys, keyb mappings
+
+Wait for everything to load, show progress bar.
+One shot signal that goes into a constant?

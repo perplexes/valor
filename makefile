@@ -1,4 +1,7 @@
-all: main.html
+all: Subspace.html
 
-main.html: Starfield.elm main.elm
-	elm --make -r elm-runtime-0.7.1.1.js main.elm
+Subspace.html: elm-runtime.js Starfield.elm Subspace.elm
+	elm --make -r elm-runtime.js Subspace.elm
+
+clean:
+	rm -rf Subspace.html
