@@ -15,17 +15,17 @@ starsLevel2 = starPoints -- farther
 l1color = rgb 184 184 184
 l2color = rgb 96 96 96
 
-starLayers (iVw,iVh) =
-  let
-      vw = toFloat iVw
+starLayers (iVw,iVh,sx,sy) =
+  let vw = toFloat iVw
       vh = toFloat iVh
-      left = floor <| (0 - vw) / (toFloat starTilesize)
-      top = floor <| (0 - vh) / (toFloat starTilesize)
-      right = floor <| vw / (toFloat starTilesize)
-      bottom = floor <| vh / (toFloat starTilesize)
+      -- We pad by half a viewport width/height on each side
+      left = floor <| (sx - vw) / (toFloat starTilesize)
+      top = floor <| (sy - vh) / (toFloat starTilesize)
+      right = floor <| (sx + vw) / (toFloat starTilesize)
+      bottom = floor <| (sy + vh) / (toFloat starTilesize)
       ltr = [left..right]
       ttb = [top..bottom]
-      st (c,r) = starTile (c,r) (vw,vh)
+      st (c,r) = starTile (c,r) (vw,vh,sx,sy)
   in (left,top,right,bottom,ltr,ttb,
     foldl (\r a ->
        foldl (\c a2 ->
@@ -33,17 +33,19 @@ starLayers (iVw,iVh) =
        ) a ltr
      ) [] ttb)
 
-starTile (c,r) (vw,vh) =
-  let dx1 x = (c * starTilesize + x - vw) / 2
-      dy1 y = (r * starTilesize + y - vh) / 2
-      dx2 x = (c * starTilesize + x) / 3 + vw/2
-      dy2 y = (r * starTilesize + y) / 3 + vh/2
+starTile (c,r) (vw,vh,sx,sy) =
+  let absX x = toFloat <| c * starTilesize + x
+      absY y = toFloat <| r * starTilesize + y
+      dx1 x = ((absX x) - sx) / 2
+      dy1 y = ((absY y) - sy) / 2
+      dx2 x = ((absX x) - sx) / 3
+      dy2 y = ((absY y) - sy) / 3
       shape = rect 1 1
       filledRect color = filled color shape
       moved color (x,y) = move x y (filledRect color)
       star color (x,y) = moved color (x,y)
-  in map (\(x,y) -> star l1color (dx1 x, dy1 y)) starsLevel1 ++
-     map (\(x,y) -> star l2color (dx2 x, dy2 y)) starsLevel2
+  in map (\(x,y) -> star l1color (dx1 x, (0-dy1 y))) starsLevel1 ++
+     map (\(x,y) -> star l2color (dx2 x, (0-dy2 y))) starsLevel2
 
 -- Override standard clamp to take floats
 clamp min max x =
@@ -95,14 +97,15 @@ debug key value =
   whiteTextForm <| key ++ ": " ++ (show value)
 
 display (w,h) (GameState gameState) =
-  let (left,top,right,bottom,ltr,ttb,sl) = starLayers (w,h)
-      displayLayers = [ background w h ] ++ sl ++ [ ship w h gameState.angle ]
+  let (left,top,right,bottom,ltr,ttb,sl) = starLayers (w,h,gameState.x,gameState.y)
+      displayLayers = [ background w h] ++ sl ++ [ ship w h gameState.angle ]
       --displayLayers = [ ship w h gameState.angle ]
   in container w h topLeft <| layers [
     collage w h displayLayers
     , flow down [
       debug "Stars" (left,top,right,bottom,ltr,ttb),
       debug "gameState" gameState
+      --debug "Startile" (starTile (0,0) (w,h,gameState.x,gameState.y))
     ]
   ]
   --in asText <| show (displayLayers)
@@ -113,8 +116,8 @@ input = sampleOn delta (lift2 Input delta userInput)
 
 gameState = foldp stepGame defaultGame input
 
---main = lift2 display dimensions gameState
-main = lift2 display (constant (640, 480)) gameState
+main = lift2 display dimensions gameState
+--main = lift2 display (constant (640, 480)) gameState
 
 --display (w,h) =
   --asText <| show (w,h)
