@@ -17,62 +17,65 @@ Elm.Subspace = function(elm){
  var _ = Elm.Window(elm); var Window = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
  var T = Elm.Graphics.Text(elm);
  var _ = Elm.Random(elm); var Random = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
- var e, case0, starTilesize_0, starDensity_1, randstar_2, starPoints_3, starsLevel1_4, starsLevel2_5, l1color_6, l2color_7, starLayers_8, vw_36, vh_37, left_38, top_39, right_40, bottom_41, ltr_42, ttb_43, st_44, starTile_9, dx1_58, dy1_59, dx2_60, dy2_61, shape_62, filledRect_63, moved_64, star_65, clamp_10, mapW_11, mapH_12, shipW_13, shipH_14, userInput_16, defaultGame_19, stepGame_20, _75000_93, x_94, y_95, angle_96, dx_97, dy_98, background_21, ship_22, whiteTextForm_23, debug_24, display_25, _98000_112, left_113, top_114, right_115, bottom_116, ltr_117, ttb_118, sl_119, displayLayers_120, delta_26, avgFPS_27, input_28, gameState_29, main_30;
- UserInput_15 = function(a1){
+ var e, case0, starTilesize_0, starDensity_1, randstar_2, starPoints_3, starsLevel1_4, starsLevel2_5, l1color_6, l2color_7, viewPort_8, starLayers_9, _27000_40, vw_41, vh_42, sx_43, sy_44, starTilesize$_45, left_46, top_47, right_48, bottom_49, ltr_50, ttb_51, st_52, starTile_10, absX_81, absY_82, dx1_83, dy1_84, dx2_85, dy2_86, shape_87, filledRect_88, moved_89, star_90, clamp_11, mapW_12, mapH_13, shipW_14, shipH_15, userInput_17, defaultGame_20, stepGame_21, _85000_120, x_121, y_122, angle_123, dx_124, dy_125, background_22, ship_23, whiteTextForm_24, debug_25, display_26, vp_139, _110000_140, left_141, top_142, right_143, bottom_144, ltr_145, ttb_146, sl_147, displayLayers_148, delta_27, avgFPS_28, input_29, gameState_30, main_31;
+ UserInput_16 = function(a1){
   return {ctor:"UserInput", _0:a1};};
- Input_17 = F2(function(a1, a2){
+ Input_18 = F2(function(a1, a2){
   return {ctor:"Input", _0:a1, _1:a2};});
- GameState_18 = function(a1){
+ GameState_19 = function(a1){
   return {ctor:"GameState", _0:a1};};
- randstar_2 = function(__31){
+ randstar_2 = function(__32){
   return A2(rangeSync, 0, starTilesize_0);};
- starLayers_8 = function(_34000_33){
-  return (e=_34000_33.ctor==='Tuple2'?(vw_36 = toFloat(_34000_33._0), vh_37 = toFloat(_34000_33._1), left_38 = floor(((0-vw_36)/toFloat(starTilesize_0))), top_39 = floor(((0-vh_37)/toFloat(starTilesize_0))), right_40 = floor((vw_36/toFloat(starTilesize_0))), bottom_41 = floor((vh_37/toFloat(starTilesize_0))), ltr_42 = _L.range(left_38,right_40), ttb_43 = _L.range(top_39,bottom_41), st_44 = function(_28000_45){
-   return (e=_28000_45.ctor==='Tuple2'?A2(starTile_9, {ctor:"Tuple2", _0:_28000_45._0, _1:_28000_45._1}, {ctor:"Tuple2", _0:vw_36, _1:vh_37}):null,e!==null?e:_E.Case('Line 28, Column 18'));}, {ctor:"Tuple7", _0:left_38, _1:top_39, _2:right_40, _3:bottom_41, _4:ltr_42, _5:ttb_43, _6:A3(foldl, function(r_48){
-   return function(a_49){
-    return A3(foldl, function(c_50){
-     return function(a2_51){
-      return _L.append(a2_51,st_44({ctor:"Tuple2", _0:c_50, _1:r_48}));};}, a_49, ltr_42);};}, _L.Nil, ttb_43)}):null,e!==null?e:_E.Case('Line 19, Column 3'));};
- starTile_9 = F2(function(_46001_52, _46000_53){
-  return (e=_46001_52.ctor==='Tuple2'?(e=_46000_53.ctor==='Tuple2'?(shape_62 = A2(rect, 1, 1), dx1_58 = function(x_66){
-   return ((((_46001_52._0*starTilesize_0)+x_66)-_46000_53._0)/2);}, dy1_59 = function(y_67){
-   return ((((_46001_52._1*starTilesize_0)+y_67)-_46000_53._1)/2);}, dx2_60 = function(x_68){
-   return ((((_46001_52._0*starTilesize_0)+x_68)/3)+(_46000_53._0/2));}, dy2_61 = function(y_69){
-   return ((((_46001_52._1*starTilesize_0)+y_69)/3)+(_46000_53._1/2));}, filledRect_63 = function(color_70){
-   return A2(filled, color_70, shape_62);}, moved_64 = F2(function(color_71, _43000_72){
-   return (e=_43000_72.ctor==='Tuple2'?A3(move, _43000_72._0, _43000_72._1, filledRect_63(color_71)):null,e!==null?e:_E.Case('Line 43, Column 27'));}), star_65 = F2(function(color_75, _44000_76){
-   return (e=_44000_76.ctor==='Tuple2'?A2(moved_64, color_75, {ctor:"Tuple2", _0:_44000_76._0, _1:_44000_76._1}):null,e!==null?e:_E.Case('Line 44, Column 26'));}), _L.append(A2(map, function(_0_79){
-   return (e=_0_79.ctor==='Tuple2'?A2(star_65, l1color_6, {ctor:"Tuple2", _0:dx1_58(_0_79._0), _1:dy1_59(_0_79._1)}):null,e!==null?e:_E.Case('Line 45, Column 21'));}, starsLevel1_4),A2(map, function(_0_82){
-   return (e=_0_82.ctor==='Tuple2'?A2(star_65, l2color_7, {ctor:"Tuple2", _0:dx2_60(_0_82._0), _1:dy2_61(_0_82._1)}):null,e!==null?e:_E.Case('Line 46, Column 21'));}, starsLevel2_5))):null,e!==null?e:_E.Case('Line 37, Column 3')):null,e!==null?e:_E.Case('Line 37, Column 3'));});
- clamp_10 = F3(function(min_85, max_86, x_87){
-  return ((_N.cmp(x_87,min_85).ctor==='LT') ? min_85 : ((_N.cmp(x_87,max_86).ctor==='LT') ? x_87 : max_86));});
- stepGame_20 = F2(function(_81001_88, _81000_89){
-  return (e=_81001_88.ctor==='Input'?(e=_81001_88._1.ctor==='UserInput'?(e=_81000_89.ctor==='GameState'?(_75000_93 = _81000_89._0, x_94 = _75000_93.x, y_95 = _75000_93.y, angle_96 = _75000_93.angle, dx_97 = _75000_93.dx, dy_98 = _75000_93.dy, GameState_18(_N.replace([['dx',A3(clamp_10, (0-100), 100, (dx_97+((toFloat(_81001_88._1._0.y)*2)*sin(angle_96))))],['dy',A3(clamp_10, (0-100), 100, (dy_98+(((toFloat(_81001_88._1._0.y)*2)*cos(angle_96))*(0-1))))],['angle',(angle_96+((_81001_88._0*3)*toFloat(_81001_88._1._0.x)))],['x',A2(clamp_10, (shipW_13/2), (mapW_11-(shipW_13/2)))((x_94+(_81001_88._0*dx_97)))],['y',A2(clamp_10, (shipH_14/2), (mapH_12-(shipH_14/2)))((y_95+(_81001_88._0*dy_98)))],['t',_81001_88._0]], _81000_89._0))):null,e!==null?e:_E.Case('Line 75, Column 3')):null,e!==null?e:null):null,e!==null?e:_E.Case('Line 75, Column 3'));});
- background_21 = F2(function(w_99, h_100){
-  return A2(move, 0, 0)(A2(filled, black, A2(rect, w_99, h_100)));});
- ship_22 = F3(function(vw_101, vh_102, angle_103){
-  return scale(0.25)(rotate(angle_103)(A4(sprite, shipW_13, shipH_14, {ctor:"Tuple2", _0:0, _1:0}, _str('ship2.png'))));});
- whiteTextForm_23 = function(string_104){
+ viewPort_8 = function(_19000_34){
+  return (e=_19000_34.ctor==='Tuple4'?{ctor:"Tuple4", _0:toFloat(_19000_34._0), _1:toFloat(_19000_34._1), _2:_19000_34._2, _3:_19000_34._3}:null,e!==null?e:_E.Case('Line 19, Column 27'));};
+ starLayers_9 = function(vp_39){
+  return (_27000_40 = vp_39, vw_41 = (e=_27000_40.ctor==='Tuple4'?_27000_40._0:null,e!==null?e:_E.Case('Line 27, Column 23')), vh_42 = (e=_27000_40.ctor==='Tuple4'?_27000_40._1:null,e!==null?e:_E.Case('Line 27, Column 23')), sx_43 = (e=_27000_40.ctor==='Tuple4'?_27000_40._2:null,e!==null?e:_E.Case('Line 27, Column 23')), sy_44 = (e=_27000_40.ctor==='Tuple4'?_27000_40._3:null,e!==null?e:_E.Case('Line 27, Column 23')), starTilesize$_45 = toFloat(starTilesize_0), left_46 = floor(((sx_43-vw_41)/starTilesize$_45)), top_47 = floor(((sy_44-vh_42)/starTilesize$_45)), right_48 = floor(((sx_43+vw_41)/starTilesize$_45)), bottom_49 = floor(((sy_44+vh_42)/starTilesize$_45)), ltr_50 = _L.range(left_46,right_48), ttb_51 = _L.range(top_47,bottom_49), st_52 = starTile_10(vp_39), {ctor:"Tuple7", _0:left_46, _1:top_47, _2:right_48, _3:bottom_49, _4:ltr_50, _5:ttb_51, _6:A3(foldl, function(r_69){
+   return function(a_70){
+    return A3(foldl, function(c_71){
+     return function(a2_72){
+      return _L.append(a2_72,st_52({ctor:"Tuple2", _0:c_71, _1:r_69}));};}, a_70, ltr_50);};}, _L.Nil, ttb_51)});};
+ starTile_10 = F2(function(_56001_73, _56000_74){
+  return (e=_56001_73.ctor==='Tuple4'?(e=_56000_74.ctor==='Tuple2'?(shape_87 = A2(rect, 1, 1), absX_81 = function(x_91){
+   return ((_56000_74._0*starTilesize_0)+x_91);}, absY_82 = function(y_92){
+   return ((_56000_74._1*starTilesize_0)+y_92);}, dx1_83 = function(x_93){
+   return ((absX_81(x_93)-_56001_73._2)/2);}, dy1_84 = function(y_94){
+   return ((absY_82(y_94)-_56001_73._3)/2);}, dx2_85 = function(x_95){
+   return ((absX_81(x_95)-_56001_73._2)/3);}, dy2_86 = function(y_96){
+   return ((absY_82(y_96)-_56001_73._3)/3);}, filledRect_88 = function(color_97){
+   return A2(filled, color_97, shape_87);}, moved_89 = F2(function(color_98, _53000_99){
+   return (e=_53000_99.ctor==='Tuple2'?A3(move, _53000_99._0, _53000_99._1, filledRect_88(color_98)):null,e!==null?e:_E.Case('Line 53, Column 27'));}), star_90 = F2(function(color_102, _54000_103){
+   return (e=_54000_103.ctor==='Tuple2'?A2(moved_89, color_102, {ctor:"Tuple2", _0:_54000_103._0, _1:_54000_103._1}):null,e!==null?e:_E.Case('Line 54, Column 26'));}), _L.append(A2(map, function(_0_106){
+   return (e=_0_106.ctor==='Tuple2'?A2(star_90, l1color_6, {ctor:"Tuple2", _0:dx1_83(_0_106._0), _1:(0-dy1_84(_0_106._1))}):null,e!==null?e:_E.Case('Line 55, Column 21'));}, starsLevel1_4),A2(map, function(_0_109){
+   return (e=_0_109.ctor==='Tuple2'?A2(star_90, l2color_7, {ctor:"Tuple2", _0:dx2_85(_0_109._0), _1:(0-dy2_86(_0_109._1))}):null,e!==null?e:_E.Case('Line 56, Column 21'));}, starsLevel2_5))):null,e!==null?e:_E.Case('Line 45, Column 3')):null,e!==null?e:_E.Case('Line 45, Column 3'));});
+ clamp_11 = F3(function(min_112, max_113, x_114){
+  return ((_N.cmp(x_114,min_112).ctor==='LT') ? min_112 : ((_N.cmp(x_114,max_113).ctor==='LT') ? x_114 : max_113));});
+ stepGame_21 = F2(function(_91001_115, _91000_116){
+  return (e=_91001_115.ctor==='Input'?(e=_91001_115._1.ctor==='UserInput'?(e=_91000_116.ctor==='GameState'?(_85000_120 = _91000_116._0, x_121 = _85000_120.x, y_122 = _85000_120.y, angle_123 = _85000_120.angle, dx_124 = _85000_120.dx, dy_125 = _85000_120.dy, GameState_19(_N.replace([['dx',A3(clamp_11, (0-1000), 1000, (dx_124+((toFloat(_91001_115._1._0.y)*10)*sin(angle_123))))],['dy',A3(clamp_11, (0-1000), 1000, (dy_125+(((toFloat(_91001_115._1._0.y)*10)*cos(angle_123))*(0-1))))],['angle',(angle_123+((_91001_115._0*3)*toFloat(_91001_115._1._0.x)))],['x',(x_121+(_91001_115._0*dx_124))],['y',(y_122+(_91001_115._0*dy_125))],['t',_91001_115._0]], _91000_116._0))):null,e!==null?e:_E.Case('Line 85, Column 3')):null,e!==null?e:null):null,e!==null?e:_E.Case('Line 85, Column 3'));});
+ background_22 = F2(function(w_126, h_127){
+  return A2(move, 0, 0)(A2(filled, black, A2(rect, w_126, h_127)));});
+ ship_23 = F3(function(vw_128, vh_129, angle_130){
+  return scale(0.25)(rotate(angle_130)(A4(sprite, shipW_14, shipH_15, {ctor:"Tuple2", _0:0, _1:0}, _str('ship2.png'))));});
+ whiteTextForm_24 = function(string_131){
   return function(x){
-   return text(A2(T.color, white, x));}(toText(string_104));};
- debug_24 = F2(function(key_105, value_106){
-  return whiteTextForm_23(_L.append(key_105,_L.append(_str(': '),show(value_106))));});
- display_25 = F2(function(_107001_107, _107000_108){
-  return (e=_107001_107.ctor==='Tuple2'?(e=_107000_108.ctor==='GameState'?(_98000_112 = starLayers_8({ctor:"Tuple2", _0:_107001_107._0, _1:_107001_107._1}), left_113 = (e=_98000_112.ctor==='Tuple7'?_98000_112._0:null,e!==null?e:_E.Case('Line 98, Column 44')), top_114 = (e=_98000_112.ctor==='Tuple7'?_98000_112._1:null,e!==null?e:_E.Case('Line 98, Column 44')), right_115 = (e=_98000_112.ctor==='Tuple7'?_98000_112._2:null,e!==null?e:_E.Case('Line 98, Column 44')), bottom_116 = (e=_98000_112.ctor==='Tuple7'?_98000_112._3:null,e!==null?e:_E.Case('Line 98, Column 44')), ltr_117 = (e=_98000_112.ctor==='Tuple7'?_98000_112._4:null,e!==null?e:_E.Case('Line 98, Column 44')), ttb_118 = (e=_98000_112.ctor==='Tuple7'?_98000_112._5:null,e!==null?e:_E.Case('Line 98, Column 44')), sl_119 = (e=_98000_112.ctor==='Tuple7'?_98000_112._6:null,e!==null?e:_E.Case('Line 98, Column 44')), displayLayers_120 = _L.Cons(A2(background_21, _107001_107._0, _107001_107._1),_L.append(sl_119,_L.Cons(A3(ship_22, _107001_107._0, _107001_107._1, _107000_108._0.angle),_L.Nil))), A3(container, _107001_107._0, _107001_107._1, topLeft)(layers(_L.Cons(A3(collage, _107001_107._0, _107001_107._1, displayLayers_120),_L.Cons(A2(flow, down, _L.Cons(A2(debug_24, _str('Stars'), {ctor:"Tuple6", _0:left_113, _1:top_114, _2:right_115, _3:bottom_116, _4:ltr_117, _5:ttb_118}),_L.Cons(A2(debug_24, _str('gameState'), _107000_108._0),_L.Nil))),_L.Nil))))):null,e!==null?e:_E.Case('Line 98, Column 3')):null,e!==null?e:_E.Case('Line 98, Column 3'));});
+   return text(A2(T.color, white, x));}(toText(string_131));};
+ debug_25 = F2(function(key_132, value_133){
+  return whiteTextForm_24(_L.append(key_132,_L.append(_str(': '),show(value_133))));});
+ display_26 = F2(function(_121001_134, _121000_135){
+  return (e=_121001_134.ctor==='Tuple2'?(e=_121000_135.ctor==='GameState'?(vp_139 = viewPort_8({ctor:"Tuple4", _0:_121001_134._0, _1:_121001_134._1, _2:_121000_135._0.x, _3:_121000_135._0.y}), _110000_140 = starLayers_9(vp_139), left_141 = (e=_110000_140.ctor==='Tuple7'?_110000_140._0:null,e!==null?e:_E.Case('Line 110, Column 44')), top_142 = (e=_110000_140.ctor==='Tuple7'?_110000_140._1:null,e!==null?e:_E.Case('Line 110, Column 44')), right_143 = (e=_110000_140.ctor==='Tuple7'?_110000_140._2:null,e!==null?e:_E.Case('Line 110, Column 44')), bottom_144 = (e=_110000_140.ctor==='Tuple7'?_110000_140._3:null,e!==null?e:_E.Case('Line 110, Column 44')), ltr_145 = (e=_110000_140.ctor==='Tuple7'?_110000_140._4:null,e!==null?e:_E.Case('Line 110, Column 44')), ttb_146 = (e=_110000_140.ctor==='Tuple7'?_110000_140._5:null,e!==null?e:_E.Case('Line 110, Column 44')), sl_147 = (e=_110000_140.ctor==='Tuple7'?_110000_140._6:null,e!==null?e:_E.Case('Line 110, Column 44')), displayLayers_148 = _L.Cons(A2(background_22, _121001_134._0, _121001_134._1),_L.append(sl_147,_L.Cons(A3(ship_23, _121001_134._0, _121001_134._1, _121000_135._0.angle),_L.Nil))), A3(container, _121001_134._0, _121001_134._1, topLeft)(layers(_L.Cons(A3(collage, _121001_134._0, _121001_134._1, displayLayers_148),_L.Cons(A2(flow, down, _L.Cons(A2(debug_25, _str('Stars'), {ctor:"Tuple6", _0:left_141, _1:top_142, _2:right_143, _3:bottom_144, _4:ltr_145, _5:ttb_146}),_L.Cons(A2(debug_25, _str('gameState'), _121000_135._0),_L.Nil))),_L.Nil))))):null,e!==null?e:_E.Case('Line 109, Column 3')):null,e!==null?e:_E.Case('Line 109, Column 3'));});
  starTilesize_0 = 1024;
  starDensity_1 = 31;
- starPoints_3 = A2(map, function(x_32){
-  return {ctor:"Tuple2", _0:randstar_2(x_32), _1:randstar_2(x_32)};}, _L.range(0,starDensity_1));
+ starPoints_3 = A2(map, function(x_33){
+  return {ctor:"Tuple2", _0:randstar_2(x_33), _1:randstar_2(x_33)};}, _L.range(0,starDensity_1));
  starsLevel1_4 = starPoints_3;
  starsLevel2_5 = starPoints_3;
  l1color_6 = A3(rgb, 184, 184, 184);
  l2color_7 = A3(rgb, 96, 96, 96);
- mapW_11 = 6400;
- mapH_12 = 4800;
- shipW_13 = 170;
- shipH_14 = 166;
- userInput_16 = A2(lift, UserInput_15, arrows);
- defaultGame_19 = GameState_18({
+ mapW_12 = 6400;
+ mapH_13 = 4800;
+ shipW_14 = 170;
+ shipH_15 = 166;
+ userInput_17 = A2(lift, UserInput_16, arrows);
+ defaultGame_20 = GameState_19({
    _:{
    },
    angle:0.0,
@@ -81,11 +84,11 @@ Elm.Subspace = function(elm){
    t:0.0,
    x:100.0,
    y:100.0});
- delta_26 = A2(lift, inSeconds, fps(30));
- avgFPS_27 = A2(average, 10, delta_26);
- input_28 = A2(sampleOn, delta_26, A3(lift2, Input_17, delta_26, userInput_16));
- gameState_29 = A3(foldp, stepGame_20, defaultGame_19, input_28);
- main_30 = A3(lift2, display_25, constant({ctor:"Tuple2", _0:640, _1:480}), gameState_29);
+ delta_27 = A2(lift, inSeconds, fps(30));
+ avgFPS_28 = A2(average, 10, delta_27);
+ input_29 = A2(sampleOn, delta_27, A3(lift2, Input_18, delta_27, userInput_17));
+ gameState_30 = A3(foldp, stepGame_21, defaultGame_20, input_29);
+ main_31 = A3(lift2, display_26, dimensions, gameState_30);
  elm.Native = elm.Native||{};
  var _ = elm.Native.Subspace||{};
  _.$op = {};
@@ -97,28 +100,29 @@ Elm.Subspace = function(elm){
  _.starsLevel2 = starsLevel2_5;
  _.l1color = l1color_6;
  _.l2color = l2color_7;
- _.starLayers = starLayers_8;
- _.starTile = starTile_9;
- _.clamp = clamp_10;
- _.mapW = mapW_11;
- _.mapH = mapH_12;
- _.shipW = shipW_13;
- _.shipH = shipH_14;
- _.UserInput = UserInput_15;
- _.userInput = userInput_16;
- _.Input = Input_17;
- _.GameState = GameState_18;
- _.defaultGame = defaultGame_19;
- _.stepGame = stepGame_20;
- _.background = background_21;
- _.ship = ship_22;
- _.whiteTextForm = whiteTextForm_23;
- _.debug = debug_24;
- _.display = display_25;
- _.delta = delta_26;
- _.avgFPS = avgFPS_27;
- _.input = input_28;
- _.gameState = gameState_29;
- _.main = main_30
+ _.viewPort = viewPort_8;
+ _.starLayers = starLayers_9;
+ _.starTile = starTile_10;
+ _.clamp = clamp_11;
+ _.mapW = mapW_12;
+ _.mapH = mapH_13;
+ _.shipW = shipW_14;
+ _.shipH = shipH_15;
+ _.UserInput = UserInput_16;
+ _.userInput = userInput_17;
+ _.Input = Input_18;
+ _.GameState = GameState_19;
+ _.defaultGame = defaultGame_20;
+ _.stepGame = stepGame_21;
+ _.background = background_22;
+ _.ship = ship_23;
+ _.whiteTextForm = whiteTextForm_24;
+ _.debug = debug_25;
+ _.display = display_26;
+ _.delta = delta_27;
+ _.avgFPS = avgFPS_28;
+ _.input = input_29;
+ _.gameState = gameState_30;
+ _.main = main_31
  return elm.Subspace = _;
  };</script></head><body><script type="text/javascript">Elm.init(Elm.Subspace)</script><noscript><p>ship2.png</p><p>: </p><p>Stars</p><p>gameState</p></noscript></body></html>
