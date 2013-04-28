@@ -1,1 +1,0 @@
-/Users/colin/src/Elm/dist/data/elm-runtime.js
