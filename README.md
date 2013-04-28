@@ -2,14 +2,16 @@
 
 Subspace game written in Elm (Haskell -> FRP -> (HTML,CSS,JS)).
 
-# Other SubSpace projects
+[Current state](http://perplexes.github.io/valor/Subspace.html)
+
+## Other SubSpace projects
 
 * [dotproduct](https://github.com/sharvil/dotproduct), another HTML5 SubSpace. [Play here](http://dev.nanavati.net:8000)
 * [Discretion](http://ss-discretion.sourceforge.net)
 * [ASSS](http://asss.minegoboom.com/)
 * [Continuum](http://www.getcontinuum.com/)
 
-# Contributing
+## Contributing
 
 * Fork the project.
 * Make your feature addition or bug fix.
