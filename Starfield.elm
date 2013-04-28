@@ -1,3 +1,5 @@
+{- XXX: Not used yet -}
+
 module Starfield where
 import Random
 

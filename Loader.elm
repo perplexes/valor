@@ -1,3 +1,5 @@
+{- XXX: Not used yet -}
+module Loader where
 stageCombine loadedRecord lastRecord =
   if lastRecord.done + 1 == total then
     ... we're done loading, switch canvases
