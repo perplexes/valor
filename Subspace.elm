@@ -96,7 +96,7 @@ stepGame (Input t (UserInput ui)) (GameState gs) =
 
 {- Display -}
 
-background w h = filled black (rect w h) |> move 0 0 -- w/2 h/2
+background w h = filled black (rect w h) |> move 0 0
 
 ship vw vh angle =
   sprite shipW shipH (0, 0) "ship2.png" |> rotate angle
@@ -112,7 +112,7 @@ display : (Int,Int) -> GameState -> Element
 display (w,h) (GameState gameState) =
   let vp = viewPort (w,h,gameState.x,gameState.y)
       (left,top,right,bottom,ltr,ttb,sl) = starLayers vp
-      displayLayers = [ background w h] ++ sl ++ [ ship w h gameState.angle ]
+      displayLayers = [ background w h ] ++ sl ++ [ ship w h gameState.angle ]
   in container w h topLeft <| layers [
     collage w h displayLayers
     , flow down [

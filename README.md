@@ -1,8 +1,13 @@
-[Discretion](http://ss-discretion.sourceforge.net) is the better part of:
-
 # Valor
 
 Subspace game written in Elm (Haskell -> FRP -> (HTML,CSS,JS)).
+
+# Other SubSpace projects
+
+* [dotproduct](https://github.com/sharvil/dotproduct), another HTML5 SubSpace. [Play here](http://dev.nanavati.net:8000)
+* [Discretion](http://ss-discretion.sourceforge.net)
+* [ASSS](http://asss.minegoboom.com/)
+* [Continuum](http://www.getcontinuum.com/)
 
 # Contributing
 
