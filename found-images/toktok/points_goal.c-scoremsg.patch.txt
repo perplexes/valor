@@ -1,0 +1,65 @@
+--- points_goal.c	2005-05-07 23:50:56.000000000 +0100
++++ new/points_goal.c	2006-01-05 11:36:38.000000000 +0000
+@@ -487,21 +487,53 @@
+ 
+ }
+ 
+-void ScoreMsg(Arena *arena, Player *p)  // pid = -1 means arena-wide, otherwise private
++void ScoreMsg(Arena *arena, Player *p)  // p = NULL means arena-wide, otherwise private
+ {
+ 	struct ArenaScores *scores = P_ARENA_DATA(arena, scrkey);
+-	char _buf[256];
++	int cfg_freqtypes = cfg->GetInt(arena->cfg, "Misc", "FrequencyShipTypes", 0);
++	char msg[256];
+ 
+-	strcpy(_buf,"SCORE: Warbirds:%d  Javelins:%d");
+-	if (scores->mode > 2)
++	/* no score message shown when mode = 0 */
++	if (scores->mode != 0)
++	{
++		if (scores->mode > 2)
++		{
++			/* modes 3, 4, 5 and 6 show 4 teams */
++			if (cfg_freqtypes)
++			{
++				snprintf(msg, sizeof(msg),
++					"SCORE: Warbirds:%d Javelins:%d Spiders:%d Leviathans:%d",
++					scores->score[0], scores->score[1], scores->score[2], scores->score[3]);
++			}
++			else
++			{
++				snprintf(msg, sizeof(msg),
++					"SCORE: Team0:%d Team1:%d Team2:%d Team3:%d",
++					scores->score[0], scores->score[1], scores->score[2], scores->score[3]);
++			}
++		}
++		else
+ 		{
+-			strcat(_buf,"  Spiders:%d  Leviathans:%d");
+-			if (!p) chat->SendArenaMessage(arena,_buf,scores->score[0],scores->score[1],scores->score[2],scores->score[3]);
+-			else chat->SendMessage(p,_buf,scores->score[0],scores->score[1],scores->score[2],scores->score[3]);
++			/* modes 1 and 2 only have 2 teams */
++			if (cfg_freqtypes)
++			{
++				snprintf(msg, sizeof(msg),
++					"SCORE: Warbirds:%d Javelins:%d",
++					scores->score[0], scores->score[1]);
++			}
++			else
++			{
++				snprintf(msg, sizeof(msg),
++					"SCORE: Evens:%d Odds:%d",
++					scores->score[0], scores->score[1]);
++			}
+ 		}
++
++		if (p)
++			chat->SendMessage(p, "%s", msg);
+ 		else
+-			if (!p) chat->SendArenaMessage(arena,_buf,scores->score[0],scores->score[1]);
+-			else chat->SendMessage(p,_buf,scores->score[0],scores->score[1]);
++			chat->SendArenaMessage(arena, "%s", msg);
++	}
+ }
+ 
+ 

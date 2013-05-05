@@ -1,0 +1,31 @@
+subspace directory client protocol
+31/01/04 - smong
+23/05/04 - smong: minor update
+28/09/06 - smong: minor updates and split
+
+Core protocol is same as usual. Dirserv specific c2s/d2c protocol.
+
+Ctm sends a sync request and ss doesn't (obviously).
+Attempting to disable encryption will fail on some directory servers.
+The list request is sent as reliable.
+
+c2s
+
+0x01 list request
+offset size comment
+0      1    type 0x01
+1      4    minimum players
+
+s2c
+
+0x01 list data
+offset size comment
+0      1    type 0x01
+1      4    ip
+5      2    port
+7      2    player count
+9      2    billing (on 0x01 0x00)
+11     4    version (0x86 0x00 0x00 0x00)
+15     64   name
+79     ?    description
+packet repeats from offset 1 until end

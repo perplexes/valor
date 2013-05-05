@@ -1,0 +1,65 @@
+asss commands
+sep 30 2006 smong: initial version
+
+this is a rough guide to the new/most used commands in asss.
+
+just a quick health warning about arenas:
+when creating arenas try not to put a number on the end. the reason for this is because asss can spawn many arenas of the same type, just like there can be many pubs. for example ?go elim, ?go elim1 and ?go elim2 will all read the same settings and scores from arenas/elim.
+
+Q: why aren't any staff commands working #$%@!?
+A: You need to be in conf/staff.conf and if you don't have billing setup you also need to use ?passwd.
+
+naming convention's in this document:
+- <blah> - you must replace <blah> with some text.
+- [blah] - blah is an optional.
+- filter - filter text doesn't have to be a whole name, for example you can do ?reloadconf ar to reload all arena.conf's and ?quickfix decoy to see all related decoy settings (MaxDecoy, InitialDecoy, PrizeWeight:Decoy, etc).
+
+player commands
+
+?listmod - show logged in staff.
+?passwd <usual ss password> - if the biller goes down asss will use this is used to make sure you are not an imposter.
+/?sendfile <filename> - pm this to another player to send them a file thats in your continuum directory.
+?arena -a -t - print all arenas in the server to the chat.
+
+mod commands
+
+?recyclearena - reloads everything in the arena. use this if you changed the map/lvz or UPLOADED new settings. there is no need to use this if you changed settings ingame.
+?resetturrets - removes all "fake players"/server-side bots. you have to do this before you can recycle an arena.
+?flagreset - reset the flag game.
+?ballcount <balls> - set the ball count for the arena. so if there are no balls and you type ?ballcount 1 a ball will be added.
+?flaginfo - show location/owner of each flag.
+?timer A:B - where A is minutes and B is seconds, set to 0:0 to stop it.
+?setjackpot <pts> - change the jackpot to pts.
+?prize <prizes> - grant prizes to everyone, or whoever you pm. note you can say stuff like "?prize 3 bomb 4 shrap prox bounce"
+?a <msg> - arena message
+?z <msg> - zone message
+
+smod commands
+
+?putmap <mapname> - the map must be in your continuum folder. this will replace the map of the arena you are currently in (it will upload the map and change the general:map= setting).
+esc + c / ?getsettings - the usual, change an arenas settings.
+?quickfix <filter> - change an arenas settings, but this time only show settings that contain "filter". this is the preferred way of changing settings while logged in since you don't have to scroll around them so much.
+?attmod [-d] <name> - attach a module to an arena, use -d flag to detach it.
+
+sysop commands
+
+?lsmod [-a] [<filter>] - show currently loaded modules. use -a flag to see what's attached to the current arena. use filter to only show matching modules.
+?insmod [<loader>] <name> - for python modules use "<py>" as the loader, otherwise leave it out.
+?rmmod <name> - unloads a module from the server.
+?lastlog [<max lines>] [<filter>] - shows the recent server logs.
+?shutdown -r - kicks everyone out and restarts the entire zone.
+?reloadconf [<filter>] - force reload of open conf files. you can use a partial file name as the filter.
+?pwd - show where uploaded files will go.
+?cd <dir. name> - change directory of where uploaded files will go. leave dirname blank to go back to the root (only news.txt is stored at the root).
+?putfile <file name> - upload a file from your continuum directory to the server (see also ?cd).
+?makearena <name> - create a new arena based off the default arena. note: do not use arena names that end in a number.
+
+sample directories to ?cd to:
+arenas/(public)
+arenas/(default)
+arenas/duel
+conf
+conf/groupdef.dir
+maps
+bin
+log

@@ -1,0 +1,10 @@
+--- cvs/asss/src/sendfile.c	2005-01-30 21:47:28.000000000 +0000
++++ asss/src/sendfile.c	2005-04-22 22:25:56.000000000 +0000
+@@ -204,6 +204,7 @@
+ 		{
+ 			chat->SendMessage(td->from, "%s is accepting your file.",
+ 				td->to->name);
++			chat->SendMessage(p, "File accepted. Transferring...");
+ 			ft->RequestFile(td->from, td->clientpath, uploaded, td);
+ 			LLRemove(&offers, td);
+ 			goto done;

@@ -1,0 +1,16 @@
+on radar
+191: like wall, but you can fly through
+192-215: stamp fillers
+216-220: stamps
+221-240: stamp fillers
+
+jiggly around
+241: weapon eater (except thor)
+
+not on radar
+242: warper + drain, like wall except eats thors
+243-251: wall
+252: looks like nme brick
+253: looks like team brick
+254: flyoverunder
+255: looks like greens

@@ -1,0 +1,26 @@
+oct 10 2004 scalextric[1] plan file
+
+brief:
+build a scalextric track
+race against the computer or a friend
+
+major pieces to be coded:
+track editor and validator
+car physics[2]
+computer ai
+race logic
+
+major pieces to get libs for:
+detailed graphical output
+keyboard and mouse input[3]
+sound[4] effects for car engine and race events
+
+footnotes:
+[1]game: http://www.tv4.se/lattjo/kojan/bilbanan.asp
+picture: http://www.tssc.org.uk/international/pics/Scalextric%203.JPG
+
+[2]3 forces: engine, friction, track (corners)
+
+[3]sdl will work for input and gfx, although glut could be used too
+
+[4]maybe use fmod or sdl_mixer

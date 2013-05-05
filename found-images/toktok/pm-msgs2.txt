@@ -1,0 +1,58 @@
+[ Misc ]
+;PeriodicMessageN = <interval> <initial> <message>
+GreetMessage         = initial=# interval=# A B C (A = every minute) (B = every 2 minutes) (C = starting after 2 minutes)
+PeriodicMessage0 = 1 1 initial=1 interval=1 x
+PeriodicMessage1 = 2 1 initial=1 interval=2   x
+PeriodicMessage2 = 1 2 initial=2 interval=1 x   x
+PeriodicMessage3 = 2 2 initial=2 interval=2   x x
+
+after patch:
+initial=# interval=# A B C (A = every minute) (B = every 2 minutes) (C = starting after 2 minutes)
+     Smong> 36 0 min in
+     Smong> 37 1 min in
+initial=1 interval=1 x
+initial=1 interval=2   x
+     Smong> 38 2 min in
+initial=1 interval=1 x
+initial=2 interval=1 x   x
+initial=2 interval=2   x x
+     Smong> 39 3 min in
+initial=1 interval=1 x
+initial=1 interval=2   x
+initial=2 interval=1 x   x
+     Smong> 40
+initial=1 interval=1 x
+initial=2 interval=1 x   x
+initial=2 interval=2   x x
+     Smong> 41
+initial=1 interval=1 x
+initial=1 interval=2   x
+initial=2 interval=1 x   x
+     Smong> 42
+initial=1 interval=1 x
+initial=2 interval=1 x   x
+initial=2 interval=2   x x
+
+before patch: (1.4.2)
+initial=# interval=# A B C (A = every minute) (B = every 2 minutes) (C = starting after 2 minutes)
+     Smong> 51
+initial=1 interval=1 x
+initial=1 interval=2   x
+initial=2 interval=1 x   x
+     Smong> 52
+initial=1 interval=1 x
+initial=2 interval=1 x   x
+initial=2 interval=2   x x
+     Smong> 53
+initial=1 interval=1 x
+initial=1 interval=2   x
+initial=2 interval=1 x   x
+     Smong> 54
+initial=1 interval=1 x
+initial=2 interval=1 x   x
+initial=2 interval=2   x x
+     Smong> 55
+initial=1 interval=1 x
+initial=1 interval=2   x
+initial=2 interval=1 x   x
+     Smong> 56

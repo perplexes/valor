@@ -1,0 +1,59 @@
+--- billing_ssc.orig.c	2006-07-03 15:54:42.000000000 +0100
++++ billing_ssc.fix1.c	2006-07-03 20:38:08.000000000 +0100
+@@ -25,6 +25,7 @@
+ #include "packets/billing.h"
+ #include "packets/banners.h"
+ 
++#define CFG_ALLOW_BILLING_USERPKT
+ 
+ typedef struct pdata
+ {
+@@ -867,7 +868,7 @@
+ 
+ #ifdef CFG_ALLOW_BILLING_USERPKT
+ /* this doesn't look like a good idea to me... */
+-local void process_userpkt(const char *data,int len)
++local void process_userpkt(const char *data, int len)
+ {
+ 	struct B2S_UserPacket *pkt = (struct B2S_UserPacket *)data;
+ 	int datalen = len - offsetof(struct B2S_UserPacket, Data[1]);
+@@ -879,12 +880,38 @@
+ 	}
+ 
+ 	if (pkt->ConnectionID == 0xffffffffU)
++	{
++		/* send to all players */
++
++		lm->Log(L_WARN, "<billing_ssc> b2s user packet "
++			"filtered (target='%s')", "<all>");
++
++		/* unlikely to get this, maybe during score reset?
+ 		net->SendToArena(ALLARENAS, NULL, pkt->Data, datalen, NET_RELIABLE);
++		*/
++	}
+ 	else
+ 	{
+ 		Player *p = pd->PidToPlayer(pkt->ConnectionID);
++
+ 		if (p)
+-			net->SendToOne(p, pkt->Data, datalen, NET_RELIABLE);
++		{
++			/* only allow S2C_LOGINTEXT for banned players to get the ban text. */
++			if (*pkt->Data == S2C_LOGINTEXT)
++			{
++				net->SendToOne(p, pkt->Data, datalen, NET_RELIABLE);
++			}
++			else
++			{
++				lm->Log(L_WARN, "<billing_ssc> b2s user packet "
++					"filtered (target='%s')", p->name);
++			}
++		}
++		else
++		{
++			lm->Log(L_MALICIOUS, "<billing_ssc> b2s user packet "
++				"unknown pid (%d)", pkt->ConnectionID);
++		}
+ 	}
+ 	lm->Log(L_DRIVEL, "<billing_ssc> [pid=%d] "
+ 			"user data packet from billing server, %d bytes",

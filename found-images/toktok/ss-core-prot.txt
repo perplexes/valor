@@ -1,0 +1,108 @@
+subspace core protocol
+28/09/06 - smong: split from dir-client-prot.txt
+
+This is the core protocol used by nearly all parts of subspace.
+
+Other protocols can be used after a connection has been established using the core protocol.
+The core protocol works in both directions and to differentiate from other higher level protocols all packets begin with 0x00.
+
+Features provided:
+- encryption.
+- ordered reliable packets.
+- packet grouping.
+- packet splitting (for large packets).
+- time sync.
+
+Misc important notes:
+- protocol is UDP.
+- max packet size is 520 bytes due to the way vie encryption is implemented (sidenote: also due to the MTU of the hardware available at the time the protocol was designed).
+
+core (both ways)
+
+0x01 login
+offset size comment
+0      1    type 0x00
+1      1    type 0x01
+2      4    client key
+6      2    protocol version (vie = 0x01, ctm = 0x11)
+
+0x02 login response
+offset size comment
+0      1    type 0x00
+1      1    type 0x02
+2      4    server key (this is typically the client key negated)
+if the server key returned is the same as the client key then encryption is disabled.
+
+0x03 reliable header
+offset size comment
+0      1    type 0x00
+1      1    type 0x03
+2      4    sequence number (starts at 0)
+6      ?    payload (514 max)
+
+0x04 reliable acknowledge
+offset size comment
+0      1    type 0x00
+1      1    type 0x04
+2      4    sequence number
+
+0x05 sync
+offset size comment
+0      1    type 0x00
+1      1    type 0x05
+2      4    local time
+6      4    packets sent
+10     4    packets received
+
+0x06 sync response
+offset size comment
+0      1    type 0x00
+1      1    type 0x06
+2      4    time from last 0x05 packet
+6      4    server time
+
+0x07 disconnect
+offset size comment
+0      1    type 0x00
+1      1    type 0x07
+
+0x08 small stream chunk
+0      1    type 0x00
+1      1    type 0x08
+2      ?    payload
+You can expect this packet to be wrapped inside a reliable packet, as such the payload of the small stream packets is never another reliable packet.
+Note: this is not intended for arbitrarily large payloads, you may encounter a 64k limit on this. See 0x0A for larger payloads.
+
+0x09 small stream end
+0      1    type 0x00
+1      1    type 0x08
+2      ?    payload
+Same as 0x08 but the terminating packet.
+
+0x0A large stream
+offset size comment
+0      1    type 0x00
+1      1    type 0x0A
+2      4    total length of all the pieces
+6      ?    payload (514 max, but don't be surprised to be receiving 480)
+This is like the 0x08/0x09 pair but this time you are told the size of the payload.
+Again this is wrapped in a reliable packet, so don't expect the payload to be another reliable packet.
+
+0x0B cancel stream request
+offset size comment
+0      1    type 0x00
+1      1    type 0x0B
+This is sent when one end wants the other to stop sending an 0x0A stream.
+
+0x0C cancel stream acknowledge
+offset size comment
+0      1    type 0x00
+1      1    type 0x0C
+
+0x0E cluster
+offset size comment
+0      1    type 0x00
+1      1    type 0x0E
+2      1    length
+3      ?    payload with length as above
+packet repeats from offset 2 until end, process contents as arbitrary packet
