@@ -2,8 +2,11 @@ module Subspace where
 import Keyboard
 import Window
 import Text as T
-import Starfield
 import Random
+import Json
+
+import Loader
+import Starfield
 
 -- Constants
 mapW = 6400
@@ -49,27 +52,36 @@ ship vw vh angle =
   sprite shipW shipH (0, 0) "assets/ship2.png" |> rotate angle
                                                |> scale 0.25
 
+scene (w,h) forms gameState gameMap =
+  container w h topLeft <| layers [
+    collage w h forms
+    , flow down [
+      --debug "Stars" (left,top,right,bottom,ltr,ttb)
+      debug "gameState" gameState
+      , debug "map" gameMap
+      --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
+    ]
+  ]
+--scene (w,h) forms gameState = collage w h forms
+
 whiteTextForm string =
   text . T.color white <| toText string
 
 debug key value =
   whiteTextForm <| key ++ ": " ++ (show value)
 
-display : (Int,Int) -> GameState -> [[(Int,Int)]] -> Element
-display (w,h) (GameState gameState) starTiles =
+display : (Int,Int) -> GameState -> [[(Int,Int)]] -> Response -> Element
+--display : (Int,Int) -> GameState -> [[(Int,Int)]] -> Element
+display (w,h) (GameState gameState) starTiles mapResponse =
+--display (w,h) (GameState gameState) starTiles =
   let vp = viewPort (w,h,gameState.x,gameState.y)
       (left,top,right,bottom,ltr,ttb,sl) = starLayers vp starTiles
       displayLayers = [ background w h ] ++ sl ++ [ ship w h gameState.angle ]
-  --in asText [vp, sl]
-  --in container w h topLeft (collage w h displayLayers)
-  in container w h topLeft <| layers [
-    collage w h displayLayers
-    , flow down [
-      debug "Stars" (left,top,right,bottom,ltr,ttb)
-      ,debug "gameState" gameState
-      --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
-    ]
-  ]
+      mapMessage = case mapResponse of
+        Waiting -> "Loading..."
+        Failure code err -> "Error!"
+        Success mapObj -> "Loaded"
+  in scene (w,h) displayLayers gameState mapMessage
 
 delta = lift inSeconds (fps 30)
 --avgFPS = average 10 delta
@@ -77,4 +89,4 @@ input = sampleOn delta (lift2 Input delta userInput)
 
 gameState = foldp stepGame defaultGame input
 
-main = lift3 display dimensions gameState starTiles
+main = lift4 display dimensions gameState starTiles (getJson "../svs/map.json")

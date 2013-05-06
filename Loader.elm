@@ -32,11 +32,7 @@ getJson url = httpToJson <~ (sendGet <| constant url)
 --
 --getTile (Object map) tile = findNumber (show tile) map
 
-getTile : Response -> Float
-getTile response =
-  case response of
-    Success (Object map) -> findNumber "3" map
-    _ -> toFloat (0-1)
+getTile : Object -> Int -> Int
+getTile map index = findNumber (show index) map |> floor
 
 --main = lift asText <| getJson "../svs/map.json"
-main = lift asText <| lift getTile (getJson "../svs/map.json")
