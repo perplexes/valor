@@ -1,14 +1,8 @@
-{- XXX: Not used yet -}
-
 module Starfield where
 import Random
 
 starTilesize = 1024
 starDensity = 31
-randstar _ = rangeSync 0 starTilesize
---starPoints = map (\x -> (randstar x, randstar x)) [0..starDensity]
---starsLevel1 = starPoints -- closer
---starsLevel2 = starPoints -- farther
 l1color = rgb 184 184 184
 l2color = rgb 96 96 96
 
