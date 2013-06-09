@@ -1,4 +1,4 @@
-module Starfield where
+module Starfield (starTiles, starLayers, viewPort) where
 import Random
 
 starTilesize = 1024
@@ -22,21 +22,29 @@ randomTile _ = lift2 zip (randomList 1) (randomList 2)
 starTiles : Signal [[(Int,Int)]]
 starTiles = combine [randomTile 1, randomTile 2]
 
+-- Give the tiles to draw given:
+-- view port, tile width, tile height
+tiles : ViewPort -> Int -> Int -> ([Int],[Int])
+tiles vp w h =
+  let (vw,vh,sx,sy) = vp
+      tileHeight = toFloat w
+      tileWidth = toFloat h
+      l = floor <| (sx - vw) / tileWidth
+      t = floor <| (sy - vh) / tileHeight
+      r = floor <| (sx + vw) / tileWidth
+      b = floor <| (sy + vh) / tileHeight
+      ltr = [l..r]
+      ttb = [t..b]
+  in (ltr, ttb)
+
 -- Draw star tiles to the viewport. + debug info
 -- My kingdom for an array comprehension.
-starLayers : ViewPort -> [[(Int,Int)]] -> (Int,Int,Int,Int,[Int],[Int],[Form])
+starLayers : ViewPort -> [[(Int,Int)]] -> ([Int],[Int],[Form])
 starLayers vp starTiles =
   -- We pad by half a viewport width/height on each side
-  let (vw,vh,sx,sy) = vp
-      starTilesize' = toFloat starTilesize
-      left = floor <| (sx - vw) / starTilesize'
-      top = floor <| (sy - vh) / starTilesize'
-      right = floor <| (sx + vw) / starTilesize'
-      bottom = floor <| (sy + vh) / starTilesize'
-      ltr = [left..right]
-      ttb = [top..bottom]
+  let (ltr, ttb) = tiles vp starTilesize starTilesize
       st = starTile vp starTiles
-  in (left,top,right,bottom,ltr,ttb,
+  in (ltr,ttb,
     foldl (\r a ->
        foldl (\c a2 ->
          a2 ++ st (c,r)
@@ -58,7 +66,7 @@ starTile (vw,vh,sx,sy) starTiles (c,r)  =
       dy2 y = ((absY y) - sy) / 3
       shape = rect 1 1
       filledRect color = filled color shape
-      moved color (x,y) = move x y (filledRect color)
+      moved color (x,y) = move (x,y) (filledRect color)
       star color (x,y) = moved color (x,y)
   in map (\(x,y) -> star l1color (dx1 x, (0-dy1 y))) starsLevel1 ++
      map (\(x,y) -> star l2color (dx2 x, (0-dy2 y))) starsLevel2
