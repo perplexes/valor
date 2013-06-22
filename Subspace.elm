@@ -7,9 +7,9 @@ import Json
 import Http (Waiting, Failure, Success)
 
 import Loader (getJson)
-import Starfield (starTiles, starLayers, viewPort)
+import Starfield (starLayer, tileLevel1, tileLevel2, viewPort)
 
--- Constants 
+-- Constants
 mapW = 6400
 mapH = 4800
 shipW = 170
@@ -29,20 +29,21 @@ userInput =
 
 data Input = Input Float UserInput
 
-data GameState = GameState { x : Float, y : Float, angle : Float, dx : Float, dy : Float, t : Float }
+type GameState = { x : Float, y : Float, angle : Float, dx : Float, dy : Float, t : Float }
 
-defaultGame = GameState { x=100.0, y=100.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
+defaultGame = { x=100.0, y=100.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
 
 -- Calculate new gamestate
 -- Old GameState + Input = New GameState
-stepGame (Input t (UserInput ui)) (GameState gs) =
-  let {x,y,angle,dx,dy} = gs in
-  GameState { gs | dx <- clamp (0-1000) 1000 (dx + toFloat (0-ui.y) * 10 * sin angle)
-                 , dy <- clamp (0-1000) 1000 (dy + toFloat (0-ui.y) * 10 * cos angle)
-                 , angle <- angle + t * (0-3) * toFloat ui.x
-                 , x <- {-clamp (shipW/2) (mapW - shipW/2) <|-} x + t * dx
-                 , y <- {-clamp (shipH/2) (mapH - shipH/2) <|-} y + t * dy
-                 , t <- t}
+stepGame : Input -> GameState -> GameState
+stepGame (Input t (UserInput ui)) gs =
+  let {x,y,angle,dx,dy} = gs
+  in { gs | dx <- clamp (0-1000) 1000 (dx + toFloat (0-ui.y) * 10 * sin angle)
+          , dy <- clamp (0-1000) 1000 (dy + toFloat (0-ui.y) * 10 * cos angle)
+          , angle <- angle + t * (0-3) * toFloat ui.x
+          , x <- {-clamp (shipW/2) (mapW - shipW/2) <|-} x + t * dx
+          , y <- {-clamp (shipH/2) (mapH - shipH/2) <|-} y + t * dy
+          , t <- t}
 
 
 {- Display -}
@@ -53,15 +54,19 @@ ship vw vh angle =
   sprite shipW shipH (0, 0) "/assets/ship2.png" |> rotate angle
                                                 |> scale 0.25
 
-scene (w,h) forms gameState =
-  container w h topLeft <| layers [
-    collage w h forms
-    --, flow down [
-    --  --debug "Stars" (left,top,right,bottom,ltr,ttb)
-    --  debug "gameState" gameState
-    --  , debug "map" gameMap
-    --  --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
-    --]
+scene : (Int, Int) -> [Form] -> GameState -> [(Int,Int)] -> [(Int,Int)] -> Element
+scene (w,h) forms gs l2coords l1coords =
+  let sceneElement = collage w h forms
+  in container w h topLeft <| layers [
+    sceneElement
+    , flow down [
+      --debug "Stars" (left,top,right,bottom,ltr,ttb)
+      debug "gameState" gs
+      , debug "l2coords" l2coords
+      , debug "l1coords" l1coords
+      --, debug "map" gameMap
+      --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
+    ]
   ]
 --scene (w,h) forms gameState = collage w h forms
 
@@ -71,19 +76,21 @@ whiteTextForm string =
 debug key value =
   whiteTextForm <| key ++ ": " ++ (show value)
 
-display : (Int,Int) -> GameState -> [[(Int,Int)]] -> Element
---display : (Int,Int) -> GameState -> [[(Int,Int)]] -> Element
-display (w,h) (GameState gameState) starTiles =
---display (w,h) (GameState gameState) starTiles =
-  let vp = viewPort (w,h,gameState.x,gameState.y)
-      (ltr,ttb,sl) = starLayers vp starTiles
-      displayLayers = [ background w h ] ++ sl ++ [ ship w h gameState.angle ]
-  in scene (w,h) displayLayers gameState
+display : (Int,Int) -> GameState -> Tile -> Tile -> Element
+display (w,h) gs tile1 tile2 =
+  let vp = viewPort (w,h,gs.x,gs.y)
+      (layer2, l2coords) = starLayer vp tile2
+      (layer1, l1coords) = starLayer vp tile1
+      backgroundLayer = background w h
+      shipLayer = ship w h gs.angle
+      displayLayers = [backgroundLayer] ++ layer2 ++ layer1 ++ [shipLayer]
+  in scene (w,h) displayLayers gs l2coords l1coords
 
 delta = lift inSeconds (fps 30)
 --avgFPS = average 10 delta
 input = sampleOn delta (lift2 Input delta userInput)
 
+gameState : Signal GameState
 gameState = foldp stepGame defaultGame input
 
-main = lift3 display dimensions gameState starTiles
+main = lift4 display dimensions gameState tileLevel1 tileLevel2
