@@ -54,18 +54,20 @@ ship vw vh angle =
   sprite shipW shipH (0, 0) "/assets/ship2.png" |> rotate angle
                                                 |> scale 0.25
 
-scene : (Int, Int) -> [Form] -> GameState -> [(Int,Int)] -> [(Int,Int)] -> Element
-scene (w,h) forms gs l2coords l1coords =
+--scene : (Int, Int) -> [Form] -> GameState -> [(Int,Int)] -> [(Int,Int)] -> Element
+scene (w,h) forms gs =
   let sceneElement = collage w h forms
+      window = (w,h)
   in container w h topLeft <| layers [
     sceneElement
     , flow down [
-      --debug "Stars" (left,top,right,bottom,ltr,ttb)
-      debug "gameState" gs
-      , debug "l2coords" l2coords
-      , debug "l1coords" l1coords
-      --, debug "map" gameMap
-      --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
+    --  --debug "Stars" (left,top,right,bottom,ltr,ttb)
+      debug "w,h" window
+      , debug "gameState" gs
+    --  , debug "l2coords" l2debug
+    --  , debug "l1coords" l1debug
+    --  --, debug "map" gameMap
+    --  --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
     ]
   ]
 --scene (w,h) forms gameState = collage w h forms
@@ -79,12 +81,12 @@ debug key value =
 display : (Int,Int) -> GameState -> Tile -> Tile -> Element
 display (w,h) gs tile1 tile2 =
   let vp = viewPort (w,h,gs.x,gs.y)
-      (layer2, l2coords) = starLayer vp tile2
-      (layer1, l1coords) = starLayer vp tile1
+      layer2 = starLayer vp tile2
+      layer1 = starLayer vp tile1
       backgroundLayer = background w h
       shipLayer = ship w h gs.angle
       displayLayers = [backgroundLayer] ++ layer2 ++ layer1 ++ [shipLayer]
-  in scene (w,h) displayLayers gs l2coords l1coords
+  in scene (w,h) displayLayers gs
 
 delta = lift inSeconds (fps 30)
 --avgFPS = average 10 delta

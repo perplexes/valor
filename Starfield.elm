@@ -21,7 +21,7 @@ randomTile num = lift2 zip (randomList (num + 1)) (randomList (num + 2))
 type Tile = (Form, Float)
 makeTile : Color -> Float -> [(Int,Int)] -> Tile
 makeTile color moveRatio points =
-  let shape = rect 5 5
+  let shape = rect 2 1
       filledRect color = filled color shape
       moved color (x,y) = move (x,y) (filledRect color)
       star color (x,y) = moved color (x,y)
@@ -40,10 +40,13 @@ tileLevel2 = lift (makeTile l2color 3.0) (randomTile 2)
 starLayer vp tile =
   let (vw,vh,sx,sy) = vp
       (f, ratio) = tile
-      (ltr, ttb, coords) = tiles vp starTilesize starTilesize ratio
+      (ltr, ttb, coords) = tiles vp (starTilesize) (starTilesize) ratio
       (x, y) = (0-sx/ratio, sy/ratio)
-      xy c r = (toFloat (c * starTilesize) + x, toFloat (r * starTilesize) + y)
-  in (map (\(c,r) -> move (xy c r) f) coords, (ltr, ttb, coords))
+      xy c r = (
+        toFloat <| round (toFloat (c * starTilesize) + x),
+        toFloat <| round (toFloat ((0-r) * starTilesize) + y)
+      )
+  in map (\(c,r) -> move (xy c r) f) coords
 
 -- Give the tiles to draw given:
 -- view port, tile width, tile height
@@ -52,10 +55,10 @@ tiles vp w h ratio =
   let (vw,vh,sx,sy) = vp
       tileHeight = toFloat w
       tileWidth = toFloat h
-      l = floor <| (sx/ratio - vw / 2) / tileWidth / 2
-      t = floor <| (sy/ratio - vh / 2) / tileHeight / 2
-      r = floor <| (sx/ratio + vw / 2) / tileWidth / 2
-      b = floor <| (sy/ratio + vh / 2) / tileHeight / 2
+      l = floor <| ((sx/ratio) - (vw/2)) / tileWidth
+      t = floor <| ((sy/ratio) - (vh/2)) / tileHeight
+      r = ceiling <| ((sx/ratio) + (vw/2)) / tileWidth
+      b = ceiling <| ((sy/ratio) + (vh/2)) / tileHeight
       ltr = [l..r]
       ttb = [t..b]
   in (ltr, ttb, foldl (\r a ->
