@@ -3,6 +3,8 @@ import Dict (fromList)
 import Json (Object)
 import Maybe (Just, Nothing, justs)
 
+import Native.Map as N
+
 tileWidth = 16
 tileHeight = tileWidth
 spriteWidth = 19
@@ -11,13 +13,15 @@ spriteHeight = 10
 mapWidth = 1024 -- In tiles
 mapHeight = mapWidth
 
-mapDict = fromList [(512,0)]
-tileForIndex (idx, col, row) = if | idx == 524800 -> Just (0, col, row)
-                                  | otherwise -> Nothing
+--mapDict = fromList [(512,0)]
+tileForIndex : (Int, Int, Int) -> Maybe (Int, Int, Int)
+--tileForIndex (idx, col, row) = if | idx `mod` 10 == 0 -> Just (0, col, row)
+--                                  | otherwise -> Nothing
 
+-- 1: 0,0, 2: 0,16
 indexToSpriteCoord index =
-  let row = index `div` spriteHeight
-      col = index `rem` spriteHeight
+  let row = index `div` spriteWidth
+      col = index `rem` spriteWidth
    in toXY (col, row)
 
 toXY (col,row) = (col * tileWidth, row * tileHeight)
@@ -49,12 +53,12 @@ tilesInView vp w h ratio =
 mapLayer vp =
   let (vw,vh,sx,sy) = vp
       coords = tilesInView vp tileWidth tileHeight 1
-      coordToIndex (col,row) = (row * mapWidth + col, col, row)
-      indicesAndCoords = justs <| map (tileForIndex . coordToIndex) coords
-      s (x,y) = sprite tileWidth tileHeight (x,y) "/svs/tileset.png"
+      coordToIndex (col,row) = ((row * mapWidth) + col, col, row)
+      indicesAndCoords = justs <| map (N.tileForIndex . coordToIndex) (filter (\(c, r) -> c >= 0 && r >= 0) coords)
+      s (x,y) = sprite tileWidth tileHeight (x,y) "/arenas/trench_9/tileset.png"
       relCoord (x,y) = (x-sx, 0-(y-sy))
   in (indicesAndCoords, group <| map (\(i,c,r) ->
-      s (indexToSpriteCoord i) |> move (relCoord (toXY (c,r)))
+      s (indexToSpriteCoord (i - 1)) |> move (relCoord (toXY (c,r)))
          ) indicesAndCoords)
 
 --c,r to index, index to spriteindex (maybe), spriteindex to x,y in spritemap, to sprite obj

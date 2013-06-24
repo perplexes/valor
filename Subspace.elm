@@ -32,7 +32,8 @@ data Input = Input Float UserInput
 
 type GameState = { x : Float, y : Float, angle : Float, dx : Float, dy : Float, t : Float }
 
-defaultGame = { x=8192.0, y=8192.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
+defaultGame = { x=8384.0, y=15552.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
+--defaultGame = { x=0.0, y=0.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
 
 -- Calculate new gamestate
 -- Old GameState + Input = New GameState
@@ -61,16 +62,16 @@ scene (w,h) gs mapl forms =
       window = (w,h)
   in container w h topLeft <| layers [
     sceneElement
-    , flow down [
-    --  --debug "Stars" (left,top,right,bottom,ltr,ttb)
-      debug "w,h" window
-      , debug "gameState" gs
-      , debug "maplayer" mapl
+    --, flow down [
+    ----  --debug "Stars" (left,top,right,bottom,ltr,ttb)
+    --  debug "w,h" window
+    --  , debug "gameState" gs
+      --debug "maplayer" mapl
     --  , debug "l2coords" l2debug
     --  , debug "l1coords" l1debug
     --  --, debug "map" gameMap
     --  --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
-    ]
+    --]
   ]
 --scene (w,h) forms gameState = collage w h forms
 

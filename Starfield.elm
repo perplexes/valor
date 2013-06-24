@@ -22,8 +22,8 @@ makeStarTile color moveRatio points =
       moved color (x,y) = move (x,y) (filledRect color)
       star color (x,y) = moved color (x,y)
       stars = map (\(x,y) -> star color (x,y)) points
-      forms = stars ++ [outlined (solid color) (rect 1024 1024)]
-  in (group forms, moveRatio)
+      --forms = stars ++ [outlined (solid color) (rect 1024 1024)]
+  in (group stars, moveRatio)
 
 -- [stars level 1 (closer), level 2 (farther)]
 tileLevel1 : Signal StarTile
