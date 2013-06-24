@@ -1,15 +1,11 @@
-module Starfield (starLayer, tileLevel1, tileLevel2, viewPort) where
+module Starfield (starLayer, tileLevel1, tileLevel2) where
 import Random
+import Map (tilesInView)
 
 starTilesize = 1024
 starDensity = 31
 l1color = rgb 184 184 184
 l2color = rgb 96 96 96
-
--- Convenience type for the width & height of the view port,
--- as well as the ship's current (x,y) coordinates
-type ViewPort = (Float,Float,Float,Float)
-viewPort (vw,vh,sx,sy) = (toFloat vw, toFloat vh, sx, sy)
 
 randomList : Int -> Signal [Int]
 randomList _ = combine (map (Random.range ((0-starTilesize) `div` 2) (starTilesize `div` 2) . constant) [0..starDensity])
@@ -18,9 +14,9 @@ randomList _ = combine (map (Random.range ((0-starTilesize) `div` 2) (starTilesi
 randomTile : Int -> Signal [(Int,Int)]
 randomTile num = lift2 zip (randomList (num + 1)) (randomList (num + 2))
 
-type Tile = (Form, Float)
-makeTile : Color -> Float -> [(Int,Int)] -> Tile
-makeTile color moveRatio points =
+type StarTile = (Form, Float)
+makeStarTile : Color -> Float -> [(Int,Int)] -> StarTile
+makeStarTile color moveRatio points =
   let shape = rect 2 1
       filledRect color = filled color shape
       moved color (x,y) = move (x,y) (filledRect color)
@@ -30,42 +26,23 @@ makeTile color moveRatio points =
   in (group forms, moveRatio)
 
 -- [stars level 1 (closer), level 2 (farther)]
-tileLevel1 : Signal Tile
-tileLevel1 = lift (makeTile l1color 2.0) (randomTile 1)
+tileLevel1 : Signal StarTile
+tileLevel1 = lift (makeStarTile l1color 2.0) (randomTile 1)
 
-tileLevel2 : Signal Tile
-tileLevel2 = lift (makeTile l2color 3.0) (randomTile 2)
+tileLevel2 : Signal StarTile
+tileLevel2 = lift (makeStarTile l2color 3.0) (randomTile 2)
 
 --starLayer : ViewPort -> Tile -> ([Form], [(Int,Int)], [Int], [Int])
 starLayer vp tile =
   let (vw,vh,sx,sy) = vp
       (f, ratio) = tile
-      (ltr, ttb, coords) = tiles vp (starTilesize) (starTilesize) ratio
+      coords = tilesInView vp (starTilesize) (starTilesize) ratio
       (x, y) = (0-sx/ratio, sy/ratio)
       xy c r = (
         toFloat <| round (toFloat (c * starTilesize) + x),
         toFloat <| round (toFloat ((0-r) * starTilesize) + y)
       )
-  in map (\(c,r) -> move (xy c r) f) coords
-
--- Give the tiles to draw given:
--- view port, tile width, tile height
---tiles : ViewPort -> Int -> Int -> ([Int], [Int], [(Int,Int)])
-tiles vp w h ratio =
-  let (vw,vh,sx,sy) = vp
-      tileHeight = toFloat w
-      tileWidth = toFloat h
-      l = floor <| ((sx/ratio) - (vw/2)) / tileWidth
-      t = floor <| ((sy/ratio) - (vh/2)) / tileHeight
-      r = ceiling <| ((sx/ratio) + (vw/2)) / tileWidth
-      b = ceiling <| ((sy/ratio) + (vh/2)) / tileHeight
-      ltr = [l..r]
-      ttb = [t..b]
-  in (ltr, ttb, foldl (\r a ->
-       foldl (\c a2 ->
-         (c, r) :: a2
-       ) a ltr
-     ) [] ttb)
+  in group <| map (\(c,r) -> move (xy c r) f) coords
 
 ---- Draw star tiles to the viewport. + debug info
 ---- My kingdom for an array comprehension.

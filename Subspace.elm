@@ -7,7 +7,8 @@ import Json
 import Http (Waiting, Failure, Success)
 
 import Loader (getJson)
-import Starfield (starLayer, tileLevel1, tileLevel2, viewPort)
+import Starfield (starLayer, tileLevel1, tileLevel2)
+import Map (mapLayer, viewPort)
 
 -- Constants
 mapW = 6400
@@ -31,7 +32,7 @@ data Input = Input Float UserInput
 
 type GameState = { x : Float, y : Float, angle : Float, dx : Float, dy : Float, t : Float }
 
-defaultGame = { x=100.0, y=100.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
+defaultGame = { x=8192.0, y=8192.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
 
 -- Calculate new gamestate
 -- Old GameState + Input = New GameState
@@ -48,14 +49,14 @@ stepGame (Input t (UserInput ui)) gs =
 
 {- Display -}
 
-background w h = filled black (rect w h) |> move (0,0)
+background (w,h) = filled black (rect w h) |> move (0,0)
 
-ship vw vh angle =
+ship angle =
   sprite shipW shipH (0, 0) "/assets/ship2.png" |> rotate angle
                                                 |> scale 0.25
 
---scene : (Int, Int) -> [Form] -> GameState -> [(Int,Int)] -> [(Int,Int)] -> Element
-scene (w,h) forms gs =
+--scene : (Int, Int) -> GameState -> Form -> [Form] ->  Element
+scene (w,h) gs mapl forms =
   let sceneElement = collage w h forms
       window = (w,h)
   in container w h topLeft <| layers [
@@ -64,6 +65,7 @@ scene (w,h) forms gs =
     --  --debug "Stars" (left,top,right,bottom,ltr,ttb)
       debug "w,h" window
       , debug "gameState" gs
+      , debug "maplayer" mapl
     --  , debug "l2coords" l2debug
     --  , debug "l1coords" l1debug
     --  --, debug "map" gameMap
@@ -78,15 +80,17 @@ whiteTextForm string =
 debug key value =
   whiteTextForm <| key ++ ": " ++ (show value)
 
-display : (Int,Int) -> GameState -> Tile -> Tile -> Element
-display (w,h) gs tile1 tile2 =
-  let vp = viewPort (w,h,gs.x,gs.y)
-      layer2 = starLayer vp tile2
-      layer1 = starLayer vp tile1
-      backgroundLayer = background w h
-      shipLayer = ship w h gs.angle
-      displayLayers = [backgroundLayer] ++ layer2 ++ layer1 ++ [shipLayer]
-  in scene (w,h) displayLayers gs
+--display : (Int,Int) -> GameState -> Tile -> Tile -> Element
+display window gs tile1 tile2 =
+  let vp = viewPort window (gs.x,gs.y)
+      (coords, mapl) = mapLayer vp
+  in scene window gs (coords,mapl) [
+    background window,
+    starLayer vp tile2,
+    starLayer vp tile1,
+    mapl,
+    ship gs.angle
+  ]
 
 delta = lift inSeconds (fps 30)
 --avgFPS = average 10 delta
