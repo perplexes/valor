@@ -1,3 +1,5 @@
-*html
-*js
-
+#*html
+#*js
+ElmFiles/*.elmo
+ElmFiles/*.js
+elm-runtime.js
