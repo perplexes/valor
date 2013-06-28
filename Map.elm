@@ -1,4 +1,4 @@
-module Map (viewPort, mapLayer, tilesInView) where
+module Map (viewPort, mapLayer, tilesInView, renderBuffer) where
 import Dict (fromList)
 import Json (Object)
 import Maybe (Just, Nothing, justs)
@@ -13,10 +13,16 @@ spriteHeight = 10
 mapWidth = 1024 -- In tiles
 mapHeight = mapWidth
 
---mapDict = fromList [(512,0)]
+-- Native
 tileForIndex : (Int, Int, Int) -> Maybe (Int, Int, Int)
---tileForIndex (idx, col, row) = if | idx `mod` 10 == 0 -> Just (0, col, row)
---                                  | otherwise -> Nothing
+-- tileForIndex (indexInMap, column, row) = Maybe (spriteIndex, column, row)
+
+-- Native
+renderBuffer : FGroup -> Int -> Int -> (Int,Int) -> FImage
+-- renderBuffer tileForm width height (x,y) = imagycanvas
+
+mapSprite : Int -> Int -> (Int, Int) -> FImage
+-- mapSprite (x,y) = FImage tileWidth tileHeight (x,y) into the lvl map sprite
 
 -- 1: 0,0, 2: 0,16
 indexToSpriteCoord index =
@@ -55,11 +61,11 @@ mapLayer vp =
       coords = tilesInView vp tileWidth tileHeight 1
       coordToIndex (col,row) = ((row * mapWidth) + col, col, row)
       indicesAndCoords = justs <| map (N.tileForIndex . coordToIndex) (filter (\(c, r) -> c >= 0 && r >= 0) coords)
-      s (x,y) = sprite tileWidth tileHeight (x,y) "/arenas/trench_9/tileset.png"
+      s (x,y) = mapSprite tileWidth tileHeight (x,y)
       relCoord (x,y) = (x-sx, 0-(y-sy))
-  in (indicesAndCoords, group <| map (\(i,c,r) ->
-      s (indexToSpriteCoord (i - 1)) |> move (relCoord (toXY (c,r)))
-         ) indicesAndCoords)
+      coordToTile (i,c,r) = s (indexToSpriteCoord (i - 1)) |> move (relCoord (toXY (c,r)))
+      tileForms = map coordToTile indicesAndCoords
+  in (indicesAndCoords, N.renderBuffer (group tileForms) vw vh (0,0))
 
 --c,r to index, index to spriteindex (maybe), spriteindex to x,y in spritemap, to sprite obj
 --c,r to move x,y coordinates

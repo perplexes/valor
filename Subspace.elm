@@ -60,8 +60,9 @@ ship angle =
 scene (w,h) gs mapl forms =
   let sceneElement = collage w h forms
       window = (w,h)
-  in container w h topLeft <| layers [
-    sceneElement
+   in sceneElement
+  --in container w h topLeft <| layers [
+  --  sceneElement
     --, flow down [
     ----  --debug "Stars" (left,top,right,bottom,ltr,ttb)
     --  debug "w,h" window
@@ -72,7 +73,7 @@ scene (w,h) gs mapl forms =
     --  --, debug "map" gameMap
     --  --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
     --]
-  ]
+  --]
 --scene (w,h) forms gameState = collage w h forms
 
 whiteTextForm string =
@@ -84,16 +85,16 @@ debug key value =
 --display : (Int,Int) -> GameState -> Tile -> Tile -> Element
 display window gs tile1 tile2 =
   let vp = viewPort window (gs.x,gs.y)
-      (coords, mapl) = mapLayer vp
-  in scene window gs (coords,mapl) [
+      --(coords, mapl) = mapLayer vp
+  in scene window gs () [
     background window,
     starLayer vp tile2,
     starLayer vp tile1,
-    mapl,
+    --mapl,
     ship gs.angle
   ]
 
-delta = lift inSeconds (fps 30)
+delta = lift inSeconds (fps 60)
 --avgFPS = average 10 delta
 input = sampleOn delta (lift2 Input delta userInput)
 
