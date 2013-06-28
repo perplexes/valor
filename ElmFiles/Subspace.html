@@ -10,7 +10,9 @@
         <script type="text/javascript" src="Subspace.js"></script>
         <script type="text/javascript" src="../assets/jquery-2.0.2.js"></script>
         <script type="text/javascript" src="../vendor/restruct.js/restruct.js"></script>
-        <script type="text/javascript" src="../vendor/bmp.js/bmp.js"></script>
+        <script type="text/javascript" src="../vendor/bmpimage/jDataView/src/jdataview.js"></script>
+        <script type="text/javascript" src="../vendor/bmpimage/jParser/src/jparser.js"></script>
+        <script type="text/javascript" src="../vendor/bmpimage/bmpimage2.js"></script>
     </head>
     <body style="background: black">
         <script type="text/javascript">
@@ -27,17 +29,6 @@ var oReq = new XMLHttpRequest();
 oReq.open("GET", "../arenas/trench9.lvl", true);
 oReq.responseType = "arraybuffer";
 
-function render(canvas, bmp) {
-    canvas.width = bmp.width;
-    canvas.height = bmp.height;
-
-    var ctx = canvas.getContext("2d");
-    var data = ctx.getImageData(0, 0, bmp.width, bmp.height);
-
-    bmp.copyToImageData(data);
-    ctx.putImageData(data, 0, 0);
-}
-
 window.subspaceMap = {};
 
 oReq.onload = function (oEvent) {
@@ -45,24 +36,25 @@ oReq.onload = function (oEvent) {
   if (arrayBuffer) {
     var a = new Uint8Array(arrayBuffer);
     // if(a[0] == 66 && a[1] == 77){
-        debugger;
         var bmp_size = bmpLength.unpack(a.subarray(2,6)).length;
         var bmp_data = a.subarray(0, bmp_size);
-        var bmp = new BMP(bmp_data);
+        var bmp = new BMPImage(bmp_data.buffer);
         var canvas = document.createElement('canvas');
-        render(canvas, bmp);
+        bmp.drawToCanvas(canvas);
         window.tileset = canvas;
-        document.body.appendChild(canvas);
+        // document.body.appendChild(canvas);
 
 
         for (var i = a.length - 1; i >= bmp_size; i -= 32) {
-            struct = mapStruct.unpack(a.subarray(i, 32)).struct;
+            struct = mapStruct.unpack(a.subarray(i, i+32)).struct;
             x = struct & 0x03FF;
             y = (struct >> 12) & 0x03FF;
             tile = struct >> 24;
             window.subspaceMap[y * 1024 + x] = tile;
         }
     // }
+
+    Elm.fullscreen(Elm.Subspace);
   }
 };
 
