@@ -6,13 +6,13 @@
         <title>
             Subspace.elm
         </title>
-        <script type="text/javascript" src="/elm-runtime.js"></script>
-        <script type="text/javascript" src="Subspace.js"></script>
-        <script type="text/javascript" src="../assets/jquery-2.0.2.js"></script>
-        <script type="text/javascript" src="../vendor/restruct.js/restruct.js"></script>
-        <script type="text/javascript" src="../vendor/bmpimage/jDataView/src/jdataview.js"></script>
-        <script type="text/javascript" src="../vendor/bmpimage/jParser/src/jparser.js"></script>
-        <script type="text/javascript" src="../vendor/bmpimage/bmpimage2.js"></script>
+        <script type="text/javascript" src="vendor/elm-runtime.js"></script>
+        <script type="text/javascript" src="ElmFiles/Subspace.js"></script>
+        <!-- <script type="text/javascript" src="vendor/jquery-2.0.2.js"></script> -->
+        <script type="text/javascript" src="vendor/restruct.js/restruct.js"></script>
+        <script type="text/javascript" src="vendor/bmpimage/jDataView/src/jdataview.js"></script>
+        <script type="text/javascript" src="vendor/bmpimage/jParser/src/jparser.js"></script>
+        <script type="text/javascript" src="vendor/bmpimage/bmpimage2.js"></script>
     </head>
     <body style="background: black">
         <script type="text/javascript">
@@ -29,7 +29,8 @@ var oReq = new XMLHttpRequest();
 oReq.open("GET", "../arenas/trench9.lvl", true);
 oReq.responseType = "arraybuffer";
 
-window.subspaceMap = {};
+// window.subspaceMap = {};
+window.tiles = [];
 
 oReq.onload = function (oEvent) {
   var arrayBuffer = oReq.response; // Note: not oReq.responseText
@@ -40,17 +41,26 @@ oReq.onload = function (oEvent) {
         var bmp_data = a.subarray(0, bmp_size);
         var bmp = new BMPImage(bmp_data.buffer);
         var canvas = document.createElement('canvas');
+        canvas.name = "tileset";
         bmp.drawToCanvas(canvas);
         window.tileset = canvas;
         // document.body.appendChild(canvas);
 
 
-        for (var i = a.length - 1; i >= bmp_size; i -= 32) {
-            struct = mapStruct.unpack(a.subarray(i, i+32)).struct;
-            x = struct & 0x03FF;
-            y = (struct >> 12) & 0x03FF;
-            tile = struct >> 24;
-            window.subspaceMap[y * 1024 + x] = tile;
+        for (var i = a.length - 1 - 4; i >= bmp_size; i -= 4) {
+            var bytes = a.subarray(i, i+4),
+                struct = mapStruct.unpack(bytes).struct,
+                x = struct & 0x03FF,
+                y = (struct >> 12) & 0x03FF,
+                tile = struct >> 24;
+            window.tiles.push({
+                x: x,
+                y: y,
+                tile: tile,
+                meta: [i, length, bytes, struct, struct.toString(2)]
+            });
+            // toString(16)
+            // window.subspaceMap[y * 1024 + x] = tile;
         }
     // }
 

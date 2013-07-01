@@ -1,6 +1,6 @@
 module Starfield (starLayer, tileLevel1, tileLevel2) where
 import Random
-import Map (tilesInView, renderBuffer)
+import Map (tilesInViewBruteforce, renderBuffer, extract)
 
 starTilesize = 1024
 starDensity = 31
@@ -23,7 +23,7 @@ makeStarTile color moveRatio points =
       star color (x,y) = moved color (x,y)
       stars = map (\(x,y) -> star color (x,y)) points
       --forms = stars ++ [outlined (solid color) (rect 1024 1024)]
-  in (renderBuffer (group stars) starTilesize starTilesize (0,0), moveRatio)
+  in (renderBuffer (group stars) (starTilesize,starTilesize) (0,0), moveRatio)
 
 -- [stars level 1 (closer), level 2 (farther)]
 tileLevel1 : Signal StarTile
@@ -34,9 +34,9 @@ tileLevel2 = lift (makeStarTile l2color 3.0) (randomTile 2)
 
 --starLayer : ViewPort -> Tile -> ([Form], [(Int,Int)], [Int], [Int])
 starLayer vp tile =
-  let (vw,vh,sx,sy) = vp
+  let (vw,vh,sx,sy) = extract vp
       (f, ratio) = tile
-      coords = tilesInView vp (starTilesize) (starTilesize) ratio
+      coords = tilesInViewBruteforce (vw,vh,sx,sy) (starTilesize) (starTilesize) ratio
       (x, y) = (0-sx/ratio, sy/ratio)
       xy c r = (
         toFloat <| round (toFloat (c * starTilesize) + x),

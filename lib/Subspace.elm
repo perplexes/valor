@@ -8,7 +8,7 @@ import Http (Waiting, Failure, Success)
 
 import Loader (getJson)
 import Starfield (starLayer, tileLevel1, tileLevel2)
-import Map (mapLayer, viewPort)
+import Map (mapLayer, viewPort, tiles)
 
 -- Constants
 mapW = 6400
@@ -50,8 +50,6 @@ stepGame (Input t (UserInput ui)) gs =
 
 {- Display -}
 
-background (w,h) = filled black (rect w h) |> move (0,0)
-
 ship angle =
   sprite shipW shipH (0, 0) "/assets/ship2.png" |> rotate angle
                                                 |> scale 0.25
@@ -83,14 +81,13 @@ debug key value =
   whiteTextForm <| key ++ ": " ++ (show value)
 
 --display : (Int,Int) -> GameState -> Tile -> Tile -> Element
-display window gs tile1 tile2 =
+display window gs tile1 tile2 mapTree =
   let vp = viewPort window (gs.x,gs.y)
-      --(coords, mapl) = mapLayer vp
+      mapl = mapLayer vp mapTree
   in scene window gs () [
-    background window,
     starLayer vp tile2,
     starLayer vp tile1,
-    --mapl,
+    mapl,
     ship gs.angle
   ]
 
@@ -101,4 +98,4 @@ input = sampleOn delta (lift2 Input delta userInput)
 gameState : Signal GameState
 gameState = foldp stepGame defaultGame input
 
-main = lift4 display dimensions gameState tileLevel1 tileLevel2
+main = lift5 display dimensions gameState tileLevel1 tileLevel2 (constant (Map.mapTree Map.tiles))
