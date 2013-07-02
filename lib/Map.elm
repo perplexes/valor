@@ -139,5 +139,5 @@ dimensions (ViewPort vp) =
 mapLayer vp tree =
   let tiles = tilesInView vp tree
       tileForms = map (tileToForm vp) tiles
-   --in N.renderBuffer (group tileForms) (dimensions vp) (0,0)
+   --in (N.renderBuffer (group tileForms) (dimensions vp) (0,0), tiles)
    in (group tileForms, tiles)

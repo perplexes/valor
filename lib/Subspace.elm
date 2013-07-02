@@ -32,7 +32,8 @@ data Input = Input Float UserInput
 
 type GameState = { x : Float, y : Float, angle : Float, dx : Float, dy : Float, t : Float }
 
-defaultGame = { x=0.0, y=0.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
+--defaultGame = { x=0.0, y=0.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
+defaultGame = { x=2384.0, y=7920.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
 --defaultGame = { x=0.0, y=0.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
 
 -- Calculate new gamestate
