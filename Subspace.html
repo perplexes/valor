@@ -44,7 +44,8 @@ oReq.onload = function (oEvent) {
         canvas.name = "tileset";
         bmp.drawToCanvas(canvas);
         window.tileset = canvas;
-        // document.body.appendChild(canvas);
+        canvas.style.position = 'absolute';
+        document.body.appendChild(canvas);
 
 
         for (var i = a.length - 1 - 4; i >= bmp_size; i -= 4) {

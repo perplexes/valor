@@ -32,7 +32,7 @@ data Input = Input Float UserInput
 
 type GameState = { x : Float, y : Float, angle : Float, dx : Float, dy : Float, t : Float }
 
-defaultGame = { x=8384.0, y=15552.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
+defaultGame = { x=0.0, y=0.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
 --defaultGame = { x=0.0, y=0.0, angle=0.0, dx=0.0, dy=0.0, t=0.0 }
 
 -- Calculate new gamestate
@@ -41,7 +41,7 @@ stepGame : Input -> GameState -> GameState
 stepGame (Input t (UserInput ui)) gs =
   let {x,y,angle,dx,dy} = gs
   in { gs | dx <- clamp (0-1000) 1000 (dx + toFloat (0-ui.y) * 10 * sin angle)
-          , dy <- clamp (0-1000) 1000 (dy + toFloat (0-ui.y) * 10 * cos angle)
+          , dy <- clamp (0-1000) 1000 (dy + toFloat ui.y * 10 * cos angle)
           , angle <- angle + t * (0-3) * toFloat ui.x
           , x <- {-clamp (shipW/2) (mapW - shipW/2) <|-} x + t * dx
           , y <- {-clamp (shipH/2) (mapH - shipH/2) <|-} y + t * dy
@@ -55,23 +55,23 @@ ship angle =
                                                 |> scale 0.25
 
 --scene : (Int, Int) -> GameState -> Form -> [Form] ->  Element
-scene (w,h) gs mapl forms =
+scene (w,h) gs debugging forms =
   let sceneElement = collage w h forms
       window = (w,h)
-   in sceneElement
-  --in container w h topLeft <| layers [
-  --  sceneElement
-    --, flow down [
+   --in sceneElement
+  in container w h topLeft <| layers [
+    sceneElement
+    , flow down [
     ----  --debug "Stars" (left,top,right,bottom,ltr,ttb)
-    --  debug "w,h" window
-    --  , debug "gameState" gs
+      debug "db" debugging,
+      debug "gameState" gs
       --debug "maplayer" mapl
     --  , debug "l2coords" l2debug
     --  , debug "l1coords" l1debug
     --  --, debug "map" gameMap
     --  --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
-    --]
-  --]
+    ]
+  ]
 --scene (w,h) forms gameState = collage w h forms
 
 whiteTextForm string =
@@ -81,12 +81,14 @@ debug key value =
   whiteTextForm <| key ++ ": " ++ (show value)
 
 --display : (Int,Int) -> GameState -> Tile -> Tile -> Element
-display window gs tile1 tile2 mapTree =
+display window gs tile1 tile2 (allTiles, mapTree) =
   let vp = viewPort window (gs.x,gs.y)
-      mapl = mapLayer vp mapTree
-  in scene window gs () [
-    starLayer vp tile2,
-    starLayer vp tile1,
+      (mapl, tiles) = mapLayer vp mapTree
+      sl2 = starLayer vp tile2
+      sl1 = starLayer vp tile1
+  in scene window gs (length tiles) [
+    sl2,
+    sl1,
     mapl,
     ship gs.angle
   ]
@@ -98,4 +100,4 @@ input = sampleOn delta (lift2 Input delta userInput)
 gameState : Signal GameState
 gameState = foldp stepGame defaultGame input
 
-main = lift5 display dimensions gameState tileLevel1 tileLevel2 (constant (Map.mapTree Map.tiles))
+main = lift5 display dimensions gameState tileLevel1 tileLevel2 (constant (Map.tiles, (Map.mapTree Map.tiles)))

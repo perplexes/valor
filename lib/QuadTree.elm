@@ -17,8 +17,7 @@ import open Automaton
 -}
 
 -- Empty is an empty node, Leaf contains a value, Node has quadrants
-data QuadTree a = Empty | Leaf a | Node (QuadTree a) (QuadTree a)
-                                        (QuadTree a) (QuadTree a)
+data QuadTree = Empty | Leaf [Tile] | Node (QuadTree) (QuadTree) (QuadTree) (QuadTree)
 
 -- Quadrant names
 data Quadrant = NW | NE | SW | SE
@@ -73,7 +72,7 @@ pathToCoord extent coord =
 isUnitExtent : Extent -> Bool
 isUnitExtent extent =
     let (x, y) = sizeOfExtent extent in
-    x <= 10 && y <= 10
+    x <= 64 && y <= 64
 
 sizeOfExtent : Extent -> (Float, Float)
 sizeOfExtent (Extent {north, south, east, west}) = (east - west, north - south)
@@ -103,17 +102,17 @@ coordInExtent (Extent {north, south, east, west}) (x, y) =
     y >= south && y < north
 
 -- QuadTree functions
-emptyTree : QuadTree a
+emptyTree : QuadTree
 emptyTree = Empty
 
-emptyNode : QuadTree a
+emptyNode : QuadTree
 emptyNode = Node Empty Empty Empty Empty
 
-getQuadrant : Quadrant -> QuadTree a -> Maybe (QuadTree a)
+getQuadrant : Quadrant -> QuadTree -> Maybe (QuadTree)
 getQuadrant quad tree =
     case tree of
         Empty     -> Nothing
-        Leaf a    -> Nothing
+        Leaf _    -> Nothing
         Node nw ne sw se
             ->  case quad of
                     NW -> Just nw
@@ -122,11 +121,11 @@ getQuadrant quad tree =
                     SE -> Just se
 
 -- Apply a function to a quadrant
-liftQ : Quadrant -> (QuadTree a -> QuadTree a) -> QuadTree a -> QuadTree a
+liftQ : Quadrant -> (QuadTree -> QuadTree) -> QuadTree -> QuadTree
 liftQ quad f tree =
     case tree of
         Empty     -> tree
-        Leaf a    -> tree
+        Leaf _    -> tree
         Node nw ne sw se
             ->  case quad of
                     NW -> Node (f nw) ne sw se
@@ -134,72 +133,77 @@ liftQ quad f tree =
                     SW -> Node nw ne (f sw) se
                     SE -> Node nw ne sw (f se)
 
--- Insert a value into the QuadTree at a location specified by a list of Quadrants
-insertByPath : [Quadrant] -> a -> QuadTree a -> QuadTree a
+-- Insert a value into the QuadTreet a location specified by a list of Quadrants
+insertByPath : [Quadrant] -> a -> QuadTree -> QuadTree
 insertByPath quadrants x tree =
-    if (length quadrants == 0) then Leaf x
-        else let (q::qs) = quadrants in
-             case tree of
-                Empty        -> liftQ q (insertByPath qs x) emptyNode
-                Leaf a       -> tree
-                Node _ _ _ _ -> liftQ q (insertByPath qs x) tree
+    if (length quadrants == 0) then
+      case tree of
+        Empty -> Leaf [x]
+        Leaf xs -> Leaf (x::xs)
+        Node _ _ _ _ -> Leaf [x]
 
-insertByCoord : Extent -> Coord -> a -> QuadTree a -> Maybe (QuadTree a)
+    else let (q::qs) = quadrants in
+       case tree of
+          Empty        -> liftQ q (insertByPath qs x) emptyNode
+          Leaf xs      -> Leaf (x::xs)
+          Node _ _ _ _ -> liftQ q (insertByPath qs x) tree
+
+insertByCoord : Extent -> Coord -> a -> QuadTree -> Maybe (QuadTree)
 insertByCoord extent coord x tree =
     pathToCoord extent coord >>= (\path ->
         return <| insertByPath path x tree)
 
-insert2ByCoord : Extent -> (Coord, Coord) -> a -> QuadTree a -> Maybe (QuadTree a)
+insert2ByCoord : Extent -> (Coord, Coord) -> a -> QuadTree -> Maybe (QuadTree)
 insert2ByCoord extent (c1, c2) x tree =
     insertByCoord extent c1 x tree >>= (\tree2 ->
         insertByCoord extent c2 x tree2)
 
-lookupNodeByPath : [Quadrant] -> QuadTree a -> Maybe (QuadTree a)
+lookupNodeByPath : [Quadrant] -> QuadTree -> Maybe (QuadTree)
 lookupNodeByPath quadrants tree =
     if   (length quadrants == 0) then Just tree
     else let (q::qs) = quadrants in
          case tree of
             Empty        -> Nothing
-            Leaf x       -> Nothing
+            Leaf _       -> Nothing
             Node _ _ _ _ -> let Just quad = getQuadrant q tree in
                             lookupNodeByPath qs quad
 
-lookupByPath : [Quadrant] -> QuadTree a -> Maybe a
+lookupByPath : [Quadrant] -> QuadTree -> Maybe a
 lookupByPath path tree =
     case lookupNodeByPath path tree of
         Just (Leaf x) -> Just x
         _             -> Nothing
 
-lookupByCoord : Extent -> Coord -> QuadTree a -> Maybe a
+lookupByCoord : Extent -> Coord -> QuadTree -> Maybe a
 lookupByCoord extent coord tree =
     pathToCoord extent coord >>= (\path ->
         lookupByPath path tree)
 
-flattenQuadTree : Extent -> QuadTree a -> [(Coord, a)]
+flattenQuadTree : Extent -> QuadTree -> [(Coord, [a])]
 flattenQuadTree extentInit treeInit =
     let flatten' extent tree = case tree of
                                  Empty  -> []
-                                 Leaf x -> let x' = x -- XXX: Elm bug!!
-                                               (n, s, e, w) = takeExtent extent
-                                            in [((w, s), x')]
+                                 Leaf xs -> let xs' = xs -- XXX: Elm bug!!
+                                                (n, s, e, w) = takeExtent extent
+                                             in [((w, s), xs')]
                                  Node _ _ _ _ -> concatMap (flattenQuad extent tree) [NW, NE, SW, SE]
         flattenQuad extent tree quad = let extent' = cutQuadrantOfExtent quad extent
                                            Just tree' = getQuadrant quad tree in
                                        flatten' extent' tree' in
     flatten' extentInit treeInit
 
-flattenQuadTreeWithExtents : Extent -> QuadTree a -> [(Extent, a)]
+flattenQuadTreeWithExtents : Extent -> QuadTree -> [(Extent, [a])]
 flattenQuadTreeWithExtents extentInit treeInit =
     let flatten' extent tree = case tree of
                                  Empty  -> []
-                                 Leaf x -> [(extent ,x)]
+                                 Leaf xs -> [(extent, xs)]
                                  Node _ _ _ _ -> concatMap (flattenQuad extent tree) [NW, NE, SW, SE]
         flattenQuad extent tree quad = let extent' = cutQuadrantOfExtent quad extent
                                            Just tree' = getQuadrant quad tree in
                                        flatten' extent' tree' in
     flatten' extentInit treeInit
 
-getExtents : Extent -> QuadTree a -> [Extent]
+getExtents : Extent -> QuadTree -> [Extent]
 getExtents extentInit treeInit =
     let flatten' extent tree = case tree of
                                  Empty  -> [extent]
@@ -210,6 +214,30 @@ getExtents extentInit treeInit =
                                        flatten' extent' tree' in
     flatten' extentInit treeInit
 
+within : Extent -> Extent -> Bool
+within extent range =
+  let (n, s, e, w) = takeExtent extent
+      (rn, rs, re, rw) = takeExtent range
+   in if | rs >= n -> False
+         | rn < s -> False
+         | rw > e -> False
+         | re <= w -> False
+         | otherwise -> True --not (e < rw || s < rn || w > re || n > rs)
+
+--query : Extent -> QuadTree -> Extent -> [a]
+query extent tree range =
+  if not (within extent range) then []
+  else
+    case tree of
+      Empty -> []
+      Leaf xs -> xs
+      Node _ _ _ _ ->
+        concatMap (\q ->
+          case getQuadrant q tree of
+            Just t -> query (cutQuadrantOfExtent q extent) t range
+            Nothing -> []
+              ) [NW, NE, SW, SE]
+
 -- Drawing functions for pretty output
 
 --extentForm : Extent -> Form
@@ -217,7 +245,7 @@ getExtents extentInit treeInit =
 --    let (w, h) = sizeOfExtent extent in
 --    outlined defaultLine <| rect w h
 
---drawTree : Extent -> QuadTree a -> Element
+--drawTree : Extent -> QuadTree -> Element
 --drawTree extent tree =
 --    let extents = getExtents extent tree
 --        centers = map centerOfExtent extents

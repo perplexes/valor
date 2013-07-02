@@ -1,8 +1,8 @@
-module Map (viewPort, mapLayer, tilesInView, tilesInViewBruteforce, renderBuffer, mapTree, tiles, extract) where
+module Map (ViewPort, viewPort, mapLayer, tilesInView, tilesInViewBruteforce, renderBuffer, mapTree, tiles, extract) where
 import Dict (fromList)
 import Json (Object)
 import Maybe (Just, Nothing, justs)
-import QuadTree (Extent, QuadTree, flattenQuadTree, makeExtent, foldM, emptyTree, insertByCoord)
+import QuadTree (flattenQuadTree, Extent, QuadTree, query, makeExtent, foldM, emptyTree, insertByCoord)
 
 import Native.Map as N
 
@@ -13,6 +13,10 @@ spriteHeight = 10 -- in tiles
 
 mapWidth = 1024 -- In tiles
 mapHeight = mapWidth
+
+mapWidthP = mapWidth * tileWidth
+mapHeightP = mapHeight * tileHeight
+
 
 -- A point on the 2D plane
 type Coord = (Float, Float)
@@ -74,8 +78,8 @@ project (ViewPort vp) (x,y) = (x-vp.sx, y-vp.sy)
 -- Give the tiles to draw given:
 -- view port, tile width, tile height
 --tilesInView : ViewPort -> Int -> Int -> ([Int], [Int], [(Int,Int)])
-tilesInViewBruteforce vp w h ratio =
-  let (vw,vh,sx,sy) = vp
+tilesInViewBruteforce (ViewPort vp) w h ratio =
+  let {vw,vh,sx,sy} = vp
       tileHeight = toFloat w
       tileWidth = toFloat h
       l = floor <| ((sx/ratio) - (vw/2)) / tileWidth
@@ -90,25 +94,27 @@ tilesInViewBruteforce vp w h ratio =
        ) a ltr
      ) [] ttb
 
-mapExtent = makeExtent mapHeight 0 mapWidth 0
+mapExtent = makeExtent mapHeightP 0 mapWidthP 0
 
 -- col, row, index??
 -- these will be different
 type Tile = (Coord, Int)
-mapTree : [Tile] -> QuadTree Int
+mapTree : [Tile] -> QuadTree [Tile]
 mapTree ts =
   let tree = foldM (\tree (coord, i) ->
-        insertByCoord mapExtent coord i tree
-      ) emptyTree ts
+        insertByCoord mapExtent coord (coord, i) tree
+          ) emptyTree ts
     in case tree of
       Just tree -> tree
       Nothing -> emptyTree
 
-tilesInView : ViewPort -> QuadTree Int -> [Tile]
+--tilesInView : ViewPort -> QuadTree Int -> [(Coord, [Tile])]
 tilesInView (ViewPort vp) tree =
-  flattenQuadTree vp.extent tree
+  query mapExtent tree vp.extent
+  --concatMap (\(qcoord, tiles) -> tiles) (flattenQuadTree mapExtent tree)
+  --tree
 
-tileToForm : ViewPort -> Tile -> Form
+--tileToForm : ViewPort -> Tile -> Form
 tileToForm vp (coord, i) =
   let form = N.mapSprite tileWidth tileHeight (indexToSpriteCoord i)
    in form |> move (project vp coord)
@@ -129,8 +135,9 @@ dimensions (ViewPort vp) =
 --  in (indicesAndCoords, N.renderBuffer (group tileForms) vw vh (0,0))
 
 -- TODO: Render map super-tiles of a certain size (except for animated)
-mapLayer : ViewPort -> QuadTree Int -> Form
+--mapLayer : ViewPort -> QuadTree Int -> Form
 mapLayer vp tree =
   let tiles = tilesInView vp tree
       tileForms = map (tileToForm vp) tiles
-   in N.renderBuffer (group tileForms) (dimensions vp) (0,0)
+   --in N.renderBuffer (group tileForms) (dimensions vp) (0,0)
+   in (group tileForms, tiles)

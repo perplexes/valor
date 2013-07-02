@@ -1,6 +1,6 @@
 module Starfield (starLayer, tileLevel1, tileLevel2) where
 import Random
-import Map (tilesInViewBruteforce, renderBuffer, extract)
+import Map (ViewPort, tilesInViewBruteforce, renderBuffer, extract)
 
 starTilesize = 1024
 starDensity = 31
@@ -24,6 +24,7 @@ makeStarTile color moveRatio points =
       stars = map (\(x,y) -> star color (x,y)) points
       --forms = stars ++ [outlined (solid color) (rect 1024 1024)]
   in (renderBuffer (group stars) (starTilesize,starTilesize) (0,0), moveRatio)
+  --in (group stars, moveRatio)
 
 -- [stars level 1 (closer), level 2 (farther)]
 tileLevel1 : Signal StarTile
@@ -33,14 +34,14 @@ tileLevel2 : Signal StarTile
 tileLevel2 = lift (makeStarTile l2color 3.0) (randomTile 2)
 
 --starLayer : ViewPort -> Tile -> ([Form], [(Int,Int)], [Int], [Int])
-starLayer vp tile =
-  let (vw,vh,sx,sy) = extract vp
+starLayer (ViewPort vp) tile =
+  let {vw, vh, sx, sy} = vp
       (f, ratio) = tile
-      coords = tilesInViewBruteforce (vw,vh,sx,sy) (starTilesize) (starTilesize) ratio
-      (x, y) = (0-sx/ratio, sy/ratio)
+      coords = tilesInViewBruteforce (ViewPort vp) (starTilesize) (starTilesize) ratio
+      (x, y) = ((0-sx)/ratio, (0-sy/ratio))
       xy c r = (
         toFloat <| round (toFloat (c * starTilesize) + x),
-        toFloat <| round (toFloat ((0-r) * starTilesize) + y)
+        toFloat <| round (toFloat (r * starTilesize) + y)
       )
   in group <| map (\(c,r) -> move (xy c r) f) coords
 
