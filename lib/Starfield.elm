@@ -8,11 +8,16 @@ l1color = rgb 184 184 184
 l2color = rgb 96 96 96
 
 randomList : Int -> Signal [Int]
-randomList _ = combine (map (Random.range ((0-starTilesize) `div` 2) (starTilesize `div` 2) . constant) [0..starDensity])
+randomList ratio =
+  let lower = (0-starTilesize) `div` 2
+      upper = starTilesize `div` 2
+      density = starDensity * (ratio ^ 2)
+   in combine <|
+    map (Random.range lower upper . constant) [0..density]
 
 -- A single random star tile
 randomTile : Int -> Signal [(Int,Int)]
-randomTile num = lift2 zip (randomList (num + 1)) (randomList (num + 2))
+randomTile ratio = lift2 zip (randomList ratio) (randomList ratio)
 
 type StarTile = (Form, Float)
 makeStarTile : Color -> Float -> [(Int,Int)] -> StarTile
@@ -28,10 +33,10 @@ makeStarTile color moveRatio points =
 
 -- [stars level 1 (closer), level 2 (farther)]
 tileLevel1 : Signal StarTile
-tileLevel1 = lift (makeStarTile l1color 2.0) (randomTile 1)
+tileLevel1 = lift (makeStarTile l1color 2.0) (randomTile 2)
 
 tileLevel2 : Signal StarTile
-tileLevel2 = lift (makeStarTile l2color 3.0) (randomTile 2)
+tileLevel2 = lift (makeStarTile l2color 3.0) (randomTile 3)
 
 --starLayer : ViewPort -> Tile -> ([Form], [(Int,Int)], [Int], [Int])
 starLayer (ViewPort vp) tile =
