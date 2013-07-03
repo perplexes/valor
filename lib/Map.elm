@@ -61,8 +61,8 @@ tiles : [Tile]
 indexToSpriteCoord : Int -> Coord
 indexToSpriteCoord index =
   let index' = index - 1 -- struct index -> spritemap index
-      row = index `div` spriteWidth
-      col = index `rem` spriteWidth
+      row = index' `div` spriteWidth
+      col = index' `rem` spriteWidth
    in scale (toFloat col, toFloat row) (tileWidth, tileHeight)
 
 -- XXX: Something something matrix?
