@@ -1,0 +1,12 @@
+[submodule "vendor/bmpimage"]
+    path = vendor/bmpimage
+    url = https://bitbucket.org/rreverser/bmpimage.git
+[submodule "vendor/restruct.js"]
+	path = vendor/restruct.js
+	url = https://github.com/rfw/restruct.js.git
+[submodule "vendor/jDataView"]
+	path = vendor/jDataView
+	url = https://github.com/vjeux/jDataView.git
+[submodule "vendor/jParser"]
+	path = vendor/jParser
+	url = https://github.com/vjeux/jParser.git

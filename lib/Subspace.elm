@@ -60,20 +60,20 @@ ship angle =
 scene (w,h) gs debugging forms =
   let sceneElement = collage w h forms
       window = (w,h)
-   in sceneElement
-  --in container w h topLeft <| layers [
-  --  sceneElement
-  --  , flow down [
+   --in sceneElement
+  in container w h topLeft <| layers [
+    sceneElement
+    , flow down [
   --  ----  --debug "Stars" (left,top,right,bottom,ltr,ttb)
-  --    debug "db" debugging,
+      debug "db" debugging
   --    debug "gameState" gs
   --    --debug "maplayer" mapl
   --  --  , debug "l2coords" l2debug
   --  --  , debug "l1coords" l1debug
   --  --  --, debug "map" gameMap
   --  --  --,debug "Startile" (starTile (w,h,gameState.x,gameState.y))
-  --  ]
-  --]
+    ]
+  ]
 --scene (w,h) forms gameState = collage w h forms
 
 whiteTextForm string =

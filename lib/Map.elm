@@ -28,8 +28,8 @@ data ViewPort = ViewPort { vw : Float
                          , vh : Float
                          , sx : Float
                          , sy : Float
-                         , minCoord : (Float, Float)
-                         , maxCoord : (Float, Float) }
+                         , minCoord : (Int, Int)
+                         , maxCoord : (Int, Int) }
 
 viewPort : (Int, Int) -> Coord -> ViewPort
 viewPort (ivw,ivh) (sx,sy) =
@@ -39,8 +39,8 @@ viewPort (ivw,ivh) (sx,sy) =
            , vh = vh
            , sx = sx
            , sy = sy
-           , minCoord = (sx - vw/2, sy - vh/2)
-           , maxCoord = (sx + vw/2, sy + vh/2)
+           , minCoord = (floor (sx - vw/2), floor (sy - vh/2))
+           , maxCoord = (ceiling (sx + vw/2), ceiling (sy + vh/2))
            }
 extract vp =
   let {vw, vh, sx, sy} = vp
@@ -93,8 +93,6 @@ tilesInViewBruteforce (ViewPort vp) w h ratio =
        ) a ltr
      ) [] ttb
 
-mapExtent = makeExtent mapHeightP 0 mapWidthP 0
-
 -- col, row, index??
 -- these will be different
 -- (pixel Coord, spritemap # Int)
@@ -107,28 +105,57 @@ mapTree ts =
 
 --tilesInView : ViewPort -> QuadTree Int -> [(Coord, [Tile])]
 tilesInView (ViewPort vp) tree =
-  query tree vp.minCoord vp.maxCoord
+  naiveQueryFold (::) [] tree vp.minCoord vp.maxCoord
+  --naiveQuery tree vp.minCoord vp.maxCoord
 
-query tree minCoord maxCoord =
+-- Or make a visiting version - maybe concat is expensive
+naiveQuery tree minCoord maxCoord =
   let (x1, y1) = minCoord
       (x2, y2) = maxCoord
       minz = Bits.zorder minCoord
       maxz = Bits.zorder maxCoord
-      between ((nx,ny), _) = x1 <= nx && nx <= x2 && y1 <= nx && nx <= y2
+      between ((nx,ny), _) =
+        if | ny > y2 -> False
+           | ny < y1 -> False
+           | nx > x2 -> False
+           | nx < x1 -> False
+           | otherwise -> True
       query' t = case t of
            RBEmpty -> []
-           RBNode _ z v l r ->
+           RBNode _ z v l r -> let v' = v in
              if | z < minz -> query' r
                 | z > maxz -> query' l
                 | otherwise ->
                   let lft = query' l
                       rgt = query' r
-                   in if | between v -> lft ++ [v] ++ rgt
+                   in if | between v -> lft ++ [v'] ++ rgt
                          | otherwise -> lft ++ rgt
    in query' tree
   --query mapExtent tree vp.extent
   --concatMap (\(qcoord, tiles) -> tiles) (flattenQuadTree mapExtent tree)
   --tree
+
+-- this is like a queryFold
+--naiveQueryFold : (a -> b -> b) -> b -> Dict Int Tile -> (Int,Int) -> (Int,Int) -> b
+naiveQueryFold f a tree minCoord maxCoord =
+  let (x1, y1) = minCoord
+      (x2, y2) = maxCoord
+      minz = Bits.zorder minCoord
+      maxz = Bits.zorder maxCoord
+      between ((nx,ny), _) =
+        if | ny > y2 -> False
+           | ny < y1 -> False
+           | nx > x2 -> False
+           | nx < x1 -> False
+           | otherwise -> True
+      query' f a t = case t of
+           RBEmpty -> a
+           RBNode _ z v l r -> let v' = v in
+             if | z < minz -> query' f a r
+                | z > maxz -> query' f a l
+                | otherwise -> if | between v -> query' f (f v' (query' f a l)) r
+                                  | otherwise -> query' f (query' f a l) r
+   in query' f a tree
 
 --tileToForm : ViewPort -> Tile -> Form
 tileToForm vp (coord, i) =
