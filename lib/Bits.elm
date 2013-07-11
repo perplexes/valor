@@ -1,4 +1,4 @@
-module Bits (<<, >>, and, or, zorder) where
+module Bits ((<<), (>>), and, or, zorder) where
 import Native.Bits as N
 
 -- Shift left

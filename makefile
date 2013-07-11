@@ -8,6 +8,7 @@ elm-runtime.js:
 Subspace.js: elm-runtime.js lib/Subspace.elm
 	cd lib && elm --make --only-js --output-directory=../ElmFiles -s Native/Map.js -r /elm-runtime.js Subspace.elm
 	cat lib/Native/Map.js >> ElmFiles/Subspace.js
+	cat lib/Native/Bits.js >> ElmFiles/Subspace.js
 
 server:
 	# elm-server --runtime-location=/elm-runtime.js

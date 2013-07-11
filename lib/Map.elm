@@ -1,5 +1,5 @@
 module Map (ViewPort, viewPort, mapLayer, tilesInView, tilesInViewBruteforce, renderBuffer, mapTree, tiles, extract) where
-import Dict (fromList)
+import Dict (RBEmpty, RBNode)
 import Json (Object)
 import Maybe (Just, Nothing, justs)
 --import QuadTree (flattenQuadTree, Extent, QuadTree, query, makeExtent, foldM, emptyTree, insertByCoord)
@@ -28,7 +28,8 @@ data ViewPort = ViewPort { vw : Float
                          , vh : Float
                          , sx : Float
                          , sy : Float
-                         , extent : Extent }
+                         , minCoord : (Float, Float)
+                         , maxCoord : (Float, Float) }
 
 viewPort : (Int, Int) -> Coord -> ViewPort
 viewPort (ivw,ivh) (sx,sy) =
@@ -38,11 +39,8 @@ viewPort (ivw,ivh) (sx,sy) =
            , vh = vh
            , sx = sx
            , sy = sy
-           , extent = Extent { north = sy + vh/2
-                             , south = sy - vh/2
-                             , east = sx + vw/2
-                             , west = sx - vw/2
-                             }
+           , minCoord = (sx - vw/2, sy - vh/2)
+           , maxCoord = (sx + vw/2, sy + vh/2)
            }
 extract vp =
   let {vw, vh, sx, sy} = vp
@@ -101,7 +99,7 @@ mapExtent = makeExtent mapHeightP 0 mapWidthP 0
 -- these will be different
 -- (pixel Coord, spritemap # Int)
 type Tile = (Coord, Int)
-mapTree : [Tile] -> QuadTree [Tile]
+mapTree : [Tile] -> Dict Int Tile
 mapTree ts =
   let collapse (c,i) = (Bits.zorder c, (c,i))
       zs = map collapse ts
@@ -109,24 +107,24 @@ mapTree ts =
 
 --tilesInView : ViewPort -> QuadTree Int -> [(Coord, [Tile])]
 tilesInView (ViewPort vp) tree =
-  query tree (vp.extent.west, vp.extent.south) (vp.extent.east, vp.extent.north)
+  query tree vp.minCoord vp.maxCoord
 
 query tree minCoord maxCoord =
   let (x1, y1) = minCoord
       (x2, y2) = maxCoord
       minz = Bits.zorder minCoord
       maxz = Bits.zorder maxCoord
-      between ((nx,ny), _) = (x1 <= nx <= x2) && (y1 <= nx <= y2)
+      between ((nx,ny), _) = x1 <= nx && nx <= x2 && y1 <= nx && nx <= y2
       query' t = case t of
-           Dict.empty -> []
+           RBEmpty -> []
            RBNode _ z v l r ->
              if | z < minz -> query' r
                 | z > maxz -> query' l
                 | otherwise ->
                   let lft = query' l
                       rgt = query' r
-                   in if | between v -> l ++ [v] ++ r
-                         | otherwise -> l ++ r
+                   in if | between v -> lft ++ [v] ++ rgt
+                         | otherwise -> lft ++ rgt
    in query' tree
   --query mapExtent tree vp.extent
   --concatMap (\(qcoord, tiles) -> tiles) (flattenQuadTree mapExtent tree)
