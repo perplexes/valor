@@ -11,8 +11,8 @@ import Starfield (starLayer, tileLevel1, tileLevel2)
 import Map (mapLayer, viewPort, tiles)
 
 -- Constants
-mapW = 6400
-mapH = 4800
+mapW = 16*1024
+mapH = 16*1024
 shipW = 170
 shipH = 166
 
@@ -45,8 +45,8 @@ stepGame (Input t (UserInput ui)) gs =
   in { gs | dx <- clamp (0-1000) 1000 (dx + toFloat (0-ui.y) * 10 * sin angle)
           , dy <- clamp (0-1000) 1000 (dy + toFloat ui.y * 10 * cos angle)
           , angle <- angle + t * (0-3) * toFloat ui.x
-          , x <- {-clamp (shipW/2) (mapW - shipW/2) <|-} x + t * dx
-          , y <- {-clamp (shipH/2) (mapH - shipH/2) <|-} y + t * dy
+          , x <- clamp 0 mapW <| x + t * dx
+          , y <- clamp 0 mapH <| y + t * dy
           , t <- t}
 
 

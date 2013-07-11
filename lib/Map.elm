@@ -2,7 +2,8 @@ module Map (ViewPort, viewPort, mapLayer, tilesInView, tilesInViewBruteforce, re
 import Dict (fromList)
 import Json (Object)
 import Maybe (Just, Nothing, justs)
-import QuadTree (flattenQuadTree, Extent, QuadTree, query, makeExtent, foldM, emptyTree, insertByCoord)
+--import QuadTree (flattenQuadTree, Extent, QuadTree, query, makeExtent, foldM, emptyTree, insertByCoord)
+import Bits
 
 import Native.Map as N
 
@@ -98,19 +99,36 @@ mapExtent = makeExtent mapHeightP 0 mapWidthP 0
 
 -- col, row, index??
 -- these will be different
+-- (pixel Coord, spritemap # Int)
 type Tile = (Coord, Int)
 mapTree : [Tile] -> QuadTree [Tile]
 mapTree ts =
-  let tree = foldM (\tree (coord, i) ->
-        insertByCoord mapExtent coord (coord, i) tree
-          ) emptyTree ts
-    in case tree of
-      Just tree -> tree
-      Nothing -> emptyTree
+  let collapse (c,i) = (Bits.zorder c, (c,i))
+      zs = map collapse ts
+   in Dict.fromList zs
 
 --tilesInView : ViewPort -> QuadTree Int -> [(Coord, [Tile])]
 tilesInView (ViewPort vp) tree =
-  query mapExtent tree vp.extent
+  query tree (vp.extent.west, vp.extent.south) (vp.extent.east, vp.extent.north)
+
+query tree minCoord maxCoord =
+  let (x1, y1) = minCoord
+      (x2, y2) = maxCoord
+      minz = Bits.zorder minCoord
+      maxz = Bits.zorder maxCoord
+      between ((nx,ny), _) = (x1 <= nx <= x2) && (y1 <= nx <= y2)
+      query' t = case t of
+           Dict.empty -> []
+           RBNode _ z v l r ->
+             if | z < minz -> query' r
+                | z > maxz -> query' l
+                | otherwise ->
+                  let lft = query' l
+                      rgt = query' r
+                   in if | between v -> l ++ [v] ++ r
+                         | otherwise -> l ++ r
+   in query' tree
+  --query mapExtent tree vp.extent
   --concatMap (\(qcoord, tiles) -> tiles) (flattenQuadTree mapExtent tree)
   --tree
 
