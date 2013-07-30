@@ -1,0 +1,257 @@
+
+Elm.Map = function(elm){
+  var N = Elm.Native, _N = N.Utils(elm), _L = N.List(elm), _E = N.Error(elm), _J = N.JavaScript(elm), _str = _J.toString;
+  var $op = {};
+  var _ = Elm.Text(elm); var Text = _; var hiding={link:1, color:1, height:1}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Prelude(elm); var Prelude = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Signal(elm); var Signal = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.List(elm); var List = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Time(elm); var Time = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Graphics.Element(elm); var Graphics = Graphics||{};Graphics.Element = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Color(elm); var Color = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Graphics.Collage(elm); var Graphics = Graphics||{};Graphics.Collage = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Dict(elm); var Dict = _;
+  var RBEmpty = _.RBEmpty, RBNode = _.RBNode;
+  var _ = Elm.Json(elm); var Json = _;
+  var Object = _.Object;
+  var _ = Elm.Maybe(elm); var Maybe = _;
+  var Just = _.Just, Nothing = _.Nothing, justs = _.justs;
+  var _ = Elm.Bits(elm); var Bits = _;
+  var N = Elm.Native.Map(elm);
+  var ViewPort_8 = function(a1){
+    return {ctor:"ViewPort", _0:a1};};
+  var viewPort_9 = F2(function(_44001_22, _44000_23){
+    return function(){ 
+    switch (_44001_22.ctor) {
+      case 'Tuple2':
+        return function(){ 
+        switch (_44000_23.ctor) {
+          case 'Tuple2':
+            return function(){
+              var vw_28 = toFloat(_44001_22._0);
+              var vh_29 = toFloat(_44001_22._1);
+              return ViewPort_8({
+                _:{
+                },
+                maxCoord:{ctor:"Tuple2", _0:ceiling((_44000_23._0+(vw_28/2))), _1:ceiling((_44000_23._1+(vh_29/2)))},
+                minCoord:{ctor:"Tuple2", _0:floor((_44000_23._0-(vw_28/2))), _1:floor((_44000_23._1-(vh_29/2)))},
+                sx:_44000_23._0,
+                sy:_44000_23._1,
+                vh:vh_29,
+                vw:vw_28});}();
+        }_E.Case('Line 36, Column 3') }();
+    }_E.Case('Line 36, Column 3') }();});
+  var extract_10 = function(vp_30){
+    return function(){
+      var _46000_31 = vp_30;
+      var vw_32 = _46000_31.vw;
+      var vh_33 = _46000_31.vh;
+      var sx_34 = _46000_31.sx;
+      var sy_35 = _46000_31.sy;
+      return {ctor:"Tuple4", _0:vw_32, _1:vh_33, _2:sx_34, _3:sy_35};}();};
+  var indexToSpriteCoord_11 = function(index_36){
+    return function(){
+      var index$_37 = (index_36-1);
+      var row_38 = A2(div, index$_37, spriteWidth_2);
+      var col_39 = A2(rem, index$_37, spriteWidth_2);
+      return A2(scale_12, {ctor:"Tuple2", _0:toFloat(col_39), _1:toFloat(row_38)}, {ctor:"Tuple2", _0:tileWidth_0, _1:tileHeight_1});}();};
+  var scale_12 = F2(function(_69001_40, _69000_41){
+    return function(){ 
+    switch (_69001_40.ctor) {
+      case 'Tuple2':
+        return function(){ 
+        switch (_69000_41.ctor) {
+          case 'Tuple2':
+            return {ctor:"Tuple2", _0:(_69001_40._0*_69000_41._0), _1:(_69001_40._1*_69000_41._1)};
+        }_E.Case('Line 69, Column 26') }();
+    }_E.Case('Line 69, Column 26') }();});
+  var project_13 = F2(function(_75001_46, _75000_47){
+    return function(){ 
+    switch (_75001_46.ctor) {
+      case 'ViewPort':
+        return function(){ 
+        switch (_75000_47.ctor) {
+          case 'Tuple2':
+            return {ctor:"Tuple2", _0:(_75000_47._0-_75001_46._0.sx), _1:(_75000_47._1-_75001_46._0.sy)};
+        }_E.Case('Line 75, Column 32') }();
+    }_E.Case('Line 75, Column 32') }();});
+  var tilesInViewBruteforce_14 = F4(function(_94000_51, w_52, h_53, ratio_54){
+    return function(){ 
+    switch (_94000_51.ctor) {
+      case 'ViewPort':
+        return function(){
+          var _81000_56 = _94000_51._0;
+          var vw_57 = _81000_56.vw;
+          var vh_58 = _81000_56.vh;
+          var sx_59 = _81000_56.sx;
+          var sy_60 = _81000_56.sy;
+          var tileHeight_61 = toFloat(w_52);
+          var tileWidth_62 = toFloat(h_53);
+          var l_63 = floor((((sx_59/ratio_54)-(vw_57/2))/tileWidth_62));
+          var t_64 = floor((((sy_60/ratio_54)-(vh_58/2))/tileHeight_61));
+          var r_65 = ceiling((((sx_59/ratio_54)+(vw_57/2))/tileWidth_62));
+          var b_66 = ceiling((((sy_60/ratio_54)+(vh_58/2))/tileHeight_61));
+          var ltr_67 = _L.range(l_63,r_65);
+          var ttb_68 = _L.range(t_64,b_66);
+          return A3(foldl, function(r_69){
+            return function(a_70){
+              return A3(foldl, function(c_71){
+                return function(a2_72){
+                  return _L.Cons({ctor:"Tuple2", _0:c_71, _1:r_69},a2_72);};}, a_70, ltr_67);};}, _J.toList([]), ttb_68);}();
+    }_E.Case('Line 81, Column 3') }();});
+  var mapTree_15 = function(ts_73){
+    return function(){
+      var collapse_74 = function(_102000_76){
+        return function(){ 
+        switch (_102000_76.ctor) {
+          case 'Tuple2':
+            return {ctor:"Tuple2", _0:Bits.zorder(_102000_76._0), _1:{ctor:"Tuple2", _0:_102000_76._0, _1:_102000_76._1}};
+        }_E.Case('Line 102, Column 25') }();};
+      var zs_75 = A2(map, collapse_74, ts_73);
+      return Dict.fromList(zs_75);}();};
+  var tilesInView_16 = F2(function(_108000_79, tree_80){
+    return function(){ 
+    switch (_108000_79.ctor) {
+      case 'ViewPort':
+        return A5(naiveQueryFold_18, function(x_82){
+          return function(y_83){
+            return _L.Cons(x_82,y_83);};}, _J.toList([]), tree_80, _108000_79._0.minCoord, _108000_79._0.maxCoord);
+    }_E.Case('Line 108, Column 3') }();});
+  var naiveQuery_17 = F3(function(tree_84, minCoord_85, maxCoord_86){
+    return function(){
+      var between_95 = function(_122000_105){
+        return function(){ 
+        switch (_122000_105.ctor) {
+          case 'Tuple2':
+            switch (_122000_105._0.ctor) {
+              case 'Tuple2':
+                return ((_N.cmp(_122000_105._0._1,y2_92).ctor==='GT') ? false : ((_N.cmp(_122000_105._0._1,y1_89).ctor==='LT') ? false : ((_N.cmp(_122000_105._0._0,x2_91).ctor==='GT') ? false : ((_N.cmp(_122000_105._0._0,x1_88).ctor==='LT') ? false : true))));
+            }break;
+        }_E.Case('Line 118, Column 9') }();};
+      var query$_96 = function(t_108){
+        return function(){ 
+        switch (t_108.ctor) {
+          case 'RBEmpty':
+            return _J.toList([]);
+          case 'RBNode':
+            return function(){
+              var v$_113 = t_108._2;
+              return ((_N.cmp(t_108._1,minz_93).ctor==='LT') ? query$_96(t_108._4) : ((_N.cmp(t_108._1,maxz_94).ctor==='GT') ? query$_96(t_108._3) : function(){
+                var lft_114 = query$_96(t_108._3);
+                var rgt_115 = query$_96(t_108._4);
+                return (between_95(t_108._2) ? _L.append(lft_114,_L.append(_J.toList([v$_113]),rgt_115)) : _L.append(lft_114,rgt_115));}()));}();
+        }_E.Case('Line 123, Column 18') }();};
+      var _113000_87 = minCoord_85;
+      var x1_88 = function(){ 
+      switch (_113000_87.ctor) {
+        case 'Tuple2':
+          return _113000_87._0;
+      }_E.Case('Line 113, Column 18') }();
+      var y1_89 = function(){ 
+      switch (_113000_87.ctor) {
+        case 'Tuple2':
+          return _113000_87._1;
+      }_E.Case('Line 113, Column 18') }();
+      var _114000_90 = maxCoord_86;
+      var x2_91 = function(){ 
+      switch (_114000_90.ctor) {
+        case 'Tuple2':
+          return _114000_90._0;
+      }_E.Case('Line 114, Column 18') }();
+      var y2_92 = function(){ 
+      switch (_114000_90.ctor) {
+        case 'Tuple2':
+          return _114000_90._1;
+      }_E.Case('Line 114, Column 18') }();
+      var minz_93 = Bits.zorder(minCoord_85);
+      var maxz_94 = Bits.zorder(maxCoord_86);
+      return query$_96(tree_84);}();});
+  var naiveQueryFold_18 = F5(function(f_116, a_117, tree_118, minCoord_119, maxCoord_120){
+    return function(){
+      var between_129 = function(_150000_139){
+        return function(){ 
+        switch (_150000_139.ctor) {
+          case 'Tuple2':
+            switch (_150000_139._0.ctor) {
+              case 'Tuple2':
+                return ((_N.cmp(_150000_139._0._1,y2_126).ctor==='GT') ? false : ((_N.cmp(_150000_139._0._1,y1_123).ctor==='LT') ? false : ((_N.cmp(_150000_139._0._0,x2_125).ctor==='GT') ? false : ((_N.cmp(_150000_139._0._0,x1_122).ctor==='LT') ? false : true))));
+            }break;
+        }_E.Case('Line 146, Column 9') }();};
+      var query$_130 = F3(function(f_142, a_143, t_144){
+        return function(){ 
+        switch (t_144.ctor) {
+          case 'RBEmpty':
+            return a_143;
+          case 'RBNode':
+            return function(){
+              var v$_149 = t_144._2;
+              return ((_N.cmp(t_144._1,minz_127).ctor==='LT') ? A3(query$_130, f_142, a_143, t_144._4) : ((_N.cmp(t_144._1,maxz_128).ctor==='GT') ? A3(query$_130, f_142, a_143, t_144._3) : (between_129(t_144._2) ? A3(query$_130, f_142, A2(f_142, v$_149, A3(query$_130, f_142, a_143, t_144._3)), t_144._4) : A3(query$_130, f_142, A3(query$_130, f_142, a_143, t_144._3), t_144._4))));}();
+        }_E.Case('Line 151, Column 22') }();});
+      var _141000_121 = minCoord_119;
+      var x1_122 = function(){ 
+      switch (_141000_121.ctor) {
+        case 'Tuple2':
+          return _141000_121._0;
+      }_E.Case('Line 141, Column 18') }();
+      var y1_123 = function(){ 
+      switch (_141000_121.ctor) {
+        case 'Tuple2':
+          return _141000_121._1;
+      }_E.Case('Line 141, Column 18') }();
+      var _142000_124 = maxCoord_120;
+      var x2_125 = function(){ 
+      switch (_142000_124.ctor) {
+        case 'Tuple2':
+          return _142000_124._0;
+      }_E.Case('Line 142, Column 18') }();
+      var y2_126 = function(){ 
+      switch (_142000_124.ctor) {
+        case 'Tuple2':
+          return _142000_124._1;
+      }_E.Case('Line 142, Column 18') }();
+      var minz_127 = Bits.zorder(minCoord_119);
+      var maxz_128 = Bits.zorder(maxCoord_120);
+      return A3(query$_130, f_116, a_117, tree_118);}();});
+  var tileToForm_19 = F2(function(vp_150, _163000_151){
+    return function(){ 
+    switch (_163000_151.ctor) {
+      case 'Tuple2':
+        return function(){
+          var form_154 = A3(N.mapSprite, tileWidth_0, tileHeight_1, indexToSpriteCoord_11(_163000_151._1));
+          return A2(move, A2(project_13, vp_150, _163000_151._0), form_154);}();
+    }_E.Case('Line 162, Column 3') }();});
+  var dimensions_20 = function(_167000_155){
+    return function(){ 
+    switch (_167000_155.ctor) {
+      case 'ViewPort':
+        return function(){
+          var _166000_157 = _167000_155._0;
+          var vw_158 = _166000_157.vw;
+          var vh_159 = _166000_157.vh;
+          return {ctor:"Tuple2", _0:vw_158, _1:vh_159};}();
+    }_E.Case('Line 166, Column 3') }();};
+  var mapLayer_21 = F2(function(vp_160, tree_161){
+    return function(){
+      var tiles_162 = A2(tilesInView_16, vp_160, tree_161);
+      var tileForms_163 = A2(map, tileToForm_19(vp_160), tiles_162);
+      return {ctor:"Tuple2", _0:group(tileForms_163), _1:tiles_162};}();});
+  var tileWidth_0 = 16;
+  var tileHeight_1 = tileWidth_0;
+  var spriteWidth_2 = 19;
+  var spriteHeight_3 = 10;
+  var mapWidth_4 = 1024;
+  var mapHeight_5 = mapWidth_4;
+  var mapWidthP_6 = (mapWidth_4*tileWidth_0);
+  var mapHeightP_7 = (mapHeight_5*tileHeight_1);
+  elm.Native = elm.Native||{};
+  var _ = elm.Native.Map||{};
+  _.$op = {};
+  _.ViewPort = ViewPort_8;
+  _.viewPort = viewPort_9;
+  _.extract = extract_10;
+  _.tilesInViewBruteforce = tilesInViewBruteforce_14;
+  _.mapTree = mapTree_15;
+  _.tilesInView = tilesInView_16;
+  _.mapLayer = mapLayer_21
+  return elm.Map = _;
+  };

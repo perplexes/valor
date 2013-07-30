@@ -10,3 +10,6 @@
 [submodule "vendor/jParser"]
 	path = vendor/jParser
 	url = https://github.com/vjeux/jParser.git
+[submodule "vendor/js_bintrees"]
+	path = vendor/js_bintrees
+	url = https://github.com/vadimg/js_bintrees.git

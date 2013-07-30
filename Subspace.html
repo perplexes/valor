@@ -4,75 +4,21 @@
     <head>
         <meta charset="UTF-8">
         <title>
-            Subspace.elm
+            Subspace: Valor
         </title>
-        <script type="text/javascript" src="vendor/elm-runtime.js"></script>
-        <script type="text/javascript" src="ElmFiles/Subspace.js"></script>
-        <!-- <script type="text/javascript" src="vendor/jquery-2.0.2.js"></script> -->
+        <style type="text/css">* { margin: 0; padding: 0; overflow: hidden; }</style>
         <script type="text/javascript" src="vendor/restruct.js/restruct.js"></script>
-        <script type="text/javascript" src="vendor/jDataView/src/jdataview.js"></script>
+        <script type="text/javascript" src="vendor/jDataView/src/jDataView.js"></script>
         <script type="text/javascript" src="vendor/jParser/src/jparser.js"></script>
         <script type="text/javascript" src="vendor/bmpimage/bmpimage2.js"></script>
+        <script type="text/javascript" src="vendor/js_bintrees/dist/rbtree.js"></script>
+        <script type="text/javascript" src="lib/Subspace.js"></script>
     </head>
     <body style="background: black">
-        <script type="text/javascript">
-          // $(function(){
-          //   $.get('/arenas/trench_9/map.json', function(data){
-          //     window.subspaceMap = data;
-          //     Elm.fullscreen(Elm.Subspace);
-          //   });
-          // });
-var bmpLength = restruct.int32lu('length');
-var mapStruct = restruct.int32lu('struct');
-
-var oReq = new XMLHttpRequest();
-oReq.open("GET", "../arenas/trench9.lvl", true);
-oReq.responseType = "arraybuffer";
-
-// window.subspaceMap = {};
-window.tiles = [];
-
-oReq.onload = function (oEvent) {
-  var arrayBuffer = oReq.response; // Note: not oReq.responseText
-  if (arrayBuffer) {
-    var a = new Uint8Array(arrayBuffer);
-    // if(a[0] == 66 && a[1] == 77){
-        var bmp_size = bmpLength.unpack(a.subarray(2,6)).length;
-        var bmp_data = a.subarray(0, bmp_size);
-        var bmp = new BMPImage(bmp_data.buffer);
-        var canvas = document.createElement('canvas');
-        canvas.name = "tileset";
-        bmp.drawToCanvas(canvas);
-        window.tileset = canvas;
-        // canvas.style.position = 'absolute';
-        // document.body.appendChild(canvas);
-
-
-        for (var i = bmp_size; i < a.length; i += 4) {
-            var bytes = a.subarray(i, i+4),
-                struct = mapStruct.unpack(bytes).struct,
-                x = struct & 0x03FF,
-                y = (struct >>> 12) & 0x03FF,
-                tile = struct >>> 24;
-            window.tiles.push({
-                x: x,
-                y: y,
-                tile: tile,
-                meta: [i, length, bytes, struct, struct.toString(2)]
-            });
-            // toString(16)
-            // window.subspaceMap[y * 1024 + x] = tile;
-        }
-    // }
-
-    Elm.fullscreen(Elm.Subspace);
-  }
-};
-
-oReq.send(null);
-        </script>
+        <canvas style="display: none;" id="offscreen"></canvas>
+        <canvas id="onscreen"></canvas>
         <noscript>
-
+            Nup.
         </noscript>
     </body>
 </html>

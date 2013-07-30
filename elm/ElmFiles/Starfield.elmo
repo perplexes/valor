@@ -1,0 +1,105 @@
+
+Elm.Starfield = function(elm){
+  var N = Elm.Native, _N = N.Utils(elm), _L = N.List(elm), _E = N.Error(elm), _J = N.JavaScript(elm), _str = _J.toString;
+  var $op = {};
+  var _ = Elm.Text(elm); var Text = _; var hiding={link:1, color:1, height:1}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Prelude(elm); var Prelude = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Signal(elm); var Signal = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.List(elm); var List = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Maybe(elm); var Maybe = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Time(elm); var Time = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Graphics.Element(elm); var Graphics = Graphics||{};Graphics.Element = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Color(elm); var Color = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Graphics.Collage(elm); var Graphics = Graphics||{};Graphics.Collage = _; var hiding={}; for(var k in _){if(k in hiding)continue;eval('var '+k+'=_["'+k+'"]')}
+  var _ = Elm.Random(elm); var Random = _;
+  var _ = Elm.Map(elm); var Map = _;
+  var ViewPort = _.ViewPort, tilesInViewBruteforce = _.tilesInViewBruteforce, renderBuffer = _.renderBuffer, extract = _.extract;
+  var randomList_4 = function(ratio_10){
+    return function(){
+      var lower_11 = A2(div, (0-starTilesize_0), 2);
+      var upper_12 = A2(div, starTilesize_0, 2);
+      var density_13 = (starDensity_1*Math.pow(ratio_10,2));
+      return combine(A2(map, function(x){
+        return A3(Random.range, lower_11, upper_12, constant(x));}, _L.range(0,density_13)));}();};
+  var randomTile_5 = function(ratio_14){
+    return A3(lift2, zip, randomList_4(ratio_14), randomList_4(ratio_14));};
+  var makeStarTile_6 = F3(function(color_15, moveRatio_16, points_17){
+    return function(){
+      var filledRect_19 = function(color_23){
+        return A2(filled, color_23, shape_18);};
+      var moved_20 = F2(function(color_24, _27000_25){
+        return function(){ 
+        switch (_27000_25.ctor) {
+          case 'Tuple2':
+            return A2(move, {ctor:"Tuple2", _0:_27000_25._0, _1:_27000_25._1}, filledRect_19(color_24));
+        }_E.Case('Line 27, Column 27') }();});
+      var star_21 = F2(function(color_28, _28000_29){
+        return function(){ 
+        switch (_28000_29.ctor) {
+          case 'Tuple2':
+            return A2(moved_20, color_28, {ctor:"Tuple2", _0:_28000_29._0, _1:_28000_29._1});
+        }_E.Case('Line 28, Column 26') }();});
+      var shape_18 = A2(rect, 1, 1);
+      var stars_22 = A2(map, function(_0_32){
+        return function(){ 
+        switch (_0_32.ctor) {
+          case 'Tuple2':
+            return A2(star_21, color_15, {ctor:"Tuple2", _0:_0_32._0, _1:_0_32._1});
+        }_E.Case('Line 29, Column 30') }();}, points_17);
+      return {ctor:"Tuple2", _0:A3(renderBuffer, group(stars_22), {ctor:"Tuple2", _0:starTilesize_0, _1:starTilesize_0}, {ctor:"Tuple2", _0:0, _1:0}), _1:moveRatio_16};}();});
+  var starLayer_9 = F2(function(_51000_35, tile_36){
+    return function(){ 
+    switch (_51000_35.ctor) {
+      case 'ViewPort':
+        return function(){
+          var xy_50 = F2(function(c_59, r_60){
+            return {ctor:"Tuple2", _0:toFloat(round((toFloat((c_59*starTilesize_0))+x_48))), _1:toFloat(round((toFloat((r_60*starTilesize_0))+y_49)))};});
+          var _43000_38 = _51000_35._0;
+          var vw_39 = _43000_38.vw;
+          var vh_40 = _43000_38.vh;
+          var sx_41 = _43000_38.sx;
+          var sy_42 = _43000_38.sy;
+          var _44000_43 = tile_36;
+          var f_44 = function(){ 
+          switch (_44000_43.ctor) {
+            case 'Tuple2':
+              return _44000_43._0;
+          }_E.Case('Line 44, Column 20') }();
+          var ratio_45 = function(){ 
+          switch (_44000_43.ctor) {
+            case 'Tuple2':
+              return _44000_43._1;
+          }_E.Case('Line 44, Column 20') }();
+          var coords_46 = A4(tilesInViewBruteforce, ViewPort(_51000_35._0), starTilesize_0, starTilesize_0, ratio_45);
+          var _46000_47 = {ctor:"Tuple2", _0:((0-sx_41)/ratio_45), _1:(0-(sy_42/ratio_45))};
+          var x_48 = function(){ 
+          switch (_46000_47.ctor) {
+            case 'Tuple2':
+              return _46000_47._0;
+          }_E.Case('Line 46, Column 17') }();
+          var y_49 = function(){ 
+          switch (_46000_47.ctor) {
+            case 'Tuple2':
+              return _46000_47._1;
+          }_E.Case('Line 46, Column 17') }();
+          return group(A2(map, function(_0_61){
+            return function(){ 
+            switch (_0_61.ctor) {
+              case 'Tuple2':
+                return A2(move, A2(xy_50, _0_61._0, _0_61._1), f_44);
+            }_E.Case('Line 51, Column 30') }();}, coords_46));}();
+    }_E.Case('Line 43, Column 3') }();});
+  var starTilesize_0 = 1024;
+  var starDensity_1 = 31;
+  var l1color_2 = A3(rgb, 184, 184, 184);
+  var l2color_3 = A3(rgb, 96, 96, 96);
+  var tileLevel1_7 = A2(lift, A2(makeStarTile_6, l1color_2, 2.0), randomTile_5(2));
+  var tileLevel2_8 = A2(lift, A2(makeStarTile_6, l2color_3, 3.0), randomTile_5(3));
+  elm.Native = elm.Native||{};
+  var _ = elm.Native.Starfield||{};
+  _.$op = {};
+  _.tileLevel1 = tileLevel1_7;
+  _.tileLevel2 = tileLevel2_8;
+  _.starLayer = starLayer_9
+  return elm.Starfield = _;
+  };
