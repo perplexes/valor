@@ -4,6 +4,11 @@
 #   "../vendor/bmpimage/bmpimage2",
 #   "../vendor/js_bintrees"
 # ]
+`
+Number.prototype.clamp = function(min, max) {
+  return Math.min(Math.max(this, min), max);
+};
+`
 
 class Subspace
   canvas: (id) ->
@@ -16,8 +21,9 @@ class Subspace
     console.log('init')
     [@offscreen, @offctx] = @canvas('offscreen')
     [@onscreen, @onctx] = @canvas('onscreen')
+    @debug = document.getElementById('debug')
 
-    @viewPort =
+    @viewport =
       width: onscreen.clientWidth
       height: onscreen.clientHeight
 
@@ -27,47 +33,107 @@ class Subspace
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
-    shipImage = new Image()
-    shipImage.src = "assets/ship2.png" # 170x166
-    shipImage.width = 170
-    shipImage.height = 166
+    @shipImage = new Image()
+    @shipImage.src = "assets/ship2.png" # 170x166
+    @shipImage.width = 170
+    @shipImage.height = 166
 
     @ship =
-      image: shipImage
       angle: 0
-      x: 0
-      y: 0
+      x: 513 * 16
+      y: 397 * 16
       dx: 0
       dy: 0
+      w: 170/4
+      h: 166/4
+
+    @starfield = new Starfield()
 
     oReq = new XMLHttpRequest()
     oReq.open "GET", "../arenas/trench9.lvl", true
     oReq.responseType = "arraybuffer"
     oReq.onload = (oEvent) =>
-      @parseLevel(oEvent)
+      @map = new Map(oEvent)
       @start()
 
     oReq.send null
 
   start: ->
-    draw = () =>
+    lastTime = 0
+    draw = (ms) =>
+      delta = ms - lastTime
+      lastTime = ms
       # @offctx.clearRect(0, 0, @offscreen.width, @offscreen.height)
       # TODO: Only draw if it's changed from the last frame
       @onctx.clearRect(0, 0, @onscreen.width, @onscreen.height)
-      @handleKeys()
+
+      # Events
+      @handleKeys(delta)
+
+      # Simulation
+      @simulateShip(delta)
+
+      # Draw
+      sfdraw = @starfield.draw(@viewport, @ship, @onctx)
+      mapdraw = @map.draw(@viewport, @ship, @onctx)
       @drawShip(@onctx)
+      @drawDebug({ship: @ship, stars: sfdraw, tiles: mapdraw.length, fps: 1/delta * 1000})
 
       # @onctx.drawImage(@offscreen, 0, 0)
       requestAnimationFrame(draw)
-    draw()
+    draw(lastTime)
 
   drawShip: (ctx) ->
     ctx.save()
-    ctx.translate(@viewPort.width/2, @viewPort.height/2)
+    ctx.translate(@viewport.width/2, @viewport.height/2)
     ctx.scale(0.25, 0.25)
     ctx.rotate(@ship.angle)
-    ctx.drawImage(@ship.image, -170/2, -166/2)
+    ctx.drawImage(@shipImage, -170/2, -166/2)
     ctx.restore()
+
+  drawDebug: (obj) ->
+    inspect = (o, d=0, omitKey=false) ->
+      return ['...'] if d >= 5
+
+      for k, v of o
+        str = if omitKey then "" else "#{k}: "
+        if k.indexOf("_") != -1
+          str += "<#{k}>"
+        else
+          if typeof(v) == "object"
+            if Array.isArray(v)
+              str += "[#{inspect(v, d+1, true).join(', ')}]"
+            else # is Object
+              str += "{#{inspect(v, d+1).join(', ')}}"
+          else
+            str += JSON.stringify(v)
+        str
+
+    $(@debug).html(inspect(obj).join('<br/>'))
+
+  simulateShip: (delta, ship, nearTiles) ->
+    # collision = null
+    # sw = ship.x - ship.w/2
+    # sn = ship.y - ship.h/2
+    # se = ship.x + ship.w/2
+    # ss = ship.y + ship.h/2
+
+    # for tile in nearTiles
+    #   px = tile.x * 16
+    #   py = tile.y * 16
+    #   tw = px - 16/2
+    #   tn = py - 16/2
+    #   te = px + 16/2
+    #   ts = py + 16/2
+    #   if 
+
+    @ship.x += @ship.dx * (delta / 1000)
+    @ship.y += @ship.dy * (delta / 1000)
+    @ship.tx = @ship.x / 16
+    @ship.ty = @ship.y / 16
+
+    @ship.x = @ship.x.clamp(0, 1024 * 16)
+    @ship.y = @ship.y.clamp(0, 1024 * 16)
 
   keyListen: (e, set = true) ->
     listened = true
@@ -76,49 +142,27 @@ class Subspace
       when KeyEvent.DOM_VK_RIGHT then @keys.right = set
       when KeyEvent.DOM_VK_UP then @keys.up = set
       when KeyEvent.DOM_VK_DOWN then @keys.down = set
+      when KeyEvent.DOM_VK_S then @keys.fullstop = set
       else listened = false
     if listened
       e.preventDefault()
       e.stopPropagation()
 
-  handleKeys: ->
-    if @keys.left then @ship.angle -= 0.1
-    if @keys.right then @ship.angle += 0.1
+  handleKeys: (delta) ->
+    x = 0
+    x -= 1 if @keys.left
+    x += 1 if @keys.right 
 
-  parseLevel: (oEvent) ->
-    # TODO: Use jParser here
-    bmpLength = restruct.int32lu("length")
-    mapStruct = restruct.int32lu("struct")
-    arrayBuffer = oEvent.target.response # Note: not oReq.responseText
-    if arrayBuffer
-      a = new Uint8Array(arrayBuffer)
-      
-      # if(a[0] == 66 && a[1] == 77){
-      bmp_size = bmpLength.unpack(a.subarray(2, 6)).length
-      bmp_data = a.subarray(0, bmp_size)
-      bmp = new BMPImage(bmp_data.buffer)
-      canvas = document.createElement("canvas")
-      canvas.name = "tileset"
-      bmp.drawToCanvas canvas
-      window.tileset = canvas
-      # canvas.style.position = "absolute"
-      # canvas.style.zIndex = 100
-      # canvas.style.top = 0
-      # document.body.appendChild canvas
-      i = bmp_size
+    y = 0
+    y += 1 if @keys.up
+    y -= 1 if @keys.down
 
-      while i < a.length
-        bytes = a.subarray(i, i + 4)
-        struct = mapStruct.unpack(bytes).struct
-        x = struct & 0x03FF
-        y = (struct >>> 12) & 0x03FF
-        tile = struct >>> 24
-        @tiles.push
-          x: x
-          y: y
-          tile: tile
-          meta: [i, length, bytes, struct, struct.toString(2)]
-        i += 4
+    @ship.angle += (Math.PI * 1.4) * (delta / 1000) * x
+    @ship.dx += 1000 * Math.sin(@ship.angle) * (delta / 1000) * y
+    @ship.dy -= 1000 * Math.cos(@ship.angle) * (delta / 1000) * y
+
+    if @keys.fullstop
+      @ship.dx = @ship.dy = 0
 
 if (typeof KeyEvent == "undefined")
   KeyEvent =
