@@ -1,6 +1,6 @@
 # Valor
 
-Subspace game written in Elm (Haskell -> FRP -> (HTML,CSS,JS)).
+Subspace-alike game written in CoffeeScript/HTML5.
 
 [Current state](http://perplexes.github.io/valor/Subspace.html)
 
