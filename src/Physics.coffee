@@ -80,7 +80,7 @@ Physics =
     # But we can also see what their velocities are...
     # So in some cases we would want to choose the y overlap
     # if their y vel is higher than their x vel. But when?
-    if x_overlap < y_overlap && Math.abs(a.dx) > Math.abs(a.dy)
+    if x_overlap < y_overlap# && Math.abs(a.dx) > Math.abs(a.dy)
       manifold.normalY = 0
       manifold.penetration = x_overlap
       if normalX < 0
@@ -118,7 +118,7 @@ Physics =
     return null if vn > 0
 
     # TODO: Programmable bounciness
-    e = 0.3 * Math.abs(vn / a.maxSpeed)
+    e = 0.5 * Math.abs(vn / a.maxSpeed)
 
     j = -(1 + e) * vn
     j /= a.invmass + b.invmass
@@ -134,9 +134,10 @@ Physics =
     bdy = b.invmass * impulseY
 
     # LERP for float drift
-    percent = Math.abs(vn / a.maxSpeed) * 6
+    # TODO: Switch to exact integers
+    percent = Math.abs(vn / a.maxSpeed)# * 6 (this should be something to counteract dx * delta / 1000)
     slop = 0.01
-    c = Math.max(m.penetration - slop, 0) / (a.invmass + b.invmass) * percent
+    c = Math.max(m.penetration - slop, 0)# * percent
     ax = -a.invmass * c * m.normalX
     ay = -a.invmass * c * m.normalY
     bbx = b.invmass * c * m.normalX

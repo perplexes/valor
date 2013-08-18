@@ -62,7 +62,7 @@ Physics = {
       onX: normalX,
       onY: normalY
     };
-    if (x_overlap < y_overlap && Math.abs(a.dx) > Math.abs(a.dy)) {
+    if (x_overlap < y_overlap) {
       manifold.normalY = 0;
       manifold.penetration = x_overlap;
       if (normalX < 0) {
@@ -93,7 +93,7 @@ Physics = {
     if (vn > 0) {
       return null;
     }
-    e = 0.3 * Math.abs(vn / a.maxSpeed);
+    e = 0.5 * Math.abs(vn / a.maxSpeed);
     j = -(1 + e) * vn;
     j /= a.invmass + b.invmass;
     impulseX = m.normalX * j;
@@ -103,9 +103,9 @@ Physics = {
     ady = -a.invmass * impulseY;
     bdx = b.invmass * impulseX;
     bdy = b.invmass * impulseY;
-    percent = Math.abs(vn / a.maxSpeed) * 6;
+    percent = Math.abs(vn / a.maxSpeed);
     slop = 0.01;
-    c = Math.max(m.penetration - slop, 0) / (a.invmass + b.invmass) * percent;
+    c = Math.max(m.penetration - slop, 0);
     ax = -a.invmass * c * m.normalX;
     ay = -a.invmass * c * m.normalY;
     bbx = b.invmass * c * m.normalX;

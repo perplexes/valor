@@ -39,6 +39,7 @@ class Subspace
     @shipImage.height = 166
 
     @ship =
+      rawAngle: 0
       angle: 0
       # Near circles
       # x: 513 * 16
@@ -217,7 +218,12 @@ class Subspace
     y += 1 if @keys.up
     y -= 1 if @keys.down
 
-    @ship.angle += (Math.PI * 1.4) * (delta / 1000) * x
+    # Should only be in 2PI/16 increments
+    # rawAngle is between 0 and 1 in 16ths
+    @ship.rawAngle += (0.7) * (delta / 1000) * x
+
+    @ship.angle = (Math.floor(@ship.rawAngle * 32) / 32) * Math.PI * 2
+
     @ship.dx += 400 * Math.sin(@ship.angle) * (delta / 1000) * y
     @ship.dy -= 400 * Math.cos(@ship.angle) * (delta / 1000) * y
     @ship.dx = @ship.dx.clamp(-@ship.maxSpeed, @ship.maxSpeed)

@@ -41,6 +41,7 @@ Subspace = (function() {
     this.shipImage.width = 170;
     this.shipImage.height = 166;
     this.ship = {
+      rawAngle: 0,
       angle: 0,
       x: 8197,
       y: 11986,
@@ -239,7 +240,8 @@ Subspace = (function() {
     if (this.keys.down) {
       y -= 1;
     }
-    this.ship.angle += (Math.PI * 1.4) * (delta / 1000) * x;
+    this.ship.rawAngle += 0.7 * (delta / 1000) * x;
+    this.ship.angle = (Math.floor(this.ship.rawAngle * 32) / 32) * Math.PI * 2;
     this.ship.dx += 400 * Math.sin(this.ship.angle) * (delta / 1000) * y;
     this.ship.dy -= 400 * Math.cos(this.ship.angle) * (delta / 1000) * y;
     this.ship.dx = this.ship.dx.clamp(-this.ship.maxSpeed, this.ship.maxSpeed);
