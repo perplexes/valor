@@ -1,10 +1,13 @@
 class Starfield
   constructor: () ->
-    @tilesize = 1024
-    @density = 31
+    @tilesize = 1024 * 2
+    @density = 32 * 4
     @levels = [
       @generateTile(2, [184,184,184]),
-      @generateTile(3, [96,96,96])
+      @generateTile(3, [96,96,96]),
+      @generateTile(4, [52,52,52]),
+      @generateTile(5, [30,30,30]),
+      @generateTile(6, [19,19,19])
     ]
     
   generateTile: (ratio, color) ->
@@ -42,10 +45,7 @@ class Starfield
     }
 
   draw: (viewport, ship, ctx) ->
-    [
-      @drawLevel(viewport, ship, ctx, @levels[0]),
-      @drawLevel(viewport, ship, ctx, @levels[1])
-    ]
+    @drawLevel(viewport, ship, ctx, level) for level in @levels
 
   drawLevel: (viewport, ship, ctx, level) ->
     left = Math.floor ((ship.x / level.ratio) - (viewport.width / 2)) / @tilesize 

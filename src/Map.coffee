@@ -9,29 +9,30 @@ class Map
     @mapWidthP = @mapHeightP = 1024 * @spriteWidth # in pixels
     # @drawtiles = (tile for tile in @tiles when Math.abs(tile.x - 524) <= 1000 && Math.abs(tile.y - 628) <= 1000)
 
-
-  draw: (viewport, ship, ctx) ->
-    # tiles = @tree.search(
+  tilesInView: (viewport, ship) ->
     west = ship.x - viewport.width / 2
     north = ship.y - viewport.height / 2
     east = ship.x + viewport.width / 2
     south = ship.y + viewport.height / 2
-    res = (@drawTile(viewport, ship, ctx, tile) for tile in @tiles when west - 16 <= tile.x * 16 <= east && north - 16 <= tile.y * 16 <= south)
-    res
+    (tile for tile in @tiles when west - 16 <= tile.x <= east && north - 16 <= tile.y <= south)
+
+  draw: (viewport, ship, tiles, ctx) ->
+    @drawTile(viewport, ship, ctx, tile) for tile in tiles
 
   drawTile: (viewport, ship, ctx, tile) ->
     origin =
       x: ship.x - viewport.width / 2
       y: ship.y - viewport.height / 2
 
-    row = Math.floor((tile.index - 1) / @spriteMapWidth)
-    col = (tile.index - 1) % @spriteMapWidth
+    row = tile.index / @spriteMapWidth | 0
+    col = tile.index % @spriteMapWidth
+
+    # Sprite Map x in Pixels
     smxp = col * @spriteWidth
     smyp = row * @spriteHeight
-    mxp = tile.x * @spriteWidth
-    myp = tile.y * @spriteHeight
-    vpmxp = mxp - origin.x
-    vpmyp = myp - origin.y
+    # Viewport Map x in Pixels
+    vpmxp = tile.x - origin.x - 8
+    vpmyp = tile.y - origin.y - 8
 
     # debugger if tile.index < 190
 
@@ -76,13 +77,25 @@ class Map
     while i < a.length
       bytes = a.subarray(i, i + 4)
       struct = mapStruct.unpack(bytes).struct
-      x = struct & 0x03FF
-      y = (struct >>> 12) & 0x03FF
+      tx = struct & 0x03FF
+      ty = (struct >>> 12) & 0x03FF
+      x = tx * 16 + 8
+      y = ty * 16 + 8
       index = struct >>> 24
       tiles.push
+        tx: tx
+        ty: ty
         x: x
         y: y
-        index: index
+        min:
+          x: x - 8
+          y: y - 8
+        max:
+          x: x + 8
+          y: y + 8
+        w: 16
+        h: 16
+        index: index - 1
         meta: [i, length, bytes, struct, struct.toString(2)]
       i += 4
 

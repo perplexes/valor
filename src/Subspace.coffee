@@ -40,12 +40,19 @@ class Subspace
 
     @ship =
       angle: 0
-      x: 513 * 16
-      y: 397 * 16
+      # Near circles
+      # x: 513 * 16
+      # y: 397 * 16
+      # Safety
+      # x: 8196
+      # y: 12135
+      x: 8197
+      y: 11986
       dx: 0
       dy: 0
       w: 170/4
       h: 166/4
+      maxSpeed: 500
 
     @starfield = new Starfield()
 
@@ -62,6 +69,10 @@ class Subspace
     lastTime = 0
     draw = (ms) =>
       delta = ms - lastTime
+      # We stopped the game, just assume a frame
+      delta = 16 if delta > 1000
+        
+
       lastTime = ms
       # @offctx.clearRect(0, 0, @offscreen.width, @offscreen.height)
       # TODO: Only draw if it's changed from the last frame
@@ -70,14 +81,23 @@ class Subspace
       # Events
       @handleKeys(delta)
 
+      tiles = @map.tilesInView(@viewport, @ship)
+
       # Simulation
-      @simulateShip(delta)
+      collisions = @simulateShip(delta, @ship, tiles)
 
       # Draw
       sfdraw = @starfield.draw(@viewport, @ship, @onctx)
-      mapdraw = @map.draw(@viewport, @ship, @onctx)
+      @map.draw(@viewport, @ship, tiles, @onctx)
       @drawShip(@onctx)
-      @drawDebug({ship: @ship, stars: sfdraw, tiles: mapdraw.length, fps: 1/delta * 1000})
+      # @drawDebugCollisions(@viewport, @ship, collisions, @onctx)
+      # @drawDebug({
+      #   ship: @ship,
+      #   stars: sfdraw,
+      #   tiles: tiles.length,
+      #   collisions: collisions.length,
+      #   fps: 1/delta * 1000
+      # })
 
       # @onctx.drawImage(@offscreen, 0, 0)
       requestAnimationFrame(draw)
@@ -111,29 +131,64 @@ class Subspace
 
     $(@debug).html(inspect(obj).join('<br/>'))
 
+  drawDebugCollisions: (viewport, ship, tiles, ctx) ->
+    origin =
+      x: ship.x - viewport.width / 2
+      y: ship.y - viewport.height / 2
+
+    for tile in tiles
+      ctx.save()
+      ctx.fillStyle = "rgba(255, 0, 0, 0.5)"
+      x = tile.min.x - origin.x
+      y = tile.min.y - origin.y
+      ctx.fillRect(x, y, 16, 16)
+      ctx.restore()
+
+    ctx.save()
+    ctx.fillStyle = "rgba(0,255,0,0.5)"
+    ctx.fillRect(
+      ship.x - ship.w / 2 - origin.x,
+      ship.y - ship.h / 2 - origin.y,
+      ship.w,
+      ship.h
+    )
+    ctx.restore()
+
   simulateShip: (delta, ship, nearTiles) ->
-    # collision = null
-    # sw = ship.x - ship.w/2
-    # sn = ship.y - ship.h/2
-    # se = ship.x + ship.w/2
-    # ss = ship.y + ship.h/2
-
-    # for tile in nearTiles
-    #   px = tile.x * 16
-    #   py = tile.y * 16
-    #   tw = px - 16/2
-    #   tn = py - 16/2
-    #   te = px + 16/2
-    #   ts = py + 16/2
-    #   if 
-
     @ship.x += @ship.dx * (delta / 1000)
     @ship.y += @ship.dy * (delta / 1000)
+    @ship.x = @ship.x.clamp(0, 1024 * 16)
+    @ship.y = @ship.y.clamp(0, 1024 * 16)
+
+
+    collisions = []
+    
+    ship.min =
+      x: ship.x - ship.w/2
+      y: ship.y - ship.h/2
+    ship.max =
+      x: ship.x + ship.w/2
+      y: ship.y + ship.h/2
+
+    for tile in nearTiles
+      if Physics.collision(ship, tile)
+        collisions.push tile
+        if m = Physics.overlap(ship, tile)
+          if resolution = Physics.resolve(ship, tile, m)
+            ship.x += resolution.a[0]
+            ship.y += resolution.a[1]
+            ship.dx += resolution.a[2]
+            ship.dy += resolution.a[3]
+
+    # if collisions.length > 0
+    #   for tile in collisions
+
+    #       # Skip b resolution for now - tiles are immovable
+
     @ship.tx = @ship.x / 16
     @ship.ty = @ship.y / 16
 
-    @ship.x = @ship.x.clamp(0, 1024 * 16)
-    @ship.y = @ship.y.clamp(0, 1024 * 16)
+    collisions
 
   keyListen: (e, set = true) ->
     listened = true
@@ -143,12 +198,17 @@ class Subspace
       when KeyEvent.DOM_VK_UP then @keys.up = set
       when KeyEvent.DOM_VK_DOWN then @keys.down = set
       when KeyEvent.DOM_VK_S then @keys.fullstop = set
+      when KeyEvent.DOM_VK_D then @keys.debugger = set
       else listened = false
     if listened
       e.preventDefault()
       e.stopPropagation()
 
   handleKeys: (delta) ->
+    if @keys.debugger
+      @keys.debugger = false
+      debugger
+
     x = 0
     x -= 1 if @keys.left
     x += 1 if @keys.right 
@@ -158,8 +218,10 @@ class Subspace
     y -= 1 if @keys.down
 
     @ship.angle += (Math.PI * 1.4) * (delta / 1000) * x
-    @ship.dx += 1000 * Math.sin(@ship.angle) * (delta / 1000) * y
-    @ship.dy -= 1000 * Math.cos(@ship.angle) * (delta / 1000) * y
+    @ship.dx += 400 * Math.sin(@ship.angle) * (delta / 1000) * y
+    @ship.dy -= 400 * Math.cos(@ship.angle) * (delta / 1000) * y
+    @ship.dx = @ship.dx.clamp(-@ship.maxSpeed, @ship.maxSpeed)
+    @ship.dy = @ship.dy.clamp(-@ship.maxSpeed, @ship.maxSpeed)
 
     if @keys.fullstop
       @ship.dx = @ship.dy = 0
