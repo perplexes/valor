@@ -14,7 +14,7 @@ class Map
     north = ship.y - viewport.height / 2
     east = ship.x + viewport.width / 2
     south = ship.y + viewport.height / 2
-    (tile for tile in @tiles when west - 16 <= tile.x <= east && north - 16 <= tile.y <= south)
+    (tile for tile in @tiles when west - 16 <= tile.x <= east + 16 && north - 16 <= tile.y <= south + 16)
 
   draw: (viewport, ship, tiles, ctx) ->
     @drawTile(viewport, ship, ctx, tile) for tile in tiles

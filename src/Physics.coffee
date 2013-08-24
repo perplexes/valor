@@ -118,7 +118,7 @@ Physics =
     return null if vn > 0
 
     # TODO: Programmable bounciness
-    e = 0.5 * Math.abs(vn / a.maxSpeed)
+    e = 0.727 * Math.abs(vn / a.maxSpeed)
 
     j = -(1 + e) * vn
     j /= a.invmass + b.invmass

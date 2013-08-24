@@ -42,13 +42,14 @@ class Subspace
       rawAngle: 0
       angle: 0
       # Near circles
-      # x: 513 * 16
-      # y: 397 * 16
+      x: 513 * 16
+      y: 397 * 16
       # Safety
       # x: 8196
       # y: 12135
-      x: 8197
-      y: 11986
+      # Outside safety
+      # x: 8197
+      # y: 11986
       dx: 0
       dy: 0
       w: 170/4
