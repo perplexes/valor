@@ -4,3 +4,4 @@ src/*.js
 ElmFiles/*.elmo
 ElmFiles/*.js
 elm-runtime.js
+reference/*

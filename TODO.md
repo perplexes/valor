@@ -1,10 +1,42 @@
-Order of shit to do:
-Move JS init into file (translate into cs)
-draw ship in middle of screen
-try to rotate ship when resp to keyboard events (need jquery?)
-star field
-update ship dx/dy, x,y when up/down
-move star field
-draw map (rb tree, zorder, impl query)
-maybe impl quadtree too to perf test
-coll detection
+# Todos
+- [x] Move JS init into file (translate into cs)
+- [x] draw ship in middle of screen
+- [x] try to rotate ship when resp to keyboard events (need jquery?)
+- [x] star field
+- [x] update ship dx/dy, x,y when up/down
+- [x] move star field
+- [x] draw map
+- [ ] move submodules out, just have the files. (or find on npm)
+- [ ] (rb tree, zorder, impl query)
+- [ ] maybe impl quadtree too to perf test
+- [x] coll detection
+- [ ] flesh out a spec for the game
+- [ ] animation sprites
+- [ ] other map tiles (space station, asteroid, animated asteroid)
+- [ ] tile metadata (colliding/no)
+- [ ] prize boxes
+- [ ] - powerups to get
+- [ ] - full charge, energy depleted, shutdown, bullet upgrade, bomb upgrade, repel, burst, multiprize, shields, superpower, etc
+- [ ] - bounty
+- [ ] thrust trails
+- [ ] bullets (bouncy/non, coll det for walls/players, random damage, multifire,)
+- [ ] bombs (same, shrapnel)
+- [ ] mines (same)
+- [ ] repel/burst (l4 bullets, only after a bounce)
+- [ ] stealth/xradar
+- [ ] antiwarp
+- [ ] EMP
+- [ ] afterburner
+- [ ] attach/spectator mode
+- [ ] using different ships
+- [ ] banners
+- [ ] decoy
+- [ ] doors (both map and team walls)
+- [ ] portal/warping
+- [ ] rockets
+- [ ] audio
+- [ ] thor's hammer
+
+# Research
+- [ ] pixi.js
+- [ ] JS rbtree implementations
