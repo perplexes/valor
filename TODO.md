@@ -13,7 +13,8 @@
 - [ ] flesh out a spec for the game
 - [ ] animation sprites
 - [ ] other map tiles (space station, asteroid, animated asteroid)
-- [ ] tile metadata (colliding/no)
+- [s] tile metadata (colliding/no) [don't know where to get it - part of server settings?]
+- [x] safe zone stopping
 - [ ] prize boxes
 - [ ] - powerups to get
 - [ ] - full charge, energy depleted, shutdown, bullet upgrade, bomb upgrade, repel, burst, multiprize, shields, superpower, etc
