@@ -1,6 +1,9 @@
 class Map
   constructor: (oEvent) ->
-    [@tileset, @tiles] = @parseLevel(oEvent)
+    @tree = new ZTree
+    ZTree.test()
+    debugger
+    @tileset = @parseLevel(oEvent, @tree)
     # @tree = zOrderTree(@tiles)
     @spriteWidth = @spriteHeight = 16 # in pixels
     @spriteMapWidth = 19 # in tiles
@@ -14,7 +17,8 @@ class Map
     north = ship.y - viewport.height / 2
     east = ship.x + viewport.width / 2
     south = ship.y + viewport.height / 2
-    (tile for tile in @tiles when west - 16 <= tile.x <= east + 16 && north - 16 <= tile.y <= south + 16)
+    # (tile for tile in @tiles when west - 16 <= tile.x <= east + 16 && north - 16 <= tile.y <= south + 16)
+    @tree.search(west, north, east, south)
 
   draw: (viewport, ship, tiles, ctx) ->
     @drawTile(viewport, ship, ctx, tile) for tile in tiles
@@ -50,14 +54,13 @@ class Map
     ctx.drawImage(args...)
     info
 
-  parseLevel: (oEvent) ->
+  parseLevel: (oEvent, tree) ->
     arrayBuffer = oEvent.target.response # Note: not oReq.responseText
     return [] unless arrayBuffer
 
     # TODO: Use jParser here
     bmpLength = restruct.int32lu("length")
     mapStruct = restruct.int32lu("struct")
-    tiles = []
 
     a = new Uint8Array(arrayBuffer)
     
@@ -82,7 +85,7 @@ class Map
       x = tx * 16 + 8
       y = ty * 16 + 8
       index = struct >>> 24
-      tiles.push
+      tree.insert
         tx: tx
         ty: ty
         x: x
@@ -99,4 +102,4 @@ class Map
         meta: [i, length, bytes, struct, struct.toString(2)]
       i += 4
 
-    [canvas, tiles]
+    canvas
