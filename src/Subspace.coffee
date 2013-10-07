@@ -15,7 +15,7 @@ class Subspace
     window.stage = @stage = new PIXI.Stage(0)
     @width = document.body.clientWidth
     @height = window.innerHeight
-    @renderer = PIXI.autoDetectRenderer(@width, @height)
+    @renderer = PIXI.autoDetectRenderer(@width, @height, document.createElement( 'canvas' ), false, false)
     @renderer.view.style.position = "absolute"
     @renderer.view.style.top = "0px"
     @renderer.view.style.left = "0px"

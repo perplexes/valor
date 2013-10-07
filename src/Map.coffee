@@ -11,12 +11,21 @@ class Map
     # ZTree.test()
     # debugger
     @tileset = @parseLevel(oEvent, @tree)
-    @drawtiles = []
-    @tree.tree.each (tile) =>
-      if Math.abs(tile.x - (513 * 16)) <= 1000 && Math.abs(tile.y - (397 * 16)) <= 1000
-        @drawtiles.push tile
+    # @drawtiles = []
+    # @tree.tree.each (tile) =>
+    #   if Math.abs(tile.x - (513 * 16)) <= 1000 && Math.abs(tile.y - (397 * 16)) <= 1000
+    #     @drawtiles.push tile
     @container = new PIXI.DisplayObjectContainer()
     stage.addChild(@container)
+    # spriteMapT = new PIXI.Texture(@baseTexture)
+    # spriteMapS = new PIXI.Sprite(spriteMapT)
+    # stage.addChild(spriteMapS)
+    # for i in [0..@tileset.length-1]
+    #   s = new PIXI.Sprite(@tileset[i])
+    #   s.position.y = 176
+    #   s.position.x = i*16
+    #   stage.addChild(s)
+
     # @stage = stage
 
 
@@ -25,23 +34,20 @@ class Map
     north = ship.y - viewport.height / 2
     east = ship.x + viewport.width / 2
     south = ship.y + viewport.height / 2
-    # (tile for tile in @tiles when west - 16 <= tile.x <= east + 16 && north - 16 <= tile.y <= south + 16)
-    # @tree.search(west, north, east, south)
-    @drawtiles
+    # (tile for tile in @drawtiles when west - 16 <= tile.x <= east + 16 && north - 16 <= tile.y <= south + 16)
+    @tree.search(west, north, east, south)
+    # @drawtiles
 
   # Mark & sweep :P
   draw: (viewport, ship, tiles) ->
     for tile in tiles
       @drawTile(viewport, ship, tile)
-      # @stage.addChild(tile._sprite) if tile._sprite
 
-    # debugger
-
-    # for tile in @container.children
-    #   if tile._contained && !tile._drawn
-    #     @container.removeChild(tile._sprite)
-    #     tile._contained = false
-    #   tile._drawn = false
+    for tile in @container.children
+      if tile._contained && !tile._drawn
+        @container.removeChild(tile._sprite)
+        tile._contained = false
+      tile._drawn = false
 
   drawTile: (viewport, ship, tile) ->
     return unless tile._sprite
@@ -84,9 +90,9 @@ class Map
 
     @baseTexture = new PIXI.BaseTexture(canvas)
     textures = []
-    for x in [0..@spriteMapWidth-1]
-      for y in [0..@spriteMapHeight-1]
-        textures.push(new PIXI.Texture(@baseTexture, new PIXI.Rectangle(x,y,16,16)))
+    for y in [0..@spriteMapHeight-1]
+      for x in [0..@spriteMapWidth-1]
+        textures.push(new PIXI.Texture(@baseTexture, {x: x * 16, y: y * 16, width: 16, height: 16}))
 
     # canvas.style.position = "absolute"
     # canvas.style.zIndex = 100
