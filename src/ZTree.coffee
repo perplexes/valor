@@ -2,7 +2,6 @@ class ZTree
   B = [0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF]
   S = [1, 2, 4, 8]
   constructor: () ->
-    debugger
     @tree = new RBTree((a, b) ->
       a.zcode - b.zcode
     )

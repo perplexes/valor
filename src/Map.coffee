@@ -1,16 +1,24 @@
 class Map
-  constructor: (oEvent) ->
-    # @tree = new ZTree
-    @tree = new ArrayTree
-    # ZTree.test()
-    # debugger
-    @tileset = @parseLevel(oEvent, @tree)
+  constructor: (oEvent, stage) ->
     @spriteWidth = @spriteHeight = 16 # in pixels
     @spriteMapWidth = 19 # in tiles
     @spriteMapHeight = 10 # in tiles
     @mapWidth = @mapHeight = 1024 # in tiles
     @mapWidthP = @mapHeightP = 1024 * @spriteWidth # in pixels
-    # @drawtiles = (tile for tile in @tiles when Math.abs(tile.x - 524) <= 1000 && Math.abs(tile.y - 628) <= 1000)
+    # TODO: Move tree into engine, we need it for ships and bullets
+    @tree = new ZTree
+    # @tree = new ArrayTree
+    # ZTree.test()
+    # debugger
+    @tileset = @parseLevel(oEvent, @tree)
+    @drawtiles = []
+    @tree.tree.each (tile) =>
+      if Math.abs(tile.x - (513 * 16)) <= 1000 && Math.abs(tile.y - (397 * 16)) <= 1000
+        @drawtiles.push tile
+    @container = new PIXI.DisplayObjectContainer()
+    stage.addChild(@container)
+    # @stage = stage
+
 
   tilesInView: (viewport, ship) ->
     west = ship.x - viewport.width / 2
@@ -18,40 +26,42 @@ class Map
     east = ship.x + viewport.width / 2
     south = ship.y + viewport.height / 2
     # (tile for tile in @tiles when west - 16 <= tile.x <= east + 16 && north - 16 <= tile.y <= south + 16)
-    @tree.search(west, north, east, south)
+    # @tree.search(west, north, east, south)
+    @drawtiles
 
-  draw: (viewport, ship, tiles, ctx) ->
-    @drawTile(viewport, ship, ctx, tile) for tile in tiles
+  # Mark & sweep :P
+  draw: (viewport, ship, tiles) ->
+    for tile in tiles
+      @drawTile(viewport, ship, tile)
+      # @stage.addChild(tile._sprite) if tile._sprite
 
-  drawTile: (viewport, ship, ctx, tile) ->
+    # debugger
+
+    # for tile in @container.children
+    #   if tile._contained && !tile._drawn
+    #     @container.removeChild(tile._sprite)
+    #     tile._contained = false
+    #   tile._drawn = false
+
+  drawTile: (viewport, ship, tile) ->
+    return unless tile._sprite
+    tile._drawn = true
+    unless tile._contained
+      @container.addChild(tile._sprite)
+      tile._contained = true 
+
     origin =
       x: ship.x - viewport.width / 2
       y: ship.y - viewport.height / 2
 
-    row = tile.index / @spriteMapWidth | 0
-    col = tile.index % @spriteMapWidth
-
-    # Sprite Map x in Pixels
-    smxp = col * @spriteWidth
-    smyp = row * @spriteHeight
     # Viewport Map x in Pixels
     vpmxp = tile.x - origin.x - 8
     vpmyp = tile.y - origin.y - 8
 
-    # debugger if tile.index < 190
+    tile._sprite.position.x = vpmxp
+    tile._sprite.position.y = vpmyp
 
-    args = [
-      @tileset,
-      smxp, smyp,
-      @spriteWidth, @spriteHeight,
-      vpmxp, vpmyp,
-      @spriteWidth, @spriteHeight
-    ]
-    info = {smxp: smxp, smyp: smyp, vpmxp: vpmxp, vpmyp: vpmyp, tile: tile.index, x: tile.x, y: tile.y}
-    # console.log(info)
-    # console.log(info) if 0 <= vpmyp <= viewport.width && 0 <= vpmyp <= viewport.height
-
-    ctx.drawImage(args...)
+    info = {vpmxp: vpmxp, vpmyp: vpmyp, tile: tile.index, x: tile.x, y: tile.y}
     info
 
   parseLevel: (oEvent, tree) ->
@@ -71,6 +81,13 @@ class Map
     canvas = document.createElement("canvas")
     canvas.name = "tileset"
     bmp.drawToCanvas canvas
+
+    @baseTexture = new PIXI.BaseTexture(canvas)
+    textures = []
+    for x in [0..@spriteMapWidth-1]
+      for y in [0..@spriteMapHeight-1]
+        textures.push(new PIXI.Texture(@baseTexture, new PIXI.Rectangle(x,y,16,16)))
+
     # canvas.style.position = "absolute"
     # canvas.style.zIndex = 100
     # canvas.style.top = 0
@@ -84,7 +101,8 @@ class Map
       ty = (struct >>> 12) & 0x03FF
       x = tx * 16 + 8
       y = ty * 16 + 8
-      index = struct >>> 24
+      index = (struct >>> 24) - 1
+      texture = textures[index]
       tree.insert
         tx: tx
         ty: ty
@@ -99,7 +117,10 @@ class Map
         w: 16
         h: 16
         index: index - 1
+        _sprite: if texture then new PIXI.Sprite(texture) else null
         meta: [i, length, bytes, struct, struct.toString(2)]
+        _contained: false
+        _drawn: false
       i += 4
 
-    canvas
+    textures

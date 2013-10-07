@@ -11,21 +11,22 @@ Number.prototype.clamp = function(min, max) {
 `
 
 class Subspace
-  canvas: (id) ->
-    c = document.getElementById(id)
-    c.width = c.style.width = document.body.clientWidth
-    c.height = c.style.height = window.innerHeight
-    [c, c.getContext('2d')]
-
   init: ->
+    window.stage = @stage = new PIXI.Stage(0)
+    @width = document.body.clientWidth
+    @height = window.innerHeight
+    @renderer = PIXI.autoDetectRenderer(@width, @height)
+    @renderer.view.style.position = "absolute"
+    @renderer.view.style.top = "0px"
+    @renderer.view.style.left = "0px"
+    document.body.appendChild(@renderer.view)
+
     console.log('init')
-    [@offscreen, @offctx] = @canvas('offscreen')
-    [@onscreen, @onctx] = @canvas('onscreen')
     @debug = document.getElementById('debug')
 
     @viewport =
-      width: onscreen.clientWidth
-      height: onscreen.clientHeight
+      width: @width
+      height: @height
 
     @tiles = []
     @keys = {debugMessages: false} # old -> new
@@ -33,20 +34,25 @@ class Subspace
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
-    @shipImage = new Image()
-    @shipImage.src = "assets/ship2.png" # 170x166
-    @shipImage.width = 170
-    @shipImage.height = 166
+    # TODO: Split into ship class
+    @shipTexture = PIXI.Texture.fromImage("assets/ship2.png")
+    @shipSprite = new PIXI.Sprite(@shipTexture)
+    @shipSprite.anchor.x = 0.5
+    @shipSprite.anchor.y = 0.5
+    @shipSprite.position.x = @width/2
+    @shipSprite.position.y = @height/2
+    @shipSprite.width = 170/4
+    @shipSprite.height = 166/4
 
     @ship =
       rawAngle: 0
       angle: 0
       # Near circles
-      # x: 513 * 16
-      # y: 397 * 16
+      x: 513 * 16
+      y: 397 * 16
       # Safety
-      x: 8196
-      y: 12135
+      # x: 8196
+      # y: 12135
       # Outside safety
       # x: 8197
       # y: 11986
@@ -56,29 +62,26 @@ class Subspace
       h: 166/4
       maxSpeed: 500
 
-    @starfield = new Starfield()
+    @starfield = new Starfield(@stage, @viewport)
 
     oReq = new XMLHttpRequest()
     oReq.open "GET", "../arenas/trench9.lvl", true
     oReq.responseType = "arraybuffer"
     oReq.onload = (oEvent) =>
-      @map = new Map(oEvent)
+      @map = new Map(oEvent, @stage)
       @start()
 
     oReq.send null
 
   start: ->
     lastTime = 0
+    @stage.addChild(@shipSprite)
+
     draw = (ms) =>
       delta = ms - lastTime
       # We stopped the game, just assume a frame
       delta = 16 if delta > 1000
-        
-
       lastTime = ms
-      # @offctx.clearRect(0, 0, @offscreen.width, @offscreen.height)
-      # TODO: Only draw if it's changed from the last frame
-      @onctx.clearRect(0, 0, @onscreen.width, @onscreen.height)
 
       # Events
       @handleKeys(delta)
@@ -89,9 +92,9 @@ class Subspace
       collisions = @simulateShip(delta, @ship, tiles)
 
       # Draw
-      sfdraw = @starfield.draw(@viewport, @ship, @onctx)
-      @map.draw(@viewport, @ship, tiles, @onctx)
-      @drawShip(@onctx)
+      sfdraw = @starfield.draw(@viewport, @ship)
+      @map.draw(@viewport, @ship, tiles)
+      @drawShip()
       # @drawDebugCollisions(@viewport, @ship, collisions, @onctx)
       if @keys.debugMessages
         @drawDebug({
@@ -103,17 +106,12 @@ class Subspace
           keys: @keys
         })
 
-      # @onctx.drawImage(@offscreen, 0, 0)
+      @renderer.render(@stage)
       requestAnimationFrame(draw)
     draw(lastTime)
 
-  drawShip: (ctx) ->
-    ctx.save()
-    ctx.translate(@viewport.width/2, @viewport.height/2)
-    ctx.scale(0.25, 0.25)
-    ctx.rotate(@ship.angle)
-    ctx.drawImage(@shipImage, -170/2, -166/2)
-    ctx.restore()
+  drawShip: () ->
+    @shipSprite.rotation = @ship.angle
 
   drawDebug: (obj) ->
     inspect = (o, d=0, omitKey=false) ->

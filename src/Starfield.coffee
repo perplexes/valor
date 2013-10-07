@@ -1,16 +1,20 @@
+# TODO: Use RenderTexture?
 class Starfield
-  constructor: () ->
+  constructor: (stage, viewport) ->
     @tilesize = 1024 * 2
     @density = 32 * 4
     @levels = [
-      @generateTile(2, [184,184,184]),
-      @generateTile(3, [96,96,96]),
+      @generateTile(viewport, 2, [184,184,184]),
+      @generateTile(viewport, 3, [96,96,96]),
       # @generateTile(4, [52,52,52]),
       # @generateTile(5, [30,30,30]),
       # @generateTile(6, [19,19,19])
     ]
+
+    for level in @levels
+      stage.addChild(level._sprite)
     
-  generateTile: (ratio, color) ->
+  generateTile: (viewport, ratio, color) ->
     buffer = document.createElement('canvas')
     buffer.width = @tilesize
     buffer.height = @tilesize
@@ -37,17 +41,21 @@ class Starfield
       ctx.putImageData(id, x, y)
       [x, y]
 
+    texture = new PIXI.Texture.fromCanvas(buffer)
+    sprite = new PIXI.TilingSprite(texture, viewport.width, viewport.height)
+
     {
-      _buffer: buffer
+      _texture: texture,
+      _sprite: sprite,
       points: points,
       color: color,
       ratio: ratio
     }
 
-  draw: (viewport, ship, ctx) ->
-    @drawLevel(viewport, ship, ctx, level) for level in @levels
+  draw: (viewport, ship) ->
+    @drawLevel(viewport, ship, level) for level in @levels
 
-  drawLevel: (viewport, ship, ctx, level) ->
+  drawLevel: (viewport, ship, level) ->
     left = Math.floor ((ship.x / level.ratio) - (viewport.width / 2)) / @tilesize 
     top = Math.floor ((ship.y / level.ratio) - (viewport.height / 2)) / @tilesize 
     right = Math.ceil ((ship.x / level.ratio) + (viewport.width / 2)) / @tilesize 
@@ -63,7 +71,9 @@ class Starfield
         tileY = row * @tilesize + y
         # ctx.save()
         # ctx.translate(tileX, tileY)
-        ctx.drawImage(level._buffer, tileX, tileY, @tilesize, @tilesize)
+        # ctx.drawImage(level._buffer, tileX, tileY, @tilesize, @tilesize)
+        level._sprite.position.x = tileX
+        level._sprite.position.y = tileY
         # ctx.restore()
         pairs.push([col, row])
     [left, right, top, bottom]
