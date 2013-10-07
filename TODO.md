@@ -8,6 +8,7 @@
 - [x] draw map
 - [ ] move submodules out, just have the files. (or find on npm)
 - [ ] (rb tree, zorder, impl query)
+-- divide tiles into z-regions to keep overhead down?
 - [ ] maybe impl quadtree too to perf test
 - [x] coll detection
 - [ ] flesh out a spec for the game

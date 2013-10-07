@@ -5,9 +5,9 @@ class Starfield
     @levels = [
       @generateTile(2, [184,184,184]),
       @generateTile(3, [96,96,96]),
-      @generateTile(4, [52,52,52]),
-      @generateTile(5, [30,30,30]),
-      @generateTile(6, [19,19,19])
+      # @generateTile(4, [52,52,52]),
+      # @generateTile(5, [30,30,30]),
+      # @generateTile(6, [19,19,19])
     ]
     
   generateTile: (ratio, color) ->

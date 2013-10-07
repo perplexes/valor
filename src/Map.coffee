@@ -1,10 +1,10 @@
 class Map
   constructor: (oEvent) ->
-    @tree = new ZTree
-    ZTree.test()
-    debugger
+    # @tree = new ZTree
+    @tree = new ArrayTree
+    # ZTree.test()
+    # debugger
     @tileset = @parseLevel(oEvent, @tree)
-    # @tree = zOrderTree(@tiles)
     @spriteWidth = @spriteHeight = 16 # in pixels
     @spriteMapWidth = 19 # in tiles
     @spriteMapHeight = 10 # in tiles

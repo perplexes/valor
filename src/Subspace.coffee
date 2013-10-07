@@ -28,7 +28,7 @@ class Subspace
       height: onscreen.clientHeight
 
     @tiles = []
-    @keys = {} # old -> new
+    @keys = {debugMessages: false} # old -> new
 
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
@@ -93,14 +93,15 @@ class Subspace
       @map.draw(@viewport, @ship, tiles, @onctx)
       @drawShip(@onctx)
       # @drawDebugCollisions(@viewport, @ship, collisions, @onctx)
-      @drawDebug({
-        ship: @ship,
-        stars: sfdraw,
-        tiles: tiles.length,
-        # collisions: collisions.length,
-        fps: 1/delta * 1000,
-        keys: @keys
-      })
+      if @keys.debugMessages
+        @drawDebug({
+          ship: @ship,
+          stars: sfdraw,
+          tiles: tiles.length,
+          # collisions: collisions.length,
+          fps: 1/delta * 1000,
+          keys: @keys
+        })
 
       # @onctx.drawImage(@offscreen, 0, 0)
       requestAnimationFrame(draw)
@@ -176,29 +177,29 @@ class Subspace
     minSafeX = minSafeY = Infinity
     maxSafeX = maxSafeY = -1
 
-    for tile in nearTiles
-      if Physics.collision(ship, tile)
-        collisions.push tile
-        if tile.index == 170
-          minSafeX = Math.min(minSafeX, tile.min.x)
-          minSafeY = Math.min(minSafeY, tile.min.y)
-          maxSafeX = Math.max(maxSafeX, tile.max.x)
-          maxSafeY = Math.max(maxSafeY, tile.max.y)
+    # for tile in nearTiles
+    #   if Physics.collision(ship, tile)
+    #     collisions.push tile
+    #     if tile.index == 170
+    #       minSafeX = Math.min(minSafeX, tile.min.x)
+    #       minSafeY = Math.min(minSafeY, tile.min.y)
+    #       maxSafeX = Math.max(maxSafeX, tile.max.x)
+    #       maxSafeY = Math.max(maxSafeY, tile.max.y)
 
-        collide = tile.index < 127
+    #     collide = tile.index < 127
 
-        if !@ship.noclip && collide && m = Physics.overlap(ship, tile)
-          if resolution = Physics.resolve(ship, tile, m)
-            ship.x += resolution.a[0]
-            ship.y += resolution.a[1]
-            ship.dx += resolution.a[2]
-            ship.dy += resolution.a[3]
+    #     if !@ship.noclip && collide && m = Physics.overlap(ship, tile)
+    #       if resolution = Physics.resolve(ship, tile, m)
+    #         ship.x += resolution.a[0]
+    #         ship.y += resolution.a[1]
+    #         ship.dx += resolution.a[2]
+    #         ship.dy += resolution.a[3]
 
-    # Ship must be surrounded by safezone to be considered safe
-    @ship.safe = minSafeX <= ship.min.x &&
-                 minSafeY <= ship.min.y &&
-                 maxSafeX >= ship.max.x &&
-                 maxSafeY >= ship.max.y
+    # # Ship must be surrounded by safezone to be considered safe
+    # @ship.safe = minSafeX <= ship.min.x &&
+    #              minSafeY <= ship.min.y &&
+    #              maxSafeX >= ship.max.x &&
+    #              maxSafeY >= ship.max.y
 
     # if collisions.length > 0
     #   for tile in collisions
@@ -220,6 +221,7 @@ class Subspace
       when KeyEvent.DOM_VK_S then @keys.fullstop = set
       when KeyEvent.DOM_VK_D then @keys.debugger = set
       when KeyEvent.DOM_VK_N then if set then @keys.noclip = !@keys.noclip
+      when KeyEvent.DOM_VK_M then if set then @keys.debugMessages = !@keys.debugMessages
       when KeyEvent.DOM_VK_SPACE then @keys.fire = set
       else listened = false
     if listened
