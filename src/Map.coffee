@@ -28,12 +28,15 @@ class Map
 
     # @stage = stage
 
+  search: (x1, y1, x2, y2) ->
+    @tree.search(x1, y1, x2, y2)
+
 
   tilesInView: (viewport, ship) ->
-    west = ship.x - viewport.width / 2
-    north = ship.y - viewport.height / 2
-    east = ship.x + viewport.width / 2
-    south = ship.y + viewport.height / 2
+    west = ship.x - viewport.width / 2 - @spriteWidth
+    north = ship.y - viewport.height / 2 - @spriteHeight
+    east = ship.x + viewport.width / 2 + @spriteWidth
+    south = ship.y + viewport.height / 2 + @spriteHeight
     # (tile for tile in @drawtiles when west - 16 <= tile.x <= east + 16 && north - 16 <= tile.y <= south + 16)
     @tree.search(west, north, east, south)
     # @drawtiles

@@ -35,22 +35,53 @@ class ZTree
     y2 |= 0
 
     [z1, z2] = [@zEncode(x1, y1), @zEncode(x2, y2)]
-    recurse = (node, minz, maxz, depth=0) =>
+    recurse = (node, minz, maxz) =>
       return [] unless node
       z = node.data.zcode
-      return recurse(node.right, minz, maxz, depth+1) if z < minz
-      return recurse(node.left, minz, maxz, depth+1) if z > maxz
+      return recurse(node.right, minz, maxz) if z < minz
+      return recurse(node.left, minz, maxz) if z > maxz
       # This can be simplified with fail-first
       if x1 <= node.data.x <= x2 && y1 <= node.data.y <= y2
         #console.log(["searchdepth:",depth])
-        recurse(node.left, minz, z, depth+1).
+        recurse(node.left, minz, z).
         concat([node.data]).
-        concat(recurse(node.right, z, maxz, depth+1))
+        concat(recurse(node.right, z, maxz))
       else
-        recurse(node.left, minz, @cleverLitmax(z1, z2, z), depth+1).
-        concat(recurse(node.right, @cleverBigmin(z1, z2, z), maxz, depth+1))
+        recurse(node.left, minz, @cleverLitmax(z1, z2, z)).
+        concat(recurse(node.right, @cleverBigmin(z1, z2, z), maxz))
 
     recurse(@tree._root, z1, z2)
+
+    # ITERATIVE WORK
+    #     [minz, maxz] = [@zEncode(x1, y1), @zEncode(x2, y2)]
+    # result = []
+    # node = @tree._root
+
+    # return result unless cur
+    # z = node.data.zcode
+    # if z < minz
+    #   node = node.right
+    #   continue
+    # if z > maxz
+    #   node = node.left
+
+    # # This can be simplified with fail-first
+    # if x1 <= node.data.x <= x2 && y1 <= node.data.y <= y2
+    #   result.push node.data
+      
+    #   # Go left, then right, but how?
+    #   cur = node.left
+    #   maxz = z
+    #   continue
+
+    #   cur = node.right
+    #   minz = z
+    #   continue
+    # else
+    #   recurse(node.left, minz, @cleverLitmax(z1, z2, z), depth+1).
+    #   concat(recurse(node.right, @cleverBigmin(z1, z2, z), maxz, depth+1))
+
+    # recurse(@tree._root, z1, z2)
 
   stupidLitmax: (x1, y1, x2, y2, minz, maxz, z) ->
     candidate = minz

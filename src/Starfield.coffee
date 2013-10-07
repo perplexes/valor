@@ -6,9 +6,9 @@ class Starfield
     @levels = [
       @generateTile(viewport, 2, [184,184,184]),
       @generateTile(viewport, 3, [96,96,96]),
-      # @generateTile(4, [52,52,52]),
-      # @generateTile(5, [30,30,30]),
-      # @generateTile(6, [19,19,19])
+      @generateTile(viewport, 4, [52,52,52]),
+      @generateTile(viewport, 5, [30,30,30]),
+      @generateTile(viewport, 6, [19,19,19])
     ]
 
     for level in @levels
@@ -41,7 +41,7 @@ class Starfield
       ctx.putImageData(id, x, y)
       [x, y]
 
-    texture = new PIXI.Texture.fromCanvas(buffer)
+    texture = PIXI.Texture.fromCanvas(buffer)
     sprite = new PIXI.TilingSprite(texture, viewport.width, viewport.height)
 
     {
@@ -72,8 +72,8 @@ class Starfield
         # ctx.save()
         # ctx.translate(tileX, tileY)
         # ctx.drawImage(level._buffer, tileX, tileY, @tilesize, @tilesize)
-        level._sprite.position.x = tileX
-        level._sprite.position.y = tileY
+        level._sprite.tilePosition.x = tileX
+        level._sprite.tilePosition.y = tileY
         # ctx.restore()
         pairs.push([col, row])
     [left, right, top, bottom]
