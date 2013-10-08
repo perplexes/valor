@@ -1,6 +1,6 @@
 # TODO: Use RenderTexture?
 class Starfield
-  constructor: (stage, viewport) ->
+  constructor: (viewport, stage) ->
     @tilesize = 1024 * 2
     @density = 32 * 4
     @levels = [

@@ -34,48 +34,16 @@ class Subspace
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
-    # TODO: Split into ship class
-    @shipTexture = PIXI.Texture.fromImage("assets/ship2.png")
-    @shipSprite = new PIXI.Sprite(@shipTexture)
-    @shipSprite.anchor.x = 0.5
-    @shipSprite.anchor.y = 0.5
-    @shipSprite.position.x = @width/2
-    @shipSprite.position.y = @height/2
-    @shipSprite.width = 170/4
-    @shipSprite.height = 166/4
-
-    @ship =
-      rawAngle: 0
-      angle: 0
-      # Near circles
-      # x: 513 * 16
-      # y: 397 * 16
-      # Safety
-      x: 8196
-      y: 12135
-      # Outside safety
-      # x: 8197
-      # y: 11986
-      dx: 0
-      dy: 0
-      w: 170/4
-      h: 166/4
-      maxSpeed: 500
-
-    @starfield = new Starfield(@stage, @viewport)
-
-    oReq = new XMLHttpRequest()
-    oReq.open "GET", "../arenas/trench9.lvl", true
-    oReq.responseType = "arraybuffer"
-    oReq.onload = (oEvent) =>
-      @map = new Map(oEvent, @stage)
+    @tree = new ZTree
+    @starfield = new Starfield(@viewport, @stage)
+    @map = new Map(@viewport, @tree, @stage)
+    @ship = new Ship(@viewport, @tree, @stage, {ship: 0, player: true})
+    @othership = new Ship(@viewport, @tree, @stage, {ship: 1, player: false})
+    @map.load =>
       @start()
-
-    oReq.send null
 
   start: ->
     lastTime = 0
-    @stage.addChild(@shipSprite)
 
     draw = (ms) =>
       delta = ms - lastTime
@@ -86,22 +54,24 @@ class Subspace
       # Events
       @handleKeys(delta)
 
+      # TODO: Do we need these tiles anywhere else?
       tiles = @map.tilesInView(@viewport, @ship)
 
       # Simulation
-      collisions = @simulateShip(delta, @ship, @map)
+      @ship.simulate(delta, @keys, @map)
 
       # Draw
       sfdraw = @starfield.draw(@viewport, @ship)
       @map.draw(@viewport, @ship, tiles)
-      @drawShip()
+      @ship.draw()
+      @othership.draw()
+
       # @drawDebugCollisions(@viewport, @ship, collisions, @onctx)
       if @keys.debugMessages
         @drawDebug({
           ship: @ship,
           stars: sfdraw,
           tiles: tiles.length,
-          # collisions: collisions.length,
           fps: 1/delta * 1000,
           keys: @keys
         })
@@ -109,9 +79,6 @@ class Subspace
       @renderer.render(@stage)
       requestAnimationFrame(draw)
     draw(lastTime)
-
-  drawShip: () ->
-    @shipSprite.rotation = @ship.angle
 
   drawDebug: (obj) ->
     inspect = (o, d=0, omitKey=false) ->
@@ -156,64 +123,6 @@ class Subspace
     )
     ctx.restore()
 
-  simulateShip: (delta, ship, map) ->
-    ship.x += ship.dx * (delta / 1000)
-    ship.y += ship.dy * (delta / 1000)
-    ship.x = ship.x.clamp(0, 1024 * 16)
-    ship.y = ship.y.clamp(0, 1024 * 16)
-
-    collisions = []
-    ship.safe = false
-    
-    ship.min =
-      x: ship.x - ship.w/2
-      y: ship.y - ship.h/2
-    ship.max =
-      x: ship.x + ship.w/2
-      y: ship.y + ship.h/2
-
-    minSafeX = minSafeY = Infinity
-    maxSafeX = maxSafeY = -1
-
-    x1 = ship.min.x - map.spriteWidth
-    y1 = ship.min.y - map.spriteHeight
-    x2 = ship.max.x + map.spriteWidth
-    y2 = ship.max.y + map.spriteHeight
-    for tile in map.search(x1, y1, x2, y2)
-      if Physics.collision(ship, tile)
-        collisions.push tile
-        if tile.index == 169
-          minSafeX = Math.min(minSafeX, tile.min.x)
-          minSafeY = Math.min(minSafeY, tile.min.y)
-          maxSafeX = Math.max(maxSafeX, tile.max.x)
-          maxSafeY = Math.max(maxSafeY, tile.max.y)
-
-        # collide = tile.index < 127
-        collide = !@keys.noclip && tile.index != 169
-
-        if collide && m = Physics.overlap(ship, tile)
-          if resolution = Physics.resolve(ship, tile, m)
-            ship.x += resolution.a[0]
-            ship.y += resolution.a[1]
-            ship.dx += resolution.a[2]
-            ship.dy += resolution.a[3]
-
-    # Ship must be surrounded by safezone to be considered safe
-    @ship.safe = minSafeX <= ship.min.x &&
-                 minSafeY <= ship.min.y &&
-                 maxSafeX >= ship.max.x &&
-                 maxSafeY >= ship.max.y
-
-    # if collisions.length > 0
-    #   for tile in collisions
-
-    #       # Skip b resolution for now - tiles are immovable
-
-    ship.tx = ship.x / 16
-    ship.ty = ship.y / 16
-
-    collisions
-
   keyListen: (e, set = true) ->
     listened = true
     switch e.keyCode
@@ -236,6 +145,7 @@ class Subspace
       @keys.debugger = false
       debugger
 
+    # TODO: Have ship listen for this event
     x = 0
     x -= 1 if @keys.left
     x += 1 if @keys.right 
@@ -244,11 +154,10 @@ class Subspace
     y += 1 if @keys.up
     y -= 1 if @keys.down
 
-    # Should only be in 2PI/16 increments
-    # rawAngle is between 0 and 1 in 16ths
+    # Should only be in increments of how many textures there are.
     @ship.rawAngle += (0.7) * (delta / 1000) * x
-
-    @ship.angle = (Math.floor(@ship.rawAngle * 32) / 32) * Math.PI * 2
+    # @ship.angle = Math.round((@ship.rawAngle * 40) / (Math.PI * 2))
+    @ship.angle = (Math.round(@ship.rawAngle * 40) / 40) * Math.PI * 2
 
     @ship.dx += 400 * Math.sin(@ship.angle) * (delta / 1000) * y
     @ship.dy -= 400 * Math.cos(@ship.angle) * (delta / 1000) * y

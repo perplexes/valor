@@ -7,12 +7,14 @@
 - [x] move star field
 - [x] draw map
 - [ ] move submodules out, just have the files. (or find on npm)
-- [ ] (rb tree, zorder, impl query)
+- [x] rb tree, zorder, impl query
 -- divide tiles into z-regions to keep overhead down?
 - [ ] maybe impl quadtree too to perf test
 - [x] coll detection
+- [ ] improve collision resolution (sometimes bounce is just way too much)
 - [ ] flesh out a spec for the game
-- [ ] animation sprites
+- [x] animation sprites, ship first
+- [ ] use super pixels/clamp rendering to pixels not sub pixels
 - [ ] other map tiles (space station, asteroid, animated asteroid)
 - [s] tile metadata (colliding/no) [don't know where to get it - part of server settings?]
 - [x] safe zone stopping
