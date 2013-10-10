@@ -12,7 +12,9 @@ Number.prototype.clamp = function(min, max) {
 
 class Subspace
   init: ->
+    window.subspace = @
     window.stage = @stage = new PIXI.Stage(0, false)
+
     @width = document.body.clientWidth
     @height = window.innerHeight
     @renderer = PIXI.autoDetectRenderer(@width, @height, document.createElement( 'canvas' ), false, false)
@@ -24,10 +26,6 @@ class Subspace
     console.log('init')
     @debug = document.getElementById('debug')
 
-    @viewport =
-      width: @width
-      height: @height
-
     @tiles = []
     @keys = {debugMessages: false} # old -> new
 
@@ -35,9 +33,13 @@ class Subspace
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
     @tree = new ZTree
+    @viewport = new Viewport(@width, @height)
+
     @starfield = new Starfield(@viewport, @stage)
-    @map = new Map(@viewport, @tree, @stage)
+    @map = new Map(@tree, @stage)
     @ship = new Ship(@viewport, @tree, @stage, {ship: 0, player: true})
+    @viewport.pos = @ship.pos
+
     @othership = new Ship(@viewport, @tree, @stage, {ship: 1, player: false})
     @map.load =>
       @start()
@@ -50,28 +52,31 @@ class Subspace
       # We stopped the game, just assume a frame
       delta = 16 if delta > 1000
       lastTime = ms
+      delta_s = delta / 1000
 
       # Events
-      @handleKeys(delta)
+      @handleKeys(delta_s)
 
-      # TODO: Do we need these tiles anywhere else?
-      tiles = @map.tilesInView(@viewport, @ship)
+      @ship.onKeys(@keys, delta_s)
 
       # Simulation
-      @ship.simulate(delta, @keys, @map)
+      @ship.simulate(@keys, delta_s)
 
-      # Draw
-      sfdraw = @starfield.draw(@viewport, @ship)
-      @map.draw(@viewport, @ship, tiles)
-      @ship.draw()
-      @othership.draw()
+      # Depends on @ship's position
+      vExtent = @viewport.extent()
+
+      # Update screen positions
+      @starfield.update(@viewport)
+      @map.update(vExtent)
+      # TODO: loop through movable entities
+      @ship.update()
+      @othership.update()
 
       # @drawDebugCollisions(@viewport, @ship, collisions, @onctx)
       if @keys.debugMessages
         @drawDebug({
-          ship: @ship,
-          stars: sfdraw,
-          tiles: tiles.length,
+          ship: [@ship.pos.x, @ship.pos.y],
+          shipVel: [@ship.vel.x, @ship.vel.y],
           fps: 1/delta * 1000,
           keys: @keys
         })
@@ -80,6 +85,7 @@ class Subspace
       requestAnimationFrame(draw)
     draw(lastTime)
 
+  # TODO: Use webgl text instead of element, faster?
   drawDebug: (obj) ->
     inspect = (o, d=0, omitKey=false) ->
       return ['...'] if d >= 5
@@ -100,6 +106,7 @@ class Subspace
 
     $(@debug).html(inspect(obj).join('<br/>'))
 
+  # TODO: Use pixi
   drawDebugCollisions: (viewport, ship, tiles, ctx) ->
     origin =
       x: ship.x - viewport.width / 2
@@ -123,6 +130,7 @@ class Subspace
     )
     ctx.restore()
 
+  # TODO: emit events
   keyListen: (e, set = true) ->
     listened = true
     switch e.keyCode
@@ -144,31 +152,6 @@ class Subspace
     if @keys.debugger
       @keys.debugger = false
       debugger
-
-    # TODO: Have ship listen for this event
-    x = 0
-    x -= 1 if @keys.left
-    x += 1 if @keys.right 
-
-    y = 0
-    y += 1 if @keys.up
-    y -= 1 if @keys.down
-
-    # Should only be in increments of how many textures there are.
-    @ship.rawAngle += (0.7) * (delta / 1000) * x
-    # @ship.angle = Math.round((@ship.rawAngle * 40) / (Math.PI * 2))
-    @ship.angle = (Math.round(@ship.rawAngle * 40) / 40) * Math.PI * 2
-
-    @ship.dx += 400 * Math.sin(@ship.angle) * (delta / 1000) * y
-    @ship.dy -= 400 * Math.cos(@ship.angle) * (delta / 1000) * y
-    @ship.dx = @ship.dx.clamp(-@ship.maxSpeed, @ship.maxSpeed)
-    @ship.dy = @ship.dy.clamp(-@ship.maxSpeed, @ship.maxSpeed)
-
-    if @keys.fullstop
-      @ship.dx = @ship.dy = 0
-
-    if @keys.fire && @ship.safe
-      @ship.dx = @ship.dy = 0
 
 if (typeof KeyEvent == "undefined")
   KeyEvent =

@@ -42,5 +42,41 @@
 - [ ] thor's hammer
 
 # Research
-- [ ] pixi.js
+- [x] pixi.js
 - [ ] JS rbtree implementations
+
+# Ideas
+Different trees for static/dynamic objects
+Look over GEA for module ideas
+Movable list, collidable list
+in movables, they must specify things they can collide with
+maybe collision agent/target?
+Ship (movable):
+  [Tile, Bullet, Bomb, Mine]
+
+Tile (collidable)
+
+Bullet (movable, collidable):
+  [Ship, Tile]
+
+so then collision goes:
+movables.each a
+  movable.near.collidable.each b
+    if collision? a, b
+      resolve a, b
+
+then what about shields? do those bounce bullets?
+
+that's only directly touching, there are also aoe - like repel, which would have a different search/collide parameter (radius?)
+
+should it be up to the movable class to deal with resolution?
+ghost ship would be like ship but shouldn't be in the collision step (it's "not movable")
+are there better terms than these?
+
+All game objects (entity?) should have:
+x, y (center)
+w, h
+hw, hh
+so that we can calculate bounding boxes
+we can trim two calculations by moving to UL x,y (-hw, -hh, +hw, +hh) -> (+w, +h)
+but collision is from the center of things

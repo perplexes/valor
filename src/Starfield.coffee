@@ -42,7 +42,7 @@ class Starfield
       [x, y]
 
     texture = PIXI.Texture.fromCanvas(buffer)
-    sprite = new PIXI.TilingSprite(texture, viewport.width, viewport.height)
+    sprite = new PIXI.TilingSprite(texture, viewport.w, viewport.h)
 
     {
       _texture: texture,
@@ -52,28 +52,23 @@ class Starfield
       ratio: ratio
     }
 
-  draw: (viewport, ship) ->
-    @drawLevel(viewport, ship, level) for level in @levels
+  update: (viewport) ->
+    @updateLevel(viewport, level) for level in @levels
 
-  drawLevel: (viewport, ship, level) ->
-    left = Math.floor ((ship.x / level.ratio) - (viewport.width / 2)) / @tilesize 
-    top = Math.floor ((ship.y / level.ratio) - (viewport.height / 2)) / @tilesize 
-    right = Math.ceil ((ship.x / level.ratio) + (viewport.width / 2)) / @tilesize 
-    bottom = Math.ceil ((ship.y / level.ratio) + (viewport.height / 2)) / @tilesize
+  # How to take ship out?
+  updateLevel: (viewport, level) ->
+    x = viewport.pos.x / level.ratio
+    y = viewport.pos.y / level.ratio
 
-    x = -ship.x / level.ratio
-    y = -ship.y / level.ratio
+    left = Math.floor (x - viewport.hw) / @tilesize 
+    top = Math.floor (y - viewport.hh) / @tilesize 
+    right = Math.ceil (x + viewport.hw) / @tilesize 
+    bottom = Math.ceil (y + viewport.hh) / @tilesize
 
-    pairs = []
+    # pairs = []
     for col in [left..right]
       for row in [top..bottom]
-        tileX = col * @tilesize + x
-        tileY = row * @tilesize + y
-        # ctx.save()
-        # ctx.translate(tileX, tileY)
-        # ctx.drawImage(level._buffer, tileX, tileY, @tilesize, @tilesize)
-        level._sprite.tilePosition.x = tileX
-        level._sprite.tilePosition.y = tileY
-        # ctx.restore()
-        pairs.push([col, row])
-    [left, right, top, bottom]
+        level._sprite.tilePosition.x = col * @tilesize - x
+        level._sprite.tilePosition.y = row * @tilesize - y
+        # pairs.push([col, row])
+    # [left, right, top, bottom]

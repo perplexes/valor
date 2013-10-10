@@ -1,14 +1,14 @@
 class Map
-  constructor: (viewport, tree, stage) ->
-    @spriteWidth = @spriteHeight = 16 # in pixels
-    @spriteMapWidth = 19 # in tiles
-    @spriteMapHeight = 10 # in tiles
-    @mapWidth = @mapHeight = 1024 # in tiles
-    @mapWidthP = @mapHeightP = 1024 * @spriteWidth # in pixels
+  spriteWidth: 16
+  spriteHeight: 16 # in pixels
+  mapWidth: 1024 # in tiles
+  mapHeight: 1024
+  mapWidthP: 1024 * @spriteWidth # in pixels
+  mapHeightP: 1024 * @spriteHeight # in pixels
+  container: new PIXI.DisplayObjectContainer()
 
+  constructor: (tree, stage) ->
     @tree = tree
-    
-    @container = new PIXI.DisplayObjectContainer()
     stage.addChild(@container)
 
   load: (callback) ->
@@ -22,20 +22,14 @@ class Map
 
     oReq.send null
 
-  tilesInView: (viewport, ship) ->
-    west = ship.x - viewport.width / 2 - @spriteWidth
-    north = ship.y - viewport.height / 2 - @spriteHeight
-    east = ship.x + viewport.width / 2 + @spriteWidth
-    south = ship.y + viewport.height / 2 + @spriteHeight
-    # (tile for tile in @drawtiles when west - 16 <= tile.x <= east + 16 && north - 16 <= tile.y <= south + 16)
-    @tree.search(west, north, east, south)
-    # @drawtiles
+  tilesInView: (extent) ->
+    @tree.searchExpand(extent, @spriteWidth, @spriteHeight)
 
   # Mark & sweep :P
   # TODO: removeChild seems to do a lot of work - profile?
-  draw: (viewport, ship, tiles) ->
-    for tile in tiles
-      @drawTile(viewport, ship, tile)
+  update: (extent) ->
+    for tile in @tilesInView(extent)
+      @drawTile(extent, tile)
 
     for tile in @container.children
       if tile._contained && !tile._drawn
@@ -43,27 +37,18 @@ class Map
         tile._contained = false
       tile._drawn = false
 
-  drawTile: (viewport, ship, tile) ->
+  drawTile: (extent, tile) ->
     return unless tile._sprite
     tile._drawn = true
     unless tile._contained
       @container.addChild(tile._sprite)
       tile._contained = true 
 
-    # TODO precalc/share
-    origin =
-      x: ship.x - viewport.width / 2
-      y: ship.y - viewport.height / 2
+    tile._sprite.position.x = tile.pos.x - extent.west - 8
+    tile._sprite.position.y = tile.pos.y - extent.north - 8
 
-    # Viewport Map x in Pixels
-    vpmxp = tile.x - origin.x - 8
-    vpmyp = tile.y - origin.y - 8
-
-    tile._sprite.position.x = vpmxp
-    tile._sprite.position.y = vpmyp
-
-    info = {vpmxp: vpmxp, vpmyp: vpmyp, tile: tile.index, x: tile.x, y: tile.y}
-    info
+    # info = {vpmxp: vpmxp, vpmyp: vpmyp, tile: tile.index, x: tile.x, y: tile.y}
+    # info
 
   parseLevel: (oEvent, tree) ->
     arrayBuffer = oEvent.target.response # Note: not oReq.responseText

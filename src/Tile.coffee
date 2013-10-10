@@ -1,16 +1,8 @@
-class Tile
+class Tile extends Entity
+  spriteMapWidth: 19 # in tiles
+  spriteMapHeight: 10 # in tiles
   tx: 0
   ty: 0
-  x: 0
-  y: 0
-  min:
-    x: 0
-    y: 0
-  max:
-    x: 0
-    y: 0
-  w: 16
-  h: 16
   index: 0
   _sprite: null # PIXI.Sprite
   meta: []
@@ -19,23 +11,14 @@ class Tile
 
   mapStruct = restruct.int32lu("struct")
   constructor: (tx, ty, index, texture, meta) ->
+    super(new Vector2d(tx * 16 + 8, ty * 16 + 8), null, 16, 16)
+
     @tx = tx
     @ty = ty
     @index = index
     @texture = texture
     @meta = meta
 
-    # TODO: Get coordinates straight.
-    # Here x/y are center, but we draw them UL
-    # Maybe cause of physics bugs?
-    @x = tx * 16 + 8
-    @y = ty * 16 + 8
-    @min =
-      x: x - 8
-      y: y - 8
-    @max =
-      x: x + 8
-      y: y + 8
     @_sprite = new PIXI.Sprite(texture) if texture
 
   @fromFile: (array, offset, spriteSheet, tree) ->
@@ -54,7 +37,7 @@ class Tile
 
     i = offset
     while i < array.length
-      bytes = a.subarray(i, i + 4)
+      bytes = array.subarray(i, i + 4)
       struct = mapStruct.unpack(bytes).struct
       tx = struct & 0x03FF
       ty = (struct >>> 12) & 0x03FF
@@ -62,6 +45,7 @@ class Tile
       index = (struct >>> 24) - 1
       texture = textures[index]
       meta = [i, bytes, struct, struct.toString(2)]
+      
       tile = new Tile(tx, ty, index, texture, meta)
       tiles.push tile
       # TODO: Tell, don't ask here? Callback?

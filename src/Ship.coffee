@@ -1,3 +1,4 @@
+# Use a mod that can deal with negative numbers
 `Math.mod = function(a,b) {
     var r = a % b;
     var m = a === 0 ? 0 : (b > 0 ? (a >= 0 ? r : r+b) : -Math.mod(-a,-b));
@@ -6,31 +7,38 @@
   }
 `
 
-class Ship
+class Ship extends Entity
   rawAngle: 0
   angle: 0
   # Near circles
   # x: 513 * 16
   # y: 397 * 16
   # Safety
-  x: 8196
-  y: 12135
+  # x: 8196
+  # y: 12135
   # Outside safety
   # x: 8197
   # y: 11986
   # Weird text bug
   # x: 5614
   # y: 743
-  dx: 0
-  dy: 0
-  w: 32
-  h: 32
   safe: false
-
   maxSpeed: 500
+  invmass: 1
+
   constructor: (viewport, tree, stage, options) ->
+    @posClamp = new Vector2d(0, 1024 * 16)
+    @velClamp = new Vector2d(-@maxSpeed, @maxSpeed)
+
+    super(
+      new Vector2d(8196, 12135), #pos
+      new Vector2d(0, 0), #vel
+      32, 32 # w,h
+    )
+
     @options = options
     @_tree = tree
+
     # TODO: Make asset jsons for this and other ships
     base = PIXI.BaseTexture.fromImage("assets/shared/graphics/ship#{options.ship}.png")
     @_textures = []
@@ -39,79 +47,82 @@ class Ship
         @_textures.push(new PIXI.Texture(base, {x: x * 36 + 2, y: y * 36 + 2, width: 32, height: 32}))
 
     @_movie = new PIXI.MovieClip(@_textures)
-    @_movie.width = 32
-    @_movie.height = 32
+    @_movie.width = @w
+    @_movie.height = @h
     if options.player
       @_movie.anchor.x = 0.5
       @_movie.anchor.y = 0.5
-      @_movie.position.x = viewport.width / 2
-      @_movie.position.y = viewport.height / 2
+      @_movie.position.x = viewport.hw
+      @_movie.position.y = viewport.hh
       stage.addChild(@_movie)
     else
       tree.insert(@)
 
-  draw: ->
-    # Add/remove from tree?
-    # neagtive starts at 39, 38, etc...
+  update: ->
     texture = Math.round((@angle * @_textures.length) / (2 * Math.PI))
     i = Math.mod(texture, @_textures.length)
     @_movie.gotoAndStop(i)
     
-  simulate: (delta, keys, map) ->
-    collisions = []
+  simulate: (keys, delta) ->
+    super(delta)
 
-    @x += @dx * (delta / 1000)
-    @y += @dy * (delta / 1000)
-    @x = @x.clamp(0, 1024 * 16)
-    @y = @y.clamp(0, 1024 * 16)
-    
-    @min =
-      x: @x - @w/2
-      y: @y - @h/2
-    @max =
-      x: @x + @w/2
-      y: @y + @h/2
+    @vel.clamp(@velClamp, @velClamp)
+    @pos.clamp(@posClamp, @posClamp)
 
     minSafeX = minSafeY = Infinity
     maxSafeX = maxSafeY = -1
 
-    x1 = @min.x - map.spriteWidth
-    y1 = @min.y - map.spriteHeight
-    x2 = @max.x + map.spriteWidth
-    y2 = @max.y + map.spriteHeight
+    # TODO: Split into collision engine
+    # Only go through collidable pairs
+    # i.e. ship collide bullet, ship collide tile,
+    # but not tile collide tile and not ship collide ship
+    # TODO: gah the below needs pos & extent!!
+    me = @extent()
+    for object in @_tree.searchExpand(me, 0)
+      oe = object.extent()
 
-    for object in @_tree.search(x1, y1, x2, y2)
-      if Physics.collision(@, object)
-        collisions.push object
-        if object.index == 169
-          minSafeX = Math.min(minSafeX, tile.min.x)
-          minSafeY = Math.min(minSafeY, tile.min.y)
-          maxSafeX = Math.max(maxSafeX, tile.max.x)
-          maxSafeY = Math.max(maxSafeY, tile.max.y)
+      if Physics.collision(me, oe)
+        if object.constructor == Tile && object.index == 169
+          minSafeX = Math.min(minSafeX, oe.west)
+          minSafeY = Math.min(minSafeY, oe.north)
+          maxSafeX = Math.max(maxSafeX, oe.east)
+          maxSafeY = Math.max(maxSafeY, oe.south)
 
-        # TODO: Where to store collision tiles
-        # collide = tile.index < 127
-        collide = !keys.noclip && tile.index != 169
+        # TODO: Where to store collision objects
+        # collide = object.index < 127
+        collide = !keys.noclip && object.constructor == Tile && object.index != 169
 
-        if collide && m = Physics.overlap(@, tile)
-          if resolution = Physics.resolve(@, tile, m)
-            @x += resolution.a[0]
-            @y += resolution.a[1]
-            @dx += resolution.a[2]
-            @dy += resolution.a[3]
+        if collide then Physics.resolve(@, object)
 
     # Ship must be surrounded by safezone to be considered safe
-    @safe = minSafeX <= @min.x &&
-             minSafeY <= @min.y &&
-             maxSafeX >= @max.x &&
-             maxSafeY >= @max.y
+    @safe = minSafeX <= me.west &&
+             minSafeY <= me.north &&
+             maxSafeX >= me.east &&
+             maxSafeY >= me.south
 
-    # if collisions.length > 0
-    #   for tile in collisions
+    @tx = @pos.x / 16
+    @ty = @pos.y / 16
 
-    #       # Skip b resolution for now - tiles are immovable
+  onKeys: (keys, delta) ->
+    # Rotation
+    x = 0
+    x -= 1 if keys.left
+    x += 1 if keys.right 
 
-    @tx = @x / 16
-    @ty = @y / 16
+    # Thrust
+    y = 0
+    y += 1 if keys.up
+    y -= 1 if keys.down
 
-    collisions
+    # In increments of how many textures there are.
+    @rawAngle += 0.7 * delta * x
+    @angle = (Math.round(@rawAngle * 40) / 40) * Math.PI * 2
+
+    @vel.addXY(
+      400 * Math.sin(@angle) * delta * y,
+      -400 * Math.cos(@angle) * delta * y)
+
+    # TODO: Disable in production
+    @vel.clear() if keys.fullstop
+
+    @vel.clear() if keys.fire && @safe

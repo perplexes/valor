@@ -28,6 +28,12 @@ class ZTree
 
     return x | (y << 1)
 
+  searchExpand: (extent, x, y) ->
+    @search(extent.west - x, extent.north - y, extent.east + x, extent.south + y)
+
+  searchExtent: (extent) ->
+    @search(extent.west, extent.north, extent.east, extent.south)
+
   search: (x1, y1, x2, y2) ->
     x1 |= 0
     y1 |= 0
