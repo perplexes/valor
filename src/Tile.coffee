@@ -1,6 +1,6 @@
 class Tile extends Entity
-  spriteMapWidth: 19 # in tiles
-  spriteMapHeight: 10 # in tiles
+  @spriteMapWidth = 19 # in tiles
+  @spriteMapHeight = 10 # in tiles
   tx: 0
   ty: 0
   index: 0

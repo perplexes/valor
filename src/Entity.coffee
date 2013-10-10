@@ -7,8 +7,9 @@ class Entity
   h: 0
   hw: 0
   hh: 0
+  zcode: 0
   invmass: 0
-  extent:
+  _extent:
     north: 0
     east: 0
     west: 0
@@ -29,8 +30,8 @@ class Entity
 
   # TODO: updates to pos/w/h updates extent
   extent: ->
-    @extent.west = @pos.x - @hw
-    @extent.north = @pos.y - @hh
-    @extent.east = @pos.x + @hw
-    @extent.south = @pos.y + @hh
-    @extent
+    @_extent.west = @pos.x - @hw
+    @_extent.north = @pos.y - @hh
+    @_extent.east = @pos.x + @hw
+    @_extent.south = @pos.y + @hh
+    @_extent

@@ -7,9 +7,9 @@ class ZTree
     )
 
   # Node must have x and y integers
-  insert: (data) ->
-    data.zcode = @zEncode(data.x|0, data.y|0)
-    @tree.insert(data)
+  insert: (entity) ->
+    entity.zcode = @zEncode(entity.pos.x|0, entity.pos.y|0)
+    @tree.insert(entity)
 
   # Interleave lower 16 bits of x and y, so the bits of x
   # are in the even positions and bits from y in the odd
@@ -47,7 +47,7 @@ class ZTree
       return recurse(node.right, minz, maxz) if z < minz
       return recurse(node.left, minz, maxz) if z > maxz
       # This can be simplified with fail-first
-      if x1 <= node.data.x <= x2 && y1 <= node.data.y <= y2
+      if x1 <= node.data.pos.x <= x2 && y1 <= node.data.pos.y <= y2
         #console.log(["searchdepth:",depth])
         recurse(node.left, minz, z).
         concat([node.data]).
