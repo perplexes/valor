@@ -65,6 +65,7 @@ class Physics
   # }
   rv = new Vector2d(0,0)
   impulse = new Vector2d(0,0)
+  friction = 0.8
   @resolve: (a, b) ->
     return null unless m = @overlap(a, b)
 
@@ -85,8 +86,15 @@ class Physics
     impulse.clear()
     impulse.add(m.normal).scaleXY(j, j)
 
-    a.vel.subXY(a.invmass * impulse.x, a.invmass * impulse.y)
-    b.vel.addXY(b.invmass * impulse.x, b.invmass * impulse.y)
+    a.vel
+      .scaleXY(friction, friction)
+      .subXY(a.invmass * impulse.x, a.invmass * impulse.y)
+
+    b.vel
+      .scaleXY(friction, friction)
+      .addXY(b.invmass * impulse.x, b.invmass * impulse.y)
+
+    # TODO: special case for stopping on a wall?
 
     # LERP for float drift
     # TODO: Switch to exact integers
