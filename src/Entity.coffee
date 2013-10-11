@@ -9,11 +9,6 @@ class Entity
   hh: 0
   zcode: 0
   invmass: 0
-  _extent:
-    north: 0
-    east: 0
-    west: 0
-    south: 0
 
   constructor: (pos, vel, w, h) ->
     @pos = pos
@@ -22,6 +17,11 @@ class Entity
     @h = h
     @hw = w/2
     @hh = h/2
+    @_extent =
+      north: 0
+      east: 0
+      west: 0
+      south: 0
 
   simulate: (delta) ->
     @scaledV.clear()

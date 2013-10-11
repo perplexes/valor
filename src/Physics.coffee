@@ -1,8 +1,8 @@
 class Physics
   @collision: (a, b) ->
     # Exit with no intersection if found separated along an axis
-    return false if a.max.x < b.min.x || a.min.x > b.max.x
-    return false if a.max.y < b.min.y || a.min.y > b.max.y
+    return false if a.east < b.west || a.west > b.east
+    return false if a.south < b.north || a.north > b.south
    
     # No separating axis found, therefore there is at least one overlapping axis
     true
@@ -17,7 +17,7 @@ class Physics
 
   normal = new Vector2d(0, 0)
   manifold = 
-    normal: @normal
+    normal: normal
     penetration: 0
 
   @overlap: (a, b) ->
@@ -66,7 +66,7 @@ class Physics
   rv = new Vector2d(0,0)
   impulse = new Vector2d(0,0)
   @resolve: (a, b) ->
-    return null unless m = overlap(a, b)
+    return null unless m = @overlap(a, b)
 
     rv.clear()
     rv.add(b.vel).sub(a.vel)
@@ -85,8 +85,8 @@ class Physics
     impulse.clear()
     impulse.add(m.normal).scaleXY(j, j)
 
-    a.vel.sub(a.invmass * impulse.x, a.invmass * impulse.y)
-    b.vel.add(b.invmass * impulse.x, b.invmass * impulse.y)
+    a.vel.subXY(a.invmass * impulse.x, a.invmass * impulse.y)
+    b.vel.addXY(b.invmass * impulse.x, b.invmass * impulse.y)
 
     # LERP for float drift
     # TODO: Switch to exact integers
@@ -94,8 +94,8 @@ class Physics
     slop = 0.01
     c = Math.max(m.penetration - slop, 0)# * percent
 
-    a.pos.sub(a.invmass * c * m.normal.x, a.invmass * c * m.normal.y)
-    b.pos.add(b.invmass * c * m.normal.x, b.invmass * c * m.normal.y)
+    a.pos.subXY(a.invmass * c * m.normal.x, a.invmass * c * m.normal.y)
+    b.pos.addXY(b.invmass * c * m.normal.x, b.invmass * c * m.normal.y)
 
       # Combines many surfaces into one surface
   # Only combine ones that share a plane
@@ -103,22 +103,22 @@ class Physics
   # combine: (as) ->
   #   surface =
   #     min:
-  #       x: as[0].min.x
-  #       y: as[0].min.y
+  #       x: as[0].west
+  #       y: as[0].north
   #     max:
-  #       x: as[0].max.x
-  #       y: as[0].max.y
+  #       x: as[0].east
+  #       y: as[0].south
 
   #   for a in as
-  #     if a.min.x < surface.min.x
-  #       surface.min.x = a.min.x
-  #     if a.min.y < surface.min.y
-  #       surface.min.y = a.min.y
-  #     if a.max.x > surface.max.x
-  #       surface.max.x = a.max.x
-  #     if a.max.y > surface.max.y
-  #       surface.max.y = a.max.y
+  #     if a.west < surface.west
+  #       surface.west = a.west
+  #     if a.north < surface.north
+  #       surface.north = a.north
+  #     if a.east > surface.east
+  #       surface.east = a.east
+  #     if a.south > surface.south
+  #       surface.south = a.south
 
-  #   surface.x = surface.min.x + ((surface.max.x - surface.min.x) / 2)
-  #   surface.y = surface.min.y + ((surface.max.y - surface.min.y) / 2)
+  #   surface.x = surface.west + ((surface.east - surface.west) / 2)
+  #   surface.y = surface.north + ((surface.south - surface.north) / 2)
   #   surface

@@ -31,7 +31,8 @@ class Ship extends Entity
     @velClamp = new Vector2d(-@maxSpeed, @maxSpeed)
 
     super(
-      new Vector2d(8196, 12135), #pos
+      # new Vector2d(8196, 12135), #pos
+      new Vector2d(8136, 11784),
       new Vector2d(0, 0), #vel
       32, 32 # w,h
     )
@@ -64,11 +65,6 @@ class Ship extends Entity
     @_movie.gotoAndStop(i)
     
   simulate: (keys, delta) ->
-    super(delta)
-
-    @vel.clamp(@velClamp, @velClamp)
-    @pos.clamp(@posClamp, @posClamp)
-
     minSafeX = minSafeY = Infinity
     maxSafeX = maxSafeY = -1
 
@@ -78,11 +74,10 @@ class Ship extends Entity
     # but not tile collide tile and not ship collide ship
     # TODO: gah the below needs pos & extent!!
     me = @extent()
-    for object in @_tree.searchExpand(me, 0)
+    for object in @_tree.searchExpand(me, 8, 8)
       oe = object.extent()
-
       if Physics.collision(me, oe)
-        if object.constructor == Tile && object.index == 169
+        if object.constructor == Tile && object.index == 170
           minSafeX = Math.min(minSafeX, oe.west)
           minSafeY = Math.min(minSafeY, oe.north)
           maxSafeX = Math.max(maxSafeX, oe.east)
@@ -90,9 +85,12 @@ class Ship extends Entity
 
         # TODO: Where to store collision objects
         # collide = object.index < 127
-        collide = !keys.noclip && object.constructor == Tile && object.index != 169
+        collide = !keys.noclip && object.constructor == Tile && object.index != 170
 
-        if collide then Physics.resolve(@, object)
+        if collide
+          Physics.resolve(@, object)
+
+    @pos.clamp(@posClamp, @posClamp)
 
     # Ship must be surrounded by safezone to be considered safe
     @safe = minSafeX <= me.west &&
@@ -100,6 +98,7 @@ class Ship extends Entity
              maxSafeX >= me.east &&
              maxSafeY >= me.south
 
+    super(delta)
     @tx = @pos.x / 16
     @ty = @pos.y / 16
 
@@ -121,6 +120,8 @@ class Ship extends Entity
     @vel.addXY(
       400 * Math.sin(@angle) * delta * y,
       -400 * Math.cos(@angle) * delta * y)
+
+    @vel.clamp(@velClamp, @velClamp)
 
     # TODO: Disable in production
     @vel.clear() if keys.fullstop

@@ -29,26 +29,13 @@ class Map
   # TODO: removeChild seems to do a lot of work - profile?
   update: (extent) ->
     for tile in @tilesInView(extent)
-      @drawTile(extent, tile)
+      tile.update(extent, @container)
 
     for tile in @container.children
       if tile._contained && !tile._drawn
         @container.removeChild(tile._sprite)
         tile._contained = false
       tile._drawn = false
-
-  drawTile: (extent, tile) ->
-    return unless tile._sprite
-    tile._drawn = true
-    unless tile._contained
-      @container.addChild(tile._sprite)
-      tile._contained = true 
-
-    tile._sprite.position.x = tile.pos.x - extent.west - 8
-    tile._sprite.position.y = tile.pos.y - extent.north - 8
-
-    # info = {vpmxp: vpmxp, vpmyp: vpmyp, tile: tile.index, x: tile.x, y: tile.y}
-    # info
 
   parseLevel: (oEvent, tree) ->
     arrayBuffer = oEvent.target.response # Note: not oReq.responseText

@@ -18,8 +18,22 @@ class Tile extends Entity
     @index = index
     @texture = texture
     @meta = meta
+    @textent = @extent()
 
-    @_sprite = new PIXI.Sprite(texture) if texture
+    if texture
+      @_sprite = new PIXI.Sprite(texture) 
+      @_sprite.anchor.x = 0.5
+      @_sprite.anchor.y = 0.5
+
+  update: (extent, container) ->
+    return unless @_sprite
+    @_drawn = true
+    unless @_contained
+      container.addChild(@_sprite)
+      @_contained = true 
+
+    @_sprite.position.x = @pos.x - extent.west
+    @_sprite.position.y = @pos.y - extent.north
 
   @fromFile: (array, offset, spriteSheet, tree) ->
     tiles = []
