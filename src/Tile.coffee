@@ -10,7 +10,7 @@ class Tile extends Entity
   _drawn: false
 
   mapStruct = restruct.int32lu("struct")
-  constructor: (tx, ty, index, texture, meta) ->
+  constructor: (tx, ty, index, texture, meta, map) ->
     super(new Vector2d(tx * 16 + 8, ty * 16 + 8), null, 16, 16)
 
     @tx = tx
@@ -18,24 +18,24 @@ class Tile extends Entity
     @index = index
     @texture = texture
     @meta = meta
-    @textent = @extent()
+    @map = map
 
     if texture
       @_sprite = new PIXI.Sprite(texture) 
       @_sprite.anchor.x = 0.5
       @_sprite.anchor.y = 0.5
 
-  update: (extent, container) ->
+  update: ->
     return unless @_sprite
     @_drawn = true
     unless @_contained
-      container.addChild(@_sprite)
+      @map.container.addChild(@_sprite)
       @_contained = true 
 
-    @_sprite.position.x = @pos.x - extent.west
-    @_sprite.position.y = @pos.y - extent.north
+    @_sprite.position.x = @pos.x - @map.extent.west
+    @_sprite.position.y = @pos.y - @map.extent.north
 
-  @fromFile: (array, offset, spriteSheet, tree) ->
+  @fromFile: (array, offset, spriteSheet, map) ->
     tiles = []
     base = new PIXI.BaseTexture(spriteSheet)
 
@@ -60,8 +60,8 @@ class Tile extends Entity
       texture = textures[index]
       meta = [i, bytes, struct, struct.toString(2)]
       
-      tile = new Tile(tx, ty, index, texture, meta)
+      tile = new Tile(tx, ty, index, texture, meta, map)
       tiles.push tile
       # TODO: Tell, don't ask here? Callback?
-      tree.insert tile
+      map.tree.insert tile
       i += 4

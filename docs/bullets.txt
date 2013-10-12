@@ -1,0 +1,11 @@
+bullets
+so a ship has a gun
+guns fire bullets
+bullets are entities that collide with walls (possibly bouncing or being absorbed)
+when they collide with a ship, they deal damage to it
+if their energy drops below zero, they die.
+bullets cannot harm your own ship or your teammates, but bombs nearby can kill your teammates and drain your energy bt not kill you.
+
+guns have three levels, 1, 2, 3, in increasing damage amount. these correspond to the bullet colors red yellow blue. guns  can be "multi" meaning they shoot 3 bullets at a time. bullets can bounce with an upgrade.
+
+there is a bullet sprite sheet

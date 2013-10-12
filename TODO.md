@@ -40,6 +40,8 @@
 - [ ] rockets
 - [ ] audio
 - [ ] thor's hammer
+- [ ] configuration with yaml
+- [ ] debug config pane to adjust paramaters during gameplay, serialize to yaml (but in same order as old config)
 
 # Research
 - [x] pixi.js
@@ -80,3 +82,9 @@ hw, hh
 so that we can calculate bounding boxes
 we can trim two calculations by moving to UL x,y (-hw, -hh, +hw, +hh) -> (+w, +h)
 but collision is from the center of things
+
+Deformable map but hitting blocks, and keep it that way, reset every night or something
+
+x Use callbacks instead of returning arrays of things
+Object pooling
+bind extent obj to things that need it so we don't need to make new functions to capture the scope

@@ -32,11 +32,13 @@ class Subspace
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
-    @tree = new ZTree
+    @tree = new ZTree()
+    # @tree = new ArrayTree()
     @viewport = new Viewport(@width, @height)
 
+    # TODO: Standardize calling convention here
     @starfield = new Starfield(@viewport, @stage)
-    @map = new Map(@tree, @stage)
+    @map = new Map(@tree, @stage, @viewport)
     @ship = new Ship(@viewport, @tree, @stage, {ship: 0, player: true})
     @viewport.pos = @ship.pos
 

@@ -7,8 +7,9 @@ class Map
   mapHeightP: 1024 * @spriteHeight # in pixels
   container: new PIXI.DisplayObjectContainer()
 
-  constructor: (tree, stage) ->
+  constructor: (tree, stage, viewport) ->
     @tree = tree
+    @extent = viewport._extent
     stage.addChild(@container)
 
   load: (callback) ->
@@ -22,14 +23,13 @@ class Map
 
     oReq.send null
 
-  tilesInView: (extent) ->
-    @tree.searchExpand(extent, @spriteWidth, @spriteHeight)
+  updateTile: (tile) ->
+    tile.update()
 
   # Mark & sweep :P
   # TODO: removeChild seems to do a lot of work - profile?
   update: (extent) ->
-    for tile in @tilesInView(extent)
-      tile.update(extent, @container)
+    @tree.searchExpand(extent, @spriteWidth, @spriteHeight, @updateTile, @)
 
     for tile in @container.children
       if tile._contained && !tile._drawn
@@ -37,7 +37,7 @@ class Map
         tile._contained = false
       tile._drawn = false
 
-  parseLevel: (oEvent, tree) ->
+  parseLevel: (oEvent) ->
     arrayBuffer = oEvent.target.response # Note: not oReq.responseText
     return [] unless arrayBuffer
 
@@ -54,4 +54,4 @@ class Map
     canvas.name = "tileset"
     bmp.drawToCanvas canvas
 
-    Tile.fromFile(a, bmp_size, canvas, tree)
+    Tile.fromFile(a, bmp_size, canvas, @)

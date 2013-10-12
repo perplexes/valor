@@ -28,35 +28,57 @@ class ZTree
 
     return x | (y << 1)
 
-  searchExpand: (extent, x, y) ->
-    @search(extent.west - x, extent.north - y, extent.east + x, extent.south + y)
+  searchExpand: (extent, x, y, callback, scope) ->
+    @search(
+      extent.west - x,
+      extent.north - y,
+      extent.east + x,
+      extent.south + y,
+      callback,
+      scope)
 
-  searchExtent: (extent) ->
-    @search(extent.west, extent.north, extent.east, extent.south)
+  searchExtent: (extent, callback, scope) ->
+    @search(
+      extent.west,
+      extent.north,
+      extent.east,
+      extent.south,
+      callback,
+      scope
+    )
 
-  search: (x1, y1, x2, y2) ->
+  litmax = null
+  bigmin = null
+  # TODO: Iterative
+  searchR: (node, minz, maxz, x1, y1, x2, y2, z1, z2, callback, scope) ->
+    return unless node
+    z = node.data.zcode
+    return @searchR(node.right, minz, maxz, x1, y1, x2, y2, z1, z2, callback, scope) if z < minz
+    return @searchR(node.left, minz, maxz, x1, y1, x2, y2, z1, z2, callback, scope) if z > maxz
+    # This can be simplified with fail-first
+    if x1 <= node.data.pos.x <= x2 && y1 <= node.data.pos.y <= y2
+      #console.log(["searchdepth:",depth])
+      @searchR(node.left, minz, z, x1, y1, x2, y2, z1, z2, callback, scope)
+      callback.call(scope, node.data)
+      @searchR(node.right, z, maxz, x1, y1, x2, y2, z1, z2, callback, scope)
+    else
+      litmax = @cleverLitmax(z1, z2, z) if litmax == null
+      bigmin = @cleverBigmin(z1, z2, z) if bigmin == null
+      @searchR(node.left, minz, litmax, x1, y1, x2, y2, z1, z2, callback, scope)
+      @searchR(node.left, minz, litmax, x1, y1, x2, y2, z1, z2, callback, scope)
+
+  search: (x1, y1, x2, y2, callback, scope) ->
     x1 |= 0
     y1 |= 0
     x2 |= 0
     y2 |= 0
 
-    [z1, z2] = [@zEncode(x1, y1), @zEncode(x2, y2)]
-    recurse = (node, minz, maxz) =>
-      return [] unless node
-      z = node.data.zcode
-      return recurse(node.right, minz, maxz) if z < minz
-      return recurse(node.left, minz, maxz) if z > maxz
-      # This can be simplified with fail-first
-      if x1 <= node.data.pos.x <= x2 && y1 <= node.data.pos.y <= y2
-        #console.log(["searchdepth:",depth])
-        recurse(node.left, minz, z).
-        concat([node.data]).
-        concat(recurse(node.right, z, maxz))
-      else
-        recurse(node.left, minz, @cleverLitmax(z1, z2, z)).
-        concat(recurse(node.right, @cleverBigmin(z1, z2, z), maxz))
+    z1 = @zEncode(x1, y1)
+    z2 = @zEncode(x2, y2)
+    litmax = null
+    bigmin = null
 
-    recurse(@tree._root, z1, z2)
+    @searchR(@tree._root, z1, z2, x1, y1, x2, y2, z1, z2, callback, scope, )
 
     # ITERATIVE WORK
     #     [minz, maxz] = [@zEncode(x1, y1), @zEncode(x2, y2)]

@@ -63,42 +63,42 @@ class Ship extends Entity
     texture = Math.round((@angle * @_textures.length) / (2 * Math.PI))
     i = Math.mod(texture, @_textures.length)
     @_movie.gotoAndStop(i)
+
+  minSafeX = minSafeY = Infinity
+  maxSafeX = maxSafeY = -1
+  collision: (object) ->
+    if Physics.collision(@_extent, object._extent)
+      if object.constructor == Tile && object.index == 170
+        minSafeX = Math.min(minSafeX, object._extent.west)
+        minSafeY = Math.min(minSafeY, object._extent.north)
+        maxSafeX = Math.max(maxSafeX, object._extent.east)
+        maxSafeY = Math.max(maxSafeY, object._extent.south)
+
+      # TODO: Where to store collision objects
+      # collide = object.index < 127
+      collide = !@keys.noclip && object.constructor == Tile && object.index != 170
+
+      if collide
+        Physics.resolve(@, object)
     
   simulate: (keys, delta) ->
+    @keys = keys
+    super(delta)
+
     minSafeX = minSafeY = Infinity
     maxSafeX = maxSafeY = -1
 
-    # TODO: Split into collision engine
-    # Only go through collidable pairs
-    # i.e. ship collide bullet, ship collide tile,
-    # but not tile collide tile and not ship collide ship
-    # TODO: gah the below needs pos & extent!!
-    me = @extent()
-    for object in @_tree.searchExpand(me, 8, 8)
-      oe = object.extent()
-      if Physics.collision(me, oe)
-        if object.constructor == Tile && object.index == 170
-          minSafeX = Math.min(minSafeX, oe.west)
-          minSafeY = Math.min(minSafeY, oe.north)
-          maxSafeX = Math.max(maxSafeX, oe.east)
-          maxSafeY = Math.max(maxSafeY, oe.south)
-
-        # TODO: Where to store collision objects
-        # collide = object.index < 127
-        collide = !keys.noclip && object.constructor == Tile && object.index != 170
-
-        if collide
-          Physics.resolve(@, object)
+    @_tree.searchExpand @_extent, 8, 8, @collision, @
 
     @pos.clamp(@posClamp, @posClamp)
 
     # Ship must be surrounded by safezone to be considered safe
-    @safe = minSafeX <= me.west &&
-             minSafeY <= me.north &&
-             maxSafeX >= me.east &&
-             maxSafeY >= me.south
+    @safe = minSafeX <= @_extent.west &&
+             minSafeY <= @_extent.north &&
+             maxSafeX >= @_extent.east &&
+             maxSafeY >= @_extent.south
 
-    super(delta)
+    
     @tx = @pos.x / 16
     @ty = @pos.y / 16
 
@@ -117,10 +117,7 @@ class Ship extends Entity
     @rawAngle += 0.7 * delta * x
     @angle = (Math.round(@rawAngle * 40) / 40) * Math.PI * 2
 
-    @vel.addXY(
-      400 * Math.sin(@angle) * delta * y,
-      -400 * Math.cos(@angle) * delta * y)
-
+    @vel.addPolar(400 * delta * y, @angle)
     @vel.clamp(@velClamp, @velClamp)
 
     # TODO: Disable in production

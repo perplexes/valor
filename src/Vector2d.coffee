@@ -15,6 +15,9 @@ class Vector2d
     debugger if arguments.length != 1
     @addXY(v.x, v.y)
 
+  addPolar: (r, theta) ->
+    @addXY(r * Math.sin(theta), r * -Math.cos(theta))
+
   addXY: (x, y) ->
     debugger if arguments.length != 2
     debugger if typeof x != 'number'
