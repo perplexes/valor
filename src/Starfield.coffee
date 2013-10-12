@@ -1,6 +1,7 @@
 # TODO: Use RenderTexture?
 class Starfield
   constructor: (viewport, stage) ->
+    @viewport = viewport
     @tilesize = 1024 * 2
     @density = 32 * 4
     @levels = [
@@ -14,7 +15,7 @@ class Starfield
     for level in @levels
       stage.addChild(level._sprite)
     
-  generateTile: (viewport, ratio, color) ->
+  generateTile: (ratio, color) ->
     buffer = document.createElement('canvas')
     buffer.width = @tilesize
     buffer.height = @tilesize
@@ -42,7 +43,7 @@ class Starfield
       [x, y]
 
     texture = PIXI.Texture.fromCanvas(buffer)
-    sprite = new PIXI.TilingSprite(texture, viewport.w, viewport.h)
+    sprite = new PIXI.TilingSprite(texture, @viewport.w, @viewport.h)
 
     {
       _texture: texture,
@@ -52,18 +53,18 @@ class Starfield
       ratio: ratio
     }
 
-  update: (viewport) ->
-    @updateLevel(viewport, level) for level in @levels
+  update: () ->
+    @updateLevel(level) for level in @levels
 
   # How to take ship out?
-  updateLevel: (viewport, level) ->
-    x = viewport.pos.x / level.ratio
-    y = viewport.pos.y / level.ratio
+  updateLevel: (level) ->
+    x = @viewport.pos.x / level.ratio
+    y = @viewport.pos.y / level.ratio
 
-    left = Math.floor (x - viewport.hw) / @tilesize 
-    top = Math.floor (y - viewport.hh) / @tilesize 
-    right = Math.ceil (x + viewport.hw) / @tilesize 
-    bottom = Math.ceil (y + viewport.hh) / @tilesize
+    left = Math.floor (x - @viewport.hw) / @tilesize 
+    top = Math.floor (y - @viewport.hh) / @tilesize 
+    right = Math.ceil (x + @viewport.hw) / @tilesize 
+    bottom = Math.ceil (y + @viewport.hh) / @tilesize
 
     # pairs = []
     for col in [left..right]

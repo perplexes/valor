@@ -37,18 +37,19 @@ class Subspace
     @viewport = new Viewport(@width, @height)
 
     # TODO: Standardize calling convention here
+    # TODO: Layers
     @starfield = new Starfield(@viewport, @stage)
     @map = new Map(@tree, @stage, @viewport)
-    @ship = new Ship(@viewport, @tree, @stage, {ship: 0, player: true})
-    @viewport.pos = @ship.pos
-
+    @ship = new Ship(@viewport, @tree, @stage, {ship: 0, player: true, keys: @keys})
     @othership = new Ship(@viewport, @tree, @stage, {ship: 1, player: false})
-    @map.load =>
-      @start()
+
+    @viewport.pos = @ship.pos
+    @map.load => @start()
 
   start: ->
     lastTime = 0
 
+    # TODO: profiling
     draw = (ms) =>
       delta = ms - lastTime
       # We stopped the game, just assume a frame
@@ -62,14 +63,15 @@ class Subspace
       @ship.onKeys(@keys, delta_s)
 
       # Simulation
-      @ship.simulate(@keys, delta_s)
+      @ship.simulate(delta_s)
+      @othership.simulate(delta_s)
 
       # Depends on @ship's position
-      vExtent = @viewport.extent()
+      @viewport.extent()
 
       # Update screen positions
-      @starfield.update(@viewport)
-      @map.update(vExtent)
+      @starfield.update()
+      @map.update()
       # TODO: loop through movable entities
       @ship.update()
       @othership.update()
@@ -80,7 +82,10 @@ class Subspace
           ship: [@ship.pos.x, @ship.pos.y],
           shipVel: [@ship.vel.x, @ship.vel.y],
           fps: 1/delta * 1000,
-          keys: @keys
+          keys: @keys,
+          container: @map.container.children.length,
+          layer: @map.layerLength,
+          tiles: @map.tileLength
         })
 
       @renderer.render(@stage)

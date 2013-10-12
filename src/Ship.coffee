@@ -25,6 +25,7 @@ class Ship extends Entity
   safe: false
   maxSpeed: 500
   invmass: 1
+  noclip: false # TODO: Does setting this true mean it's shared across instances??
 
   constructor: (viewport, tree, stage, options) ->
     @posClamp = new Vector2d(0, 1024 * 16)
@@ -38,6 +39,7 @@ class Ship extends Entity
     )
 
     @options = options
+    @keys = options.keys
     @_tree = tree
 
     # TODO: Make asset jsons for this and other ships
@@ -76,13 +78,12 @@ class Ship extends Entity
 
       # TODO: Where to store collision objects
       # collide = object.index < 127
-      collide = !@keys.noclip && object.constructor == Tile && object.index != 170
+      collide = !@noclip && object.constructor == Tile && object.index != 170
 
       if collide
         Physics.resolve(@, object)
     
-  simulate: (keys, delta) ->
-    @keys = keys
+  simulate: (delta) ->
     super(delta)
 
     minSafeX = minSafeY = Infinity
@@ -124,3 +125,5 @@ class Ship extends Entity
     @vel.clear() if keys.fullstop
 
     @vel.clear() if keys.fire && @safe
+
+    @noclip = @keys.noclip

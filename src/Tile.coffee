@@ -8,6 +8,9 @@ class Tile extends Entity
   meta: []
   _contained: false
   _drawn: false
+  hash: 0
+  mapNode: null
+  objectCounter = 0
 
   mapStruct = restruct.int32lu("struct")
   constructor: (tx, ty, index, texture, meta, map) ->
@@ -19,6 +22,7 @@ class Tile extends Entity
     @texture = texture
     @meta = meta
     @map = map
+    @hash = (objectCounter += 1)
 
     if texture
       @_sprite = new PIXI.Sprite(texture) 
@@ -30,13 +34,12 @@ class Tile extends Entity
     @_drawn = true
     unless @_contained
       @map.container.addChild(@_sprite)
-      @_contained = true 
+      @_contained = @map.layer.insert(@) 
 
     @_sprite.position.x = @pos.x - @map.extent.west
     @_sprite.position.y = @pos.y - @map.extent.north
 
   @fromFile: (array, offset, spriteSheet, map) ->
-    tiles = []
     base = new PIXI.BaseTexture(spriteSheet)
 
     textures = []
@@ -61,7 +64,6 @@ class Tile extends Entity
       meta = [i, bytes, struct, struct.toString(2)]
       
       tile = new Tile(tx, ty, index, texture, meta, map)
-      tiles.push tile
       # TODO: Tell, don't ask here? Callback?
       map.tree.insert tile
       i += 4

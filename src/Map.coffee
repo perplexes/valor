@@ -10,6 +10,7 @@ class Map
   constructor: (tree, stage, viewport) ->
     @tree = tree
     @extent = viewport._extent
+    @layer = new DLinkedList()
     stage.addChild(@container)
 
   load: (callback) ->
@@ -23,19 +24,32 @@ class Map
 
     oReq.send null
 
+  tileLength: 0
+  tiles: []
   updateTile: (tile) ->
-    tile.update()
+    if tile._sprite
+      @tileLength += 1 
+      @tiles.push tile
+      tile.update()
+
+  layerLength: 0
+  sweep: (tile) ->
+    @layerLength += 1
+    unless tile._drawn
+      @container.removeChild(tile._sprite)
+      @layer.remove(tile._contained)
+      tile._contained = null
+      
+    tile._drawn = false
 
   # Mark & sweep :P
   # TODO: removeChild seems to do a lot of work - profile?
   update: (extent) ->
-    @tree.searchExpand(extent, @spriteWidth, @spriteHeight, @updateTile, @)
-
-    for tile in @container.children
-      if tile._contained && !tile._drawn
-        @container.removeChild(tile._sprite)
-        tile._contained = false
-      tile._drawn = false
+    @tileLength = 0
+    @layerLength = 0
+    @tiles = []
+    @tree.searchExpand(@extent, @spriteWidth, @spriteHeight, @updateTile, @)
+    @layer.each(@sweep, @)
 
   parseLevel: (oEvent) ->
     arrayBuffer = oEvent.target.response # Note: not oReq.responseText
