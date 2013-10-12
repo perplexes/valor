@@ -47,8 +47,6 @@ class ZTree
       scope
     )
 
-  litmax = null
-  bigmin = null
   # TODO: Iterative
   searchR: (node, minz, maxz, x1, y1, x2, y2, z1, z2, callback, scope) ->
     return unless node
@@ -62,10 +60,8 @@ class ZTree
       callback.call(scope, node.data)
       @searchR(node.right, z, maxz, x1, y1, x2, y2, z1, z2, callback, scope)
     else
-      litmax = @cleverLitmax(z1, z2, z) if litmax == null
-      bigmin = @cleverBigmin(z1, z2, z) if bigmin == null
-      @searchR(node.left, minz, litmax, x1, y1, x2, y2, z1, z2, callback, scope)
-      @searchR(node.left, minz, litmax, x1, y1, x2, y2, z1, z2, callback, scope)
+      @searchR(node.left, minz, @cleverLitmax(z1, z2, z), x1, y1, x2, y2, z1, z2, callback, scope)
+      @searchR(node.right, @cleverBigmin(z1, z2, z), maxz, x1, y1, x2, y2, z1, z2, callback, scope)
 
   search: (x1, y1, x2, y2, callback, scope) ->
     x1 |= 0
@@ -75,10 +71,8 @@ class ZTree
 
     z1 = @zEncode(x1, y1)
     z2 = @zEncode(x2, y2)
-    litmax = null
-    bigmin = null
 
-    @searchR(@tree._root, z1, z2, x1, y1, x2, y2, z1, z2, callback, scope, )
+    @searchR(@tree._root, z1, z2, x1, y1, x2, y2, z1, z2, callback, scope)
 
     # ITERATIVE WORK
     #     [minz, maxz] = [@zEncode(x1, y1), @zEncode(x2, y2)]
