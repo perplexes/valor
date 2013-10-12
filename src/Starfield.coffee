@@ -15,7 +15,7 @@ class Starfield
     for level in @levels
       stage.addChild(level._sprite)
     
-  generateTile: (ratio, color) ->
+  generateTile: (viewport, ratio, color) ->
     buffer = document.createElement('canvas')
     buffer.width = @tilesize
     buffer.height = @tilesize
@@ -43,7 +43,7 @@ class Starfield
       [x, y]
 
     texture = PIXI.Texture.fromCanvas(buffer)
-    sprite = new PIXI.TilingSprite(texture, @viewport.w, @viewport.h)
+    sprite = new PIXI.TilingSprite(texture, viewport.w, viewport.h)
 
     {
       _texture: texture,
