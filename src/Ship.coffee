@@ -66,6 +66,7 @@ class Ship extends Entity
     @_displayObject = @_movie
 
   update: ->
+    @angle = (Math.round(@rawAngle * 40) / 40) * Math.PI * 2
     texture = Math.round((@angle * @_textures.length) / (2 * Math.PI))
     i = Math.mod(texture, @_textures.length)
     @_movie.gotoAndStop(i)
@@ -118,7 +119,6 @@ class Ship extends Entity
 
     # In increments of how many textures there are.
     @rawAngle += 0.7 * delta * x
-    @angle = (Math.round(@rawAngle * 40) / 40) * Math.PI * 2
 
     @vel.addPolar(400 * delta * y, @angle)
     @vel.clamp(@velClamp, @velClamp)

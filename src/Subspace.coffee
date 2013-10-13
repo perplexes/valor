@@ -28,7 +28,6 @@ class Subspace
     @map = new Map(@scene)
     @ship = new Ship(@scene, true, {ship: 0, keys: @keys})
     @othership = new Ship(@scene, false, {ship: 1})
-
     @scene.viewport.pos = @ship.pos
 
     @map.load => @start()
@@ -51,6 +50,11 @@ class Subspace
 
       # Simulation
       @ship.simulate(delta_s)
+
+      r = Math.sqrt(Math.pow(@ship.pos.x - @othership.pos.x, 2) + Math.pow(@ship.pos.y - @othership.pos.y, 2))
+      angle = Math.atan2(@ship.pos.y - @othership.pos.y, @ship.pos.x - @othership.pos.x) + (Math.PI/2)
+      @othership.rawAngle = angle/(2*Math.PI)
+      @othership.vel.addPolar(r * delta_s/2, angle)
       @othership.simulate(delta_s)
 
       # Update screen positions
@@ -60,7 +64,7 @@ class Subspace
       # @drawDebugCollisions(@viewport, @ship, collisions, @onctx)
       if @keys.debugMessages
         @drawDebug({
-          ship: [@ship.pos.x, @ship.pos.y],
+          ship: [@ship.pos.x, @ship.pos.y, @ship.rawAngle, @ship.angle],
           shipVel: [@ship.vel.x, @ship.vel.y],
           fps: 1/delta * 1000,
           keys: @keys,
@@ -68,7 +72,9 @@ class Subspace
           children: @scene.stage.children.length,
           tiles: Tile._displayObjectContainer.children.length,
           ships: Ship._displayObjectContainer.children.length,
-          removed: @scene.removed
+          removed: @scene.removed,
+          o: [@othership.pos.x, @othership.pos.y, @othership.rawAngle],
+          angle: angle
         })
 
       @scene.render()
