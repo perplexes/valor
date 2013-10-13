@@ -87,4 +87,6 @@ Deformable map but hitting blocks, and keep it that way, reset every night or so
 
 x Use callbacks instead of returning arrays of things
 Object pooling
-bind extent obj to things that need it so we don't need to make new functions to capture the scope
+x bind extent obj to things that need it so we don't need to make new functions to capture the scope
+
+Different layers for selfship/othership

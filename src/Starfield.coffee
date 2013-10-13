@@ -12,9 +12,10 @@ class Starfield
       @generateTile(5, [30,30,30]),
       @generateTile(6, [19,19,19])
     ]
+    @container = new PIXI.DisplayObjectContainer
 
     for level in @levels
-      scene.stage.addChild(level._displayObject)
+      @container.addChild(level._displayObject)
     
   generateTile: (ratio, color) ->
     buffer = document.createElement('canvas')
@@ -54,7 +55,7 @@ class Starfield
       ratio: ratio
     }
 
-  update: () ->
+  update: ->
     @updateLevel(level) for level in @levels
 
   # TODO: Not sure if we need to do all that calculation
@@ -62,3 +63,5 @@ class Starfield
   updateLevel: (level) ->
     level._displayObject.tilePosition.x = -@viewport.pos.x / level.ratio
     level._displayObject.tilePosition.y = -@viewport.pos.y / level.ratio
+
+  sweep: -> # No op

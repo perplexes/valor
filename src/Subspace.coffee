@@ -21,13 +21,35 @@ class Subspace
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
-    @scene = new Scene(@viewport)
+    @scene = new Scene()
+    @simulator = new Simulator(@scene)
 
-    # TODO: Layers
+    # Starfield
+    # Map
+    # Projectiles
+    # Other ships
+    # Selfship
+    # Effects
+    # HUD
+
     @starfield = new Starfield(@scene)
-    @map = new Map(@scene)
-    @ship = new Ship(@scene, true, {ship: 0, keys: @keys})
-    @othership = new Ship(@scene, false, {ship: 1})
+    @scene.addLayer(@starfield)
+
+    @mapLayer = new Layer(@scene)
+    @map = new Map(@mapLayer)
+
+    # @projectileLayer = new Layer(@scene)
+
+    @otherShipsLayer = new Layer(@scene)
+    @othership = new Ship(@otherShipsLayer, false, {ship: 1})
+    @simulator.addObject(@othership)
+
+    @selfShipLayer = new Layer(@scene)
+    @ship = new Ship(@selfShipLayer, true, {ship: 0, keys: @keys})
+    @simulator.addObject(@ship)
+
+    # @effectsLayer = new Layer(@scene)
+    
     @scene.viewport.pos = @ship.pos
 
     @map.load => @start()
@@ -45,20 +67,18 @@ class Subspace
 
       # Events
       @handleKeys(delta_s)
-
       @ship.onKeys(@keys, delta_s)
 
-      # Simulation
-      @ship.simulate(delta_s)
-
+      # Have the other ship follow player (AI?)
       r = Math.sqrt(Math.pow(@ship.pos.x - @othership.pos.x, 2) + Math.pow(@ship.pos.y - @othership.pos.y, 2))
       angle = Math.atan2(@ship.pos.y - @othership.pos.y, @ship.pos.x - @othership.pos.x) + (Math.PI/2)
       @othership.rawAngle = angle/(2*Math.PI)
       @othership.vel.addPolar(r * delta_s/2, angle)
-      @othership.simulate(delta_s)
+
+      # Run simulation
+      @simulator.simulate(delta_s)
 
       # Update screen positions
-      @starfield.update()
       @scene.update()
 
       # @drawDebugCollisions(@viewport, @ship, collisions, @onctx)
@@ -68,11 +88,10 @@ class Subspace
           shipVel: [@ship.vel.x, @ship.vel.y],
           fps: 1/delta * 1000,
           keys: @keys,
-          objects: @scene.objects,
+          objects: @scene.objects(),
           children: @scene.stage.children.length,
-          tiles: Tile._displayObjectContainer.children.length,
-          ships: Ship._displayObjectContainer.children.length,
-          removed: @scene.removed,
+          tiles: @mapLayer.objects,
+          ships: @otherShipsLayer.objects,
           o: [@othership.pos.x, @othership.pos.y, @othership.rawAngle],
           angle: angle
         })

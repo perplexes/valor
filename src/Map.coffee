@@ -5,10 +5,9 @@ class Map
   mapHeight: 1024
   mapWidthP: 1024 * @spriteWidth # in pixels
   mapHeightP: 1024 * @spriteHeight # in pixels
-  container: new PIXI.DisplayObjectContainer()
 
-  constructor: (scene) ->
-    @scene = scene
+  constructor: (layer) ->
+    @layer = layer
 
   load: (callback) ->
     oReq = new XMLHttpRequest()

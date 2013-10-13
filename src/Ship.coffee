@@ -8,9 +8,6 @@
 `
 
 class Ship extends Entity
-  @_displayObjectContainer = new PIXI.DisplayObjectContainer()
-  @tree = new ZTree()
-
   rawAngle: 0
   angle: 0
   # Near circles
@@ -30,12 +27,12 @@ class Ship extends Entity
   invmass: 1
   noclip: false # TODO: Does setting this true mean it's shared across instances??
 
-  constructor: (scene, player, options) ->
+  constructor: (layer, player, options) ->
     @posClamp = new Vector2d(0, 1024 * 16)
     @velClamp = new Vector2d(-@maxSpeed, @maxSpeed)
 
     super(
-      scene,
+      layer,
       # new Vector2d(8196, 12135), # safety
       new Vector2d(8136, 11784), # Touching safety wall
       new Vector2d(0, 0), #vel
@@ -60,8 +57,8 @@ class Ship extends Entity
     @_movie.anchor.y = 0.5
 
     if @player
-      @_movie.position.x = scene.viewport.hw
-      @_movie.position.y = scene.viewport.hh
+      @_movie.position.x = layer.scene.viewport.hw
+      @_movie.position.y = layer.scene.viewport.hh
 
     @_displayObject = @_movie
 
@@ -92,20 +89,19 @@ class Ship extends Entity
 
   minSafeX = minSafeY = Infinity
   maxSafeX = maxSafeY = -1
-  collision: (object) ->
-    return unless object.constructor == Tile
+  collide: (entity) ->
+    return unless entity.constructor == Tile
 
-    if object.index == 170
-      minSafeX = Math.min(minSafeX, object._extent.west)
-      minSafeY = Math.min(minSafeY, object._extent.north)
-      maxSafeX = Math.max(maxSafeX, object._extent.east)
-      maxSafeY = Math.max(maxSafeY, object._extent.south)
+    if entity.index == 170
+      minSafeX = Math.min(minSafeX, entity._extent.west)
+      minSafeY = Math.min(minSafeY, entity._extent.north)
+      maxSafeX = Math.max(maxSafeX, entity._extent.east)
+      maxSafeY = Math.max(maxSafeY, entity._extent.south)
 
     # TODO: Where to store collision objects
-    # collide = object.index < 127
-    if !@noclip && object.index != 170
-      Physics.resolve(@, object)
-
+    # collide = entity.index < 127
+    super(entity) if !@noclip && entity.index != 170
+      
   onKeys: (keys, delta) ->
     # Rotation
     x = 0

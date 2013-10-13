@@ -1,7 +1,4 @@
 class Tile extends Entity
-  @_displayObjectContainer = new PIXI.DisplayObjectContainer()
-  @tree = new ZTree()
-
   @spriteMapWidth = 19 # in tiles
   @spriteMapHeight = 10 # in tiles
   tx: 0
@@ -14,7 +11,7 @@ class Tile extends Entity
 
   mapStruct = restruct.int32lu("struct")
   constructor: (tx, ty, index, texture, meta, map) ->
-    super(map.scene, new Vector2d(tx * 16 + 8, ty * 16 + 8), null, 16, 16)
+    super(map.layer, new Vector2d(tx * 16 + 8, ty * 16 + 8), null, 16, 16)
 
     @tx = tx
     @ty = ty

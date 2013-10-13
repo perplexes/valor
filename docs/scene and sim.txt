@@ -9,6 +9,8 @@ on update, all objects in the viewport are found, added to the stage (if not add
 
 on invalidate, any objects remaining in the red list are removed from the stage, the list is cleared and red & black swap.
 
+--
+
 the Simulator class
 simulatable list
 the game tree
@@ -22,3 +24,28 @@ add: object is added to the game to be simulated
 ships, bullets, bombs, anything that moves and needs to check collision
 
 remove: object is removed from being simulated (should also be removed from scene and game graph)
+
+--
+
+the Layer class
+has a tree for things to render in this layer
+it has a pixi container
+
+Starfield
+Map
+Projectiles
+Other ships
+Selfship
+Effects
+HUD
+
+
+STARFIELD: 0,
+MAP: 1,
+PROJECTILES: 2,
+PLAYERS: 3,
+LOCAL_PLAYER: 4,
+EFFECTS: 5,
+HUD: 6
+
+responds to update, which largely just does exactly what scene was doing.

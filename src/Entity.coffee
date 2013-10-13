@@ -1,6 +1,6 @@
 # TODO: touching pos should update extent
 class Entity
-  scene: null
+  layer: null
   pos: new Vector2d(0,0) # Vector2d
   vel: new Vector2d(0,0) # Vector2d, per second?
   scaledV: new Vector2d(0,0)
@@ -15,8 +15,8 @@ class Entity
   hash: 0
   objectCounter = 0
 
-  constructor: (scene, pos, vel, w, h) ->
-    @scene = scene if scene?
+  constructor: (layer, pos, vel, w, h) ->
+    @layer = layer if layer?
     @pos = pos if pos?
     @vel = vel if vel?
     @w = w
@@ -30,21 +30,24 @@ class Entity
       south: 0
     @extent()
 
-    @constructor.tree.insert(@) if @constructor.tree
+    layer.insert(@) if layer?
     @hash = (objectCounter += 1)
 
   simulate: (delta) ->
     @scaledV.clear()
     @scaledV.add(@vel).scaleXY(delta, delta)
-    @constructor.tree.remove(@)
+    @layer.remove(@)
     @pos.add(@scaledV)
-    @constructor.tree.insert(@)
+    @layer.insert(@)
     @extent()
+
+  collide: (entity) ->
+    Physics.resolve(@, entity)
 
   update: ->
     return unless @_displayObject
-    @_displayObject.position.x = @pos.x - @scene.viewport._extent.west
-    @_displayObject.position.y = @pos.y - @scene.viewport._extent.north
+    @_displayObject.position.x = @pos.x - @layer.scene.viewport._extent.west
+    @_displayObject.position.y = @pos.y - @layer.scene.viewport._extent.north
 
   # TODO: updates to pos/w/h updates extent
   extent: ->
