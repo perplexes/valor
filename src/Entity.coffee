@@ -30,15 +30,15 @@ class Entity
       south: 0
     @extent()
 
-    this.constructor.tree.insert(@) if this.constructor.tree
+    @constructor.tree.insert(@) if @constructor.tree
     @hash = (objectCounter += 1)
 
   simulate: (delta) ->
     @scaledV.clear()
     @scaledV.add(@vel).scaleXY(delta, delta)
-    @.constructor.tree.remove(@)
+    @constructor.tree.remove(@)
     @pos.add(@scaledV)
-    @.constructor.tree.insert(@)
+    @constructor.tree.insert(@)
     @extent()
 
   update: ->

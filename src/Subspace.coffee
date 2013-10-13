@@ -21,9 +21,7 @@ class Subspace
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
-    @tree = new ZTree()
-    # @tree = new ArrayTree()
-    @scene = new Scene(@tree, @viewport)
+    @scene = new Scene(@viewport)
 
     # TODO: Layers
     @starfield = new Starfield(@scene)

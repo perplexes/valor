@@ -1,6 +1,5 @@
 class Scene
-  constructor: (tree, viewport) ->
-    @tree = tree
+  constructor: (viewport) ->
     # "from space" for scene removal
     @red = new DLinkedList()
     # "to space" for keeping around

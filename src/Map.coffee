@@ -16,7 +16,7 @@ class Map
     oReq.open "GET", "../arenas/trench9.lvl", true
     oReq.responseType = "arraybuffer"
     oReq.onload = (oEvent) =>
-      @parseLevel(oEvent, @tree)
+      @parseLevel(oEvent)
       callback()
 
     oReq.send null
