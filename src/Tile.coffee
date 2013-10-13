@@ -1,20 +1,20 @@
 class Tile extends Entity
+  @_displayObjectContainer = new PIXI.DisplayObjectContainer()
+  @tree = new ZTree()
+
   @spriteMapWidth = 19 # in tiles
   @spriteMapHeight = 10 # in tiles
   tx: 0
   ty: 0
   index: 0
-  _sprite: null # PIXI.Sprite
   meta: []
   _contained: false
   _drawn: false
-  hash: 0
   mapNode: null
-  objectCounter = 0
 
   mapStruct = restruct.int32lu("struct")
   constructor: (tx, ty, index, texture, meta, map) ->
-    super(new Vector2d(tx * 16 + 8, ty * 16 + 8), null, 16, 16)
+    super(map.scene, new Vector2d(tx * 16 + 8, ty * 16 + 8), null, 16, 16)
 
     @tx = tx
     @ty = ty
@@ -22,22 +22,11 @@ class Tile extends Entity
     @texture = texture
     @meta = meta
     @map = map
-    @hash = (objectCounter += 1)
 
     if texture
-      @_sprite = new PIXI.Sprite(texture) 
-      @_sprite.anchor.x = 0.5
-      @_sprite.anchor.y = 0.5
-
-  update: ->
-    return unless @_sprite
-    @_drawn = true
-    unless @_contained
-      @map.container.addChild(@_sprite)
-      @_contained = @map.layer.insert(@) 
-
-    @_sprite.position.x = @pos.x - @map.extent.west
-    @_sprite.position.y = @pos.y - @map.extent.north
+      @_displayObject = new PIXI.Sprite(texture) 
+      @_displayObject.anchor.x = 0.5
+      @_displayObject.anchor.y = 0.5
 
   @fromFile: (array, offset, spriteSheet, map) ->
     base = new PIXI.BaseTexture(spriteSheet)
@@ -64,6 +53,4 @@ class Tile extends Entity
       meta = [i, bytes, struct, struct.toString(2)]
       
       tile = new Tile(tx, ty, index, texture, meta, map)
-      # TODO: Tell, don't ask here? Callback?
-      map.tree.insert tile
       i += 4

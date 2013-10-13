@@ -1,15 +1,15 @@
 class DLLNullNode
-  constructor: ->
-    @next = @prev = @
-
-  visit: (callback, scope) ->
-
-  remove: ->
+  constructor: -> @next = @prev = @
+  visit: (callback, scope) -> @
+  remove: -> @
 
 class DLLNode
   # Insert after prev
   constructor: (prev, value) ->
     @value = value
+    @insert(prev)
+
+  insert: (prev) ->
     @prev = prev
     @next = prev.next
     @next.prev = prev.next = @
@@ -23,6 +23,7 @@ class DLLNode
     @prev.next = @next
     @next.prev = @prev
     @next = @prev = null
+    @
 
 # Head ----- Tail
 class DLinkedList
@@ -30,7 +31,11 @@ class DLinkedList
     @head = new DLLNullNode()
 
   insert: (value) ->
+    # TODO: object pool
     new DLLNode(@head, value)
+
+  insertNode: (node) ->
+    node.insert(@head)
 
   remove: (node) ->
     node.remove()

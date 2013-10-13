@@ -13,37 +13,26 @@ Number.prototype.clamp = function(min, max) {
 class Subspace
   init: ->
     window.subspace = @
-    window.stage = @stage = new PIXI.Stage(0, false)
-
-    @width = document.body.clientWidth
-    @height = window.innerHeight
-    @renderer = PIXI.autoDetectRenderer(@width, @height, document.createElement( 'canvas' ), false, false)
-    @renderer.view.style.position = "absolute"
-    @renderer.view.style.top = "0px"
-    @renderer.view.style.left = "0px"
-    document.body.appendChild(@renderer.view)
 
     console.log('init')
     @debug = document.getElementById('debug')
 
-    @tiles = []
-    @keys = {debugMessages: false} # old -> new
-
+    @keys = {debugMessages: false}
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
     @tree = new ZTree()
     # @tree = new ArrayTree()
-    @viewport = new Viewport(@width, @height)
+    @scene = new Scene(@tree, @viewport)
 
-    # TODO: Standardize calling convention here
     # TODO: Layers
-    @starfield = new Starfield(@viewport, @stage)
-    @map = new Map(@tree, @stage, @viewport)
-    @ship = new Ship(@viewport, @tree, @stage, {ship: 0, player: true, keys: @keys})
-    @othership = new Ship(@viewport, @tree, @stage, {ship: 1, player: false})
+    @starfield = new Starfield(@scene)
+    @map = new Map(@scene)
+    @ship = new Ship(@scene, true, {ship: 0, keys: @keys})
+    @othership = new Ship(@scene, false, {ship: 1})
 
-    @viewport.pos = @ship.pos
+    @scene.viewport.pos = @ship.pos
+
     @map.load => @start()
 
   start: ->
@@ -66,15 +55,9 @@ class Subspace
       @ship.simulate(delta_s)
       @othership.simulate(delta_s)
 
-      # Depends on @ship's position
-      @viewport.extent()
-
       # Update screen positions
       @starfield.update()
-      @map.update()
-      # TODO: loop through movable entities
-      @ship.update()
-      @othership.update()
+      @scene.update()
 
       # @drawDebugCollisions(@viewport, @ship, collisions, @onctx)
       if @keys.debugMessages
@@ -83,12 +66,14 @@ class Subspace
           shipVel: [@ship.vel.x, @ship.vel.y],
           fps: 1/delta * 1000,
           keys: @keys,
-          container: @map.container.children.length,
-          layer: @map.layerLength,
-          tiles: @map.tileLength
+          objects: @scene.objects,
+          children: @scene.stage.children.length,
+          tiles: Tile._displayObjectContainer.children.length,
+          ships: Ship._displayObjectContainer.children.length,
+          removed: @scene.removed
         })
 
-      @renderer.render(@stage)
+      @scene.render()
       requestAnimationFrame(draw)
     draw(lastTime)
 

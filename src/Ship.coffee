@@ -8,6 +8,9 @@
 `
 
 class Ship extends Entity
+  @_displayObjectContainer = new PIXI.DisplayObjectContainer()
+  @tree = new ZTree()
+
   rawAngle: 0
   angle: 0
   # Near circles
@@ -27,20 +30,21 @@ class Ship extends Entity
   invmass: 1
   noclip: false # TODO: Does setting this true mean it's shared across instances??
 
-  constructor: (viewport, tree, stage, options) ->
+  constructor: (scene, player, options) ->
     @posClamp = new Vector2d(0, 1024 * 16)
     @velClamp = new Vector2d(-@maxSpeed, @maxSpeed)
 
     super(
-      # new Vector2d(8196, 12135), #pos
-      new Vector2d(8136, 11784),
+      scene,
+      # new Vector2d(8196, 12135), # safety
+      new Vector2d(8136, 11784), # Touching safety wall
       new Vector2d(0, 0), #vel
       32, 32 # w,h
     )
 
+    @player = player
     @options = options
     @keys = options.keys
-    @_tree = tree
 
     # TODO: Make asset jsons for this and other ships
     base = PIXI.BaseTexture.fromImage("assets/shared/graphics/ship#{options.ship}.png")
@@ -52,44 +56,26 @@ class Ship extends Entity
     @_movie = new PIXI.MovieClip(@_textures)
     @_movie.width = @w
     @_movie.height = @h
-    if options.player
-      @_movie.anchor.x = 0.5
-      @_movie.anchor.y = 0.5
-      @_movie.position.x = viewport.hw
-      @_movie.position.y = viewport.hh
-      stage.addChild(@_movie)
-    else
-      tree.insert(@)
+    @_movie.anchor.x = 0.5
+    @_movie.anchor.y = 0.5
+
+    if @player
+      @_movie.position.x = scene.viewport.hw
+      @_movie.position.y = scene.viewport.hh
+
+    @_displayObject = @_movie
 
   update: ->
     texture = Math.round((@angle * @_textures.length) / (2 * Math.PI))
     i = Math.mod(texture, @_textures.length)
     @_movie.gotoAndStop(i)
+    super() unless @player
 
-  minSafeX = minSafeY = Infinity
-  maxSafeX = maxSafeY = -1
-  collision: (object) ->
-    if Physics.collision(@_extent, object._extent)
-      if object.constructor == Tile && object.index == 170
-        minSafeX = Math.min(minSafeX, object._extent.west)
-        minSafeY = Math.min(minSafeY, object._extent.north)
-        maxSafeX = Math.max(maxSafeX, object._extent.east)
-        maxSafeY = Math.max(maxSafeY, object._extent.south)
-
-      # TODO: Where to store collision objects
-      # collide = object.index < 127
-      collide = !@noclip && object.constructor == Tile && object.index != 170
-
-      if collide
-        Physics.resolve(@, object)
-    
   simulate: (delta) ->
     super(delta)
 
     minSafeX = minSafeY = Infinity
     maxSafeX = maxSafeY = -1
-
-    @_tree.searchExpand @_extent, 8, 8, @collision, @
 
     @pos.clamp(@posClamp, @posClamp)
 
@@ -102,6 +88,22 @@ class Ship extends Entity
     
     @tx = @pos.x / 16
     @ty = @pos.y / 16
+
+  minSafeX = minSafeY = Infinity
+  maxSafeX = maxSafeY = -1
+  collision: (object) ->
+    return unless object.constructor == Tile
+
+    if object.index == 170
+      minSafeX = Math.min(minSafeX, object._extent.west)
+      minSafeY = Math.min(minSafeY, object._extent.north)
+      maxSafeX = Math.max(maxSafeX, object._extent.east)
+      maxSafeY = Math.max(maxSafeY, object._extent.south)
+
+    # TODO: Where to store collision objects
+    # collide = object.index < 127
+    if !@noclip && object.index != 170
+      Physics.resolve(@, object)
 
   onKeys: (keys, delta) ->
     # Rotation

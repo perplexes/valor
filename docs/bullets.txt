@@ -9,3 +9,5 @@ bullets cannot harm your own ship or your teammates, but bombs nearby can kill y
 guns have three levels, 1, 2, 3, in increasing damage amount. these correspond to the bullet colors red yellow blue. guns  can be "multi" meaning they shoot 3 bullets at a time. bullets can bounce with an upgrade.
 
 there is a bullet sprite sheet
+row 0-4 is non-bouncy
+row 5-9 is bouncy

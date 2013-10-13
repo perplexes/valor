@@ -7,11 +7,8 @@ class Map
   mapHeightP: 1024 * @spriteHeight # in pixels
   container: new PIXI.DisplayObjectContainer()
 
-  constructor: (tree, stage, viewport) ->
-    @tree = tree
-    @extent = viewport._extent
-    @layer = new DLinkedList()
-    stage.addChild(@container)
+  constructor: (scene) ->
+    @scene = scene
 
   load: (callback) ->
     oReq = new XMLHttpRequest()
@@ -23,33 +20,6 @@ class Map
       callback()
 
     oReq.send null
-
-  tileLength: 0
-  tiles: []
-  updateTile: (tile) ->
-    if tile._sprite
-      @tileLength += 1 
-      @tiles.push tile
-      tile.update()
-
-  layerLength: 0
-  sweep: (tile) ->
-    @layerLength += 1
-    unless tile._drawn
-      @container.removeChild(tile._sprite)
-      @layer.remove(tile._contained)
-      tile._contained = null
-      
-    tile._drawn = false
-
-  # Mark & sweep :P
-  # TODO: removeChild seems to do a lot of work - profile?
-  update: (extent) ->
-    @tileLength = 0
-    @layerLength = 0
-    @tiles = []
-    @tree.searchExpand(@extent, @spriteWidth, @spriteHeight, @updateTile, @)
-    @layer.each(@sweep, @)
 
   parseLevel: (oEvent) ->
     arrayBuffer = oEvent.target.response # Note: not oReq.responseText

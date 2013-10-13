@@ -1,21 +1,22 @@
 # TODO: Use RenderTexture?
 class Starfield
-  constructor: (viewport, stage) ->
-    @viewport = viewport
+  constructor: (scene) ->
+    @scene = scene
+    @viewport = scene.viewport
     @tilesize = 1024 * 2
     @density = 32 * 4
     @levels = [
-      @generateTile(viewport, 2, [184,184,184]),
-      @generateTile(viewport, 3, [96,96,96]),
-      @generateTile(viewport, 4, [52,52,52]),
-      @generateTile(viewport, 5, [30,30,30]),
-      @generateTile(viewport, 6, [19,19,19])
+      @generateTile(2, [184,184,184]),
+      @generateTile(3, [96,96,96]),
+      @generateTile(4, [52,52,52]),
+      @generateTile(5, [30,30,30]),
+      @generateTile(6, [19,19,19])
     ]
 
     for level in @levels
-      stage.addChild(level._sprite)
+      scene.stage.addChild(level._displayObject)
     
-  generateTile: (viewport, ratio, color) ->
+  generateTile: (ratio, color) ->
     buffer = document.createElement('canvas')
     buffer.width = @tilesize
     buffer.height = @tilesize
@@ -43,11 +44,11 @@ class Starfield
       [x, y]
 
     texture = PIXI.Texture.fromCanvas(buffer)
-    sprite = new PIXI.TilingSprite(texture, viewport.w, viewport.h)
+    sprite = new PIXI.TilingSprite(texture, @viewport.w, @viewport.h)
 
     {
       _texture: texture,
-      _sprite: sprite,
+      _displayObject: sprite,
       points: points,
       color: color,
       ratio: ratio
@@ -56,20 +57,8 @@ class Starfield
   update: () ->
     @updateLevel(level) for level in @levels
 
-  # How to take ship out?
+  # TODO: Not sure if we need to do all that calculation
+  # now that it's a tiling texture.
   updateLevel: (level) ->
-    x = @viewport.pos.x / level.ratio
-    y = @viewport.pos.y / level.ratio
-
-    left = Math.floor (x - @viewport.hw) / @tilesize 
-    top = Math.floor (y - @viewport.hh) / @tilesize 
-    right = Math.ceil (x + @viewport.hw) / @tilesize 
-    bottom = Math.ceil (y + @viewport.hh) / @tilesize
-
-    # pairs = []
-    for col in [left..right]
-      for row in [top..bottom]
-        level._sprite.tilePosition.x = col * @tilesize - x
-        level._sprite.tilePosition.y = row * @tilesize - y
-        # pairs.push([col, row])
-    # [left, right, top, bottom]
+    level._displayObject.tilePosition.x = -@viewport.pos.x / level.ratio
+    level._displayObject.tilePosition.y = -@viewport.pos.y / level.ratio
