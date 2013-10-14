@@ -17,7 +17,8 @@ class Entity
   objectCounter = 0
   lifetime: null
   maxSpeed: null
-  bounciness: 0.727
+  bounciness: 0.5
+  friction: 0.8
 
   constructor: (layer, simulator, pos, vel, w, h) ->
     @layer = layer if layer?

@@ -27,7 +27,7 @@ class Ship extends Entity
   noclip: false # TODO: Does setting this true mean it's shared across instances??
   # TODO: advanceTime with listeners for managing timers and stuff
   # Or, have global absolute time
-  gunTimeoutDefault: 0.01
+  gunTimeoutDefault: 0.250
   gunTimeout: 0
   safety:
     west: Infinity
@@ -146,6 +146,8 @@ class Ship extends Entity
       if @safe
         @vel.clear()
       else if @gunTimeout <= 0
+        # TODO: we're leaking objects here unless they go to safety
+        # Maybe have a list of parents that retain this object
         @bullets.push(new Bullet(@, simulator, 2, true))
         @gunTimeout = @gunTimeoutDefault
 

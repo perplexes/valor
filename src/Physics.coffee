@@ -73,7 +73,6 @@ class Physics
   # }
   rv = new Vector2d(0,0)
   impulse = new Vector2d(0,0)
-  friction = 0.8
   @resolve: (a, b) ->
     return null unless m = @overlap(a, b)
 
@@ -85,23 +84,22 @@ class Physics
     # Separating velocity
     return null if vn > 0
 
-    # TODO: Programmable bounciness
     e = a.bounciness
     e *= Math.abs(vn / a.maxSpeed) if a.maxSpeed?
 
     j = -(1 + e) * vn
-    j /= a.invmass + b.invmass
+    # j /= a.invmass + b.invmass
 
     impulse.clear()
     impulse.add(m.normal).scaleXY(j, j)
 
-    a.vel
-      .scaleXY(friction, friction)
-      .subXY(a.invmass * impulse.x, a.invmass * impulse.y)
+    a.vel.subXY(a.invmass * impulse.x, a.invmass * impulse.y)
+      # .scaleXY(a.friction, a.friction)
+      
 
-    b.vel
-      .scaleXY(friction, friction)
-      .addXY(b.invmass * impulse.x, b.invmass * impulse.y)
+    # b.vel
+    #   .scaleXY(b.friction, b.friction)
+    #   .addXY(b.invmass * impulse.x, b.invmass * impulse.y)
 
     # TODO: special case for stopping on a wall?
 
@@ -112,7 +110,7 @@ class Physics
     c = Math.max(m.penetration - slop, 0)# * percent
 
     a.pos.subXY(a.invmass * c * m.normal.x, a.invmass * c * m.normal.y)
-    b.pos.addXY(b.invmass * c * m.normal.x, b.invmass * c * m.normal.y)
+    # b.pos.addXY(b.invmass * c * m.normal.x, b.invmass * c * m.normal.y)
 
       # Combines many surfaces into one surface
   # Only combine ones that share a plane

@@ -1,5 +1,6 @@
 class Bullet extends Entity
   bounciness: 1
+  friction: 0
   base = PIXI.BaseTexture.fromImage("assets/shared/graphics/bullets.png")
   textures = []
   for y in [0..10]
