@@ -1,5 +1,9 @@
 class Layer
-  constructor: (scene) ->
+  @layers = {}
+  constructor: (name, scene) ->
+    @name = name
+    Layer.layers[name] = @
+    
     @scene = scene
     @tree = new ZTree()
     @container = new PIXI.DisplayObjectContainer()
@@ -7,46 +11,51 @@ class Layer
     @red = new DLinkedList()
     # "to space" for keeping around
     @black = new DLinkedList()
-    
+
     @scene.addLayer(@)
 
-  insert: (object) ->
-    @tree.insert(object)
+  insert: (entity) ->
+    entity._hasGametreeNode = @tree.insert(entity)
 
-  remove: (object) ->
-    @tree.remove(object)
+  remove: (entity) ->
+    return unless entity._hasGametreeNode
+    @tree.remove(entity)
+    entity._hasGametreeNode = false
 
-  addChild: (object) ->
-    if object._displayObject
-      @container.addChild(object._displayObject)
+  addChild: (entity) ->
+    if entity._displayObject
+      @container.addChild(entity._displayObject)
 
-    object._sceneNode = @black.insert(object)
+    entity._containerNode = @black.insert(entity)
 
-  removeChild: (object) ->
+  removeChild: (entity) ->
+    return unless entity._containerNode
+    
     @removed += 1
-    if object._displayObject
-      @container.removeChild(object._displayObject)
+    if entity._displayObject
+      @container.removeChild(entity._displayObject)
 
-    object._sceneNode.remove()
-    object._sceneNode = null
+    entity._containerNode.remove()
+    entity._containerNode = null
 
-  # TODO: Assumes largest object is 32x32
-  objects: 0
-  update: ->
-    @objects = 0
+  # TODO: Assumes largest entity is 32x32
+  entities: 0
+  update: (gametime) ->
+    @entities = 0
+    @gametime = gametime
     @tree.searchExpand(@scene.viewport._extent, 16, 16, @updateObject, @)
 
   # TODO: standardize property names (like Go??)
-  updateObject: (object) ->
-    @objects += 1
+  updateObject: (entity) ->
+    @entities += 1
     # Copy to black space
-    if object._sceneNode
-      @black.insertNode(object._sceneNode.remove())
+    if entity._containerNode
+      @black.insertNode(entity._containerNode.remove())
     # Haven't seen it before, add to stage and black space
     else
-      @addChild(object)
+      @addChild(entity)
 
-    object.update()
+    entity.update()
 
   removed: 0
   sweep: ->

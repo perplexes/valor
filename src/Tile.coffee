@@ -8,10 +8,11 @@ class Tile extends Entity
   _contained: false
   _drawn: false
   mapNode: null
+  invmass: 0
 
   mapStruct = restruct.int32lu("struct")
   constructor: (tx, ty, index, texture, meta, map) ->
-    super(map.layer, new Vector2d(tx * 16 + 8, ty * 16 + 8), null, 16, 16)
+    super(map.layer, null, new Vector2d(tx * 16 + 8, ty * 16 + 8), null, 16, 16)
 
     @tx = tx
     @ty = ty

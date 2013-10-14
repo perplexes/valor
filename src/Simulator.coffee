@@ -10,13 +10,16 @@ class Simulator
   removeObject: (object) ->
     @objects.remove(object._simulatorNode)
 
+  # Ship -> Tile
+  # Bullet -> Tile, Ship
   simulate: (delta) ->
     @objects.each (object) =>
+      object.simulate(delta)
+
       for layer in @layers
         continue unless layer.tree
         layer.tree.searchExpand(object._extent, 16, 16, (nearObject) ->
-          if Physics.collision(object, nearObject)
+          return false if object == nearObject
+          if Physics.collision(object._extent, nearObject._extent)
             object.collide(nearObject)
         , @)
-
-      object.simulate(delta)

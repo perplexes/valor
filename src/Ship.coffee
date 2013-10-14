@@ -24,17 +24,27 @@ class Ship extends Entity
   # y: 743
   safe: false
   maxSpeed: 500
-  invmass: 1
   noclip: false # TODO: Does setting this true mean it's shared across instances??
+  # TODO: advanceTime with listeners for managing timers and stuff
+  # Or, have global absolute time
+  gunTimeoutDefault: 0.01
+  gunTimeout: 0
+  safety:
+    west: Infinity
+    north: Infinity
+    east: -1
+    south: -1
 
-  constructor: (layer, player, options) ->
+  constructor: (layer, simulator, player, options) ->
     @posClamp = new Vector2d(0, 1024 * 16)
     @velClamp = new Vector2d(-@maxSpeed, @maxSpeed)
 
     super(
       layer,
+      simulator,
       # new Vector2d(8196, 12135), # safety
-      new Vector2d(8136, 11784), # Touching safety wall
+      # new Vector2d(8136, 11784), # Touching safety wall
+      new Vector2d(8136, 11428),
       new Vector2d(0, 0), #vel
       32, 32 # w,h
     )
@@ -42,6 +52,12 @@ class Ship extends Entity
     @player = player
     @options = options
     @keys = options.keys
+    @gunTimeout = @gunTimeoutDefault
+    @safety =
+      west: Infinity
+      north: Infinity
+      east: -1
+      south: -1
 
     # TODO: Make asset jsons for this and other ships
     base = PIXI.BaseTexture.fromImage("assets/shared/graphics/ship#{options.ship}.png")
@@ -60,9 +76,16 @@ class Ship extends Entity
       @_movie.position.x = layer.scene.viewport.hw
       @_movie.position.y = layer.scene.viewport.hh
 
+    @bullets = []
+
     @_displayObject = @_movie
 
   update: ->
+    # Ship must be surrounded by safezone to be considered safe
+    @safe = @safety.west <= @_extent.west &&
+            @safety.north <= @_extent.north &&
+            @safety.east >= @_extent.east &&
+            @safety.south >= @_extent.south
     @angle = (Math.round(@rawAngle * 40) / 40) * Math.PI * 2
     texture = Math.round((@angle * @_textures.length) / (2 * Math.PI))
     i = Math.mod(texture, @_textures.length)
@@ -70,39 +93,36 @@ class Ship extends Entity
     super() unless @player
 
   simulate: (delta) ->
+    @gunTimeout -= delta if @gunTimeout > 0
+    @safety.west = @safety.north = Infinity
+    @safety.east = @safety.south = -1
+
     super(delta)
 
-    minSafeX = minSafeY = Infinity
-    maxSafeX = maxSafeY = -1
+    if @safe
+      for bullet in @bullets
+        bullet.expire()
+      @bullets = []
 
     @pos.clamp(@posClamp, @posClamp)
 
-    # Ship must be surrounded by safezone to be considered safe
-    @safe = minSafeX <= @_extent.west &&
-             minSafeY <= @_extent.north &&
-             maxSafeX >= @_extent.east &&
-             maxSafeY >= @_extent.south
-
-    
     @tx = @pos.x / 16
     @ty = @pos.y / 16
 
-  minSafeX = minSafeY = Infinity
-  maxSafeX = maxSafeY = -1
   collide: (entity) ->
     return unless entity.constructor == Tile
 
     if entity.index == 170
-      minSafeX = Math.min(minSafeX, entity._extent.west)
-      minSafeY = Math.min(minSafeY, entity._extent.north)
-      maxSafeX = Math.max(maxSafeX, entity._extent.east)
-      maxSafeY = Math.max(maxSafeY, entity._extent.south)
+      @safety.west = Math.min(@safety.west, entity._extent.west)
+      @safety.north = Math.min(@safety.north, entity._extent.north)
+      @safety.east = Math.max(@safety.east, entity._extent.east)
+      @safety.south = Math.max(@safety.south, entity._extent.south)
 
     # TODO: Where to store collision objects
     # collide = entity.index < 127
     super(entity) if !@noclip && entity.index != 170
       
-  onKeys: (keys, delta) ->
+  onKeys: (keys, simulator, delta) ->
     # Rotation
     x = 0
     x -= 1 if keys.left
@@ -122,6 +142,11 @@ class Ship extends Entity
     # TODO: Disable in production
     @vel.clear() if keys.fullstop
 
-    @vel.clear() if keys.fire && @safe
+    if keys.fire
+      if @safe
+        @vel.clear()
+      else if @gunTimeout <= 0
+        @bullets.push(new Bullet(@, simulator, 2, true))
+        @gunTimeout = @gunTimeoutDefault
 
     @noclip = @keys.noclip

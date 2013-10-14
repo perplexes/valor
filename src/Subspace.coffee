@@ -33,22 +33,19 @@ class Subspace
     # HUD
 
     @starfield = new Starfield(@scene)
-    @scene.addLayer(@starfield)
 
-    @mapLayer = new Layer(@scene)
+    @mapLayer = new Layer("map", @scene)
     @map = new Map(@mapLayer)
 
-    # @projectileLayer = new Layer(@scene)
+    @projectileLayer = new Layer("projectile", @scene)
 
-    @otherShipsLayer = new Layer(@scene)
-    @othership = new Ship(@otherShipsLayer, false, {ship: 1})
-    @simulator.addObject(@othership)
+    @otherShipsLayer = new Layer("otherships", @scene)
+    @othership = new Ship(@otherShipsLayer, @simulator, false, {ship: 1})
 
-    @selfShipLayer = new Layer(@scene)
-    @ship = new Ship(@selfShipLayer, true, {ship: 0, keys: @keys})
-    @simulator.addObject(@ship)
+    @selfShipLayer = new Layer("selfship", @scene)
+    @ship = new Ship(@selfShipLayer, @simulator, true, {ship: 0, keys: @keys})
 
-    # @effectsLayer = new Layer(@scene)
+    @effectsLayer = new Layer("effects", @scene)
     
     @scene.viewport.pos = @ship.pos
 
@@ -67,13 +64,13 @@ class Subspace
 
       # Events
       @handleKeys(delta_s)
-      @ship.onKeys(@keys, delta_s)
+      @ship.onKeys(@keys, @simulator, delta_s)
 
       # Have the other ship follow player (AI?)
-      r = Math.sqrt(Math.pow(@ship.pos.x - @othership.pos.x, 2) + Math.pow(@ship.pos.y - @othership.pos.y, 2))
-      angle = Math.atan2(@ship.pos.y - @othership.pos.y, @ship.pos.x - @othership.pos.x) + (Math.PI/2)
-      @othership.rawAngle = angle/(2*Math.PI)
-      @othership.vel.addPolar(r * delta_s/2, angle)
+      # r = Math.sqrt(Math.pow(@ship.pos.x - @othership.pos.x, 2) + Math.pow(@ship.pos.y - @othership.pos.y, 2))
+      # angle = Math.atan2(@ship.pos.y - @othership.pos.y, @ship.pos.x - @othership.pos.x) + (Math.PI/2)
+      # @othership.rawAngle = angle/(2*Math.PI)
+      # @othership.vel.addPolar(r * delta_s/2, angle)
 
       # Run simulation
       @simulator.simulate(delta_s)
@@ -86,14 +83,18 @@ class Subspace
         @drawDebug({
           ship: [@ship.pos.x, @ship.pos.y, @ship.rawAngle, @ship.angle],
           shipVel: [@ship.vel.x, @ship.vel.y],
+          safety: @ship.safety,
+          safe: @ship.safe,
           fps: 1/delta * 1000,
           keys: @keys,
           objects: @scene.objects(),
           children: @scene.stage.children.length,
-          tiles: @mapLayer.objects,
-          ships: @otherShipsLayer.objects,
+          tiles: @mapLayer.entities,
+          ships: @otherShipsLayer.entities,
+          projectiles: @projectileLayer.entities,
           o: [@othership.pos.x, @othership.pos.y, @othership.rawAngle],
-          angle: angle
+          simulating: @simulator.objects.length
+          # angle: angle
         })
 
       @scene.render()
@@ -116,7 +117,10 @@ class Subspace
             else # is Object
               str += "{#{inspect(v, d+1).join(', ')}}"
           else
-            str += JSON.stringify(v)
+            rep = JSON.stringify(v)
+            if rep == 'null'
+              rep = v.toString()
+            str += rep
         str
 
     $(@debug).html(inspect(obj).join('<br/>'))

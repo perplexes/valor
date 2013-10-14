@@ -1,5 +1,13 @@
 class Physics
   @collision: (a, b) ->
+    # debugger if a.west == null
+    # debugger if a.east == null
+    # debugger if a.north == null
+    # debugger if a.south == null
+    # debugger if b.west == null
+    # debugger if b.east == null
+    # debugger if b.north == null
+    # debugger if b.south == null
     # Exit with no intersection if found separated along an axis
     return false if a.east < b.west || a.west > b.east
     return false if a.south < b.north || a.north > b.south
@@ -78,7 +86,8 @@ class Physics
     return null if vn > 0
 
     # TODO: Programmable bounciness
-    e = 0.727 * Math.abs(vn / a.maxSpeed)
+    e = a.bounciness
+    e *= Math.abs(vn / a.maxSpeed) if a.maxSpeed?
 
     j = -(1 + e) * vn
     j /= a.invmass + b.invmass

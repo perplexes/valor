@@ -1,6 +1,7 @@
 # TODO: touching pos should update extent
 class Entity
   layer: null
+  simulator: null
   pos: new Vector2d(0,0) # Vector2d
   vel: new Vector2d(0,0) # Vector2d, per second?
   scaledV: new Vector2d(0,0)
@@ -9,14 +10,18 @@ class Entity
   hw: 0
   hh: 0
   zcode: 0
-  invmass: 0
+  invmass: 1
   _sceneNode: null
   _displayObject: null
   hash: 0
   objectCounter = 0
+  lifetime: null
+  maxSpeed: null
+  bounciness: 0.727
 
-  constructor: (layer, pos, vel, w, h) ->
+  constructor: (layer, simulator, pos, vel, w, h) ->
     @layer = layer if layer?
+    @simulator = simulator if simulator?
     @pos = pos if pos?
     @vel = vel if vel?
     @w = w
@@ -30,10 +35,21 @@ class Entity
       south: 0
     @extent()
 
-    layer.insert(@) if layer?
+    @layer.insert(@) if @layer?
+    @simulator.addObject(@) if @simulator?
+
     @hash = (objectCounter += 1)
 
   simulate: (delta) ->
+    # TODO: Better place for this?
+    if @lifetime
+      if @lifetime <= 0
+        @layer.remove(@) if @layer?
+        @simulator.removeObject(@) if @simulator?
+        return
+      else
+        @lifetime -= delta
+
     @scaledV.clear()
     @scaledV.add(@vel).scaleXY(delta, delta)
     @layer.remove(@)
@@ -56,3 +72,6 @@ class Entity
     @_extent.east = @pos.x + @hw
     @_extent.south = @pos.y + @hh
     @_extent
+
+  expire: ->
+    @lifetime = 0

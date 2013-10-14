@@ -22,10 +22,12 @@ class Scene
   update: ->
     @viewport.extent()
     layer.update() for layer in @layers
+    null
 
   render: ->
     @renderer.render(@stage)
     layer.sweep() for layer in @layers
+    null
 
   objects: ->
     sum = 0

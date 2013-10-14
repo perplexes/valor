@@ -16,6 +16,8 @@ class Starfield
 
     for level in @levels
       @container.addChild(level._displayObject)
+
+    @scene.addLayer(@)
     
   generateTile: (ratio, color) ->
     buffer = document.createElement('canvas')
