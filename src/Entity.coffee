@@ -45,8 +45,7 @@ class Entity
     # TODO: Better place for this?
     if @lifetime
       if @lifetime <= 0
-        @layer.remove(@) if @layer?
-        @simulator.removeObject(@) if @simulator?
+        @expire()
         return
       else
         @lifetime -= delta
@@ -76,3 +75,5 @@ class Entity
 
   expire: ->
     @lifetime = 0
+    @layer.remove(@) if @layer?
+    @simulator.removeObject(@) if @simulator?

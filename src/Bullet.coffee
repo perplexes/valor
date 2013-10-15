@@ -1,6 +1,7 @@
 class Bullet extends Entity
   bounciness: 1
   friction: 0
+  damage: 200
   base = PIXI.BaseTexture.fromImage("assets/shared/graphics/bullets.png")
   textures = []
   for y in [0..10]
@@ -46,9 +47,9 @@ class Bullet extends Entity
         super(object)
 
     if object.constructor == Ship && object != @ship
-      @
-      # object.onDamage(@, 100)
-      # explode effect
+      object.onDamage(@, @damage)
+      @expire()
+      Effect.create('explode0', @pos, null)
 
   update: ->
     if @ship.safe

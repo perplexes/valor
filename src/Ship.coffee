@@ -27,8 +27,13 @@ class Ship extends Entity
   noclip: false # TODO: Does setting this true mean it's shared across instances??
   # TODO: advanceTime with listeners for managing timers and stuff
   # Or, have global absolute time
-  gunTimeoutDefault: 0.250
+  gunTimeoutDefault: 0.5
   gunTimeout: 0
+  maxEnergy: 1000
+  energy: @::maxEnergy
+  # Bullets
+  fireEnergy: 20
+  alive: true
   safety:
     west: Infinity
     north: Infinity
@@ -58,6 +63,7 @@ class Ship extends Entity
       north: Infinity
       east: -1
       south: -1
+    @energy = @maxEnergy
 
     # TODO: Make asset jsons for this and other ships
     base = PIXI.BaseTexture.fromImage("assets/shared/graphics/ship#{options.ship}.png")
@@ -101,7 +107,7 @@ class Ship extends Entity
 
     if @safe
       for bullet in @bullets
-        bullet.expire()
+        bullet.expire() if bullet.lifetime > 0
       @bullets = []
 
     @pos.clamp(@posClamp, @posClamp)
@@ -145,10 +151,23 @@ class Ship extends Entity
     if keys.fire
       if @safe
         @vel.clear()
-      else if @gunTimeout <= 0
+      else if @gunTimeout <= 0 && @energy >= @fireEnergy
+        @energy -= @fireEnergy
         # TODO: we're leaking objects here unless they go to safety
         # Maybe have a list of parents that retain this object
         @bullets.push(new Bullet(@, simulator, 2, true))
         @gunTimeout = @gunTimeoutDefault
 
     @noclip = @keys.noclip
+
+  onDamage: (projectile, damage) ->
+    return unless @alive
+    # TODO: Damage from explosions nearby
+    @energy -= damage
+    if @energy <= 0
+      @explode()
+
+  explode: ->
+    @alive = false
+    @expire()
+    Effect.create('explode1', @pos, @vel)

@@ -3,6 +3,7 @@ class Simulator
     @scene = scene
     @layers = scene.layers
     @objects = new DLinkedList()
+    Simulator.simulator = @
 
   addObject: (object) ->
     object._simulatorNode = @objects.insert(object)

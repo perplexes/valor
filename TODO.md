@@ -90,3 +90,5 @@ Object pooling
 x bind extent obj to things that need it so we don't need to make new functions to capture the scope
 
 Different layers for selfship/othership
+
+Show tile damage, battle scars
