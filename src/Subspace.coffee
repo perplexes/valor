@@ -67,10 +67,11 @@ class Subspace
       @ship.onKeys(@keys, @simulator, delta_s)
 
       # Have the other ship follow player (AI?)
-      # r = Math.sqrt(Math.pow(@ship.pos.x - @othership.pos.x, 2) + Math.pow(@ship.pos.y - @othership.pos.y, 2))
-      # angle = Math.atan2(@ship.pos.y - @othership.pos.y, @ship.pos.x - @othership.pos.x) + (Math.PI/2)
-      # @othership.rawAngle = angle/(2*Math.PI)
-      # @othership.vel.addPolar(r * delta_s/2, angle)
+      r = Math.sqrt(Math.pow(@ship.pos.x - @othership.pos.x, 2) + Math.pow(@ship.pos.y - @othership.pos.y, 2))
+      r -= @ship.w*2
+      angle = Math.atan2(@ship.pos.y - @othership.pos.y, @ship.pos.x - @othership.pos.x) + (Math.PI/2)
+      @othership.rawAngle = angle/(2*Math.PI)
+      @othership.vel.clear().addPolar(r, angle)
 
       # Run simulation
       @simulator.simulate(delta_s)
