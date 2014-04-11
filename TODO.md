@@ -43,6 +43,10 @@
 - [ ] configuration with yaml
 - [ ] debug config pane to adjust paramaters during gameplay, serialize to yaml (but in same order as old config)
 
+# Random
+- [ ] Use vendorer ruby gem for the js vendor files.
+- [ ] Figure out require.js
+
 # Research
 - [x] pixi.js
 - [ ] JS rbtree implementations
