@@ -11,7 +11,7 @@ class Map
 
   load: (callback) ->
     oReq = new XMLHttpRequest()
-    # TODO: Parameterize
+    # TODO: Parameterize, drag n drop
     oReq.open "GET", "../arenas/trench9.lvl", true
     oReq.responseType = "arraybuffer"
     oReq.onload = (oEvent) =>

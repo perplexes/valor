@@ -1,5 +1,6 @@
 # TODO: Use RenderTexture?
 class Starfield
+  LEVELS = 6
   constructor: (scene) ->
     @scene = scene
     @viewport = scene.viewport
@@ -34,6 +35,7 @@ class Starfield
     # ctx.fillStyle = 'black'
     # ctx.fillRect(0,0,1024,1024)
     # ctx.restore()
+    # TODO: We want less stars in the foreground, more in background
     points = for i in [0...(@density * (Math.pow(ratio, 2)))]
       x = Math.random() * @tilesize
       y = Math.random() * @tilesize
