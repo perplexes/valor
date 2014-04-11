@@ -34,18 +34,18 @@ class Subspace
 
     @starfield = new Starfield(@scene)
 
-    @mapLayer = new Layer("map", @scene)
+    @mapLayer = @scene.layer("map")
     @map = new Map(@mapLayer)
 
-    @projectileLayer = new Layer("projectile", @scene)
+    @projectileLayer = @scene.layer("projectile")
 
-    @otherShipsLayer = new Layer("otherships", @scene)
+    @otherShipsLayer = @scene.layer("otherships")
     @othership = new Ship(@otherShipsLayer, @simulator, false, {ship: 1})
 
-    @selfShipLayer = new Layer("selfship", @scene)
+    @selfShipLayer = @scene.layer("selfship")
     @ship = new Ship(@selfShipLayer, @simulator, true, {ship: 0, keys: @keys})
 
-    @effectsLayer = new Layer("effects", @scene)
+    @effectsLayer = @scene.layer("effects")
     
     @scene.viewport.pos = @ship.pos
 

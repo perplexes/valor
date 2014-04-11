@@ -19,6 +19,11 @@ class Scene
     @layers.push layer
     @stage.addChild(layer.container)
 
+  layer: (name) ->
+    l = new Layer(name, @viewport)
+    @addLayer(l)
+    l
+
   update: ->
     @viewport.extent()
     layer.update() for layer in @layers
