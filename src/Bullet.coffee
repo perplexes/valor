@@ -9,7 +9,7 @@ class Bullet extends Entity
   # TODO: This should be automated somehow
   base = PIXI.BaseTexture.fromImage("assets/shared/graphics/bullets.png")
   textures = []
-  for y in [0..10]
+  for y in [0..9]
     row = []
     for x in [0..3]
       row.push(new PIXI.Texture(base, {x: x*5, y: y*5, width: 5, height: 5}))
