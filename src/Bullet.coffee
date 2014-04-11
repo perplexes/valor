@@ -2,6 +2,11 @@ class Bullet extends Entity
   bounciness: 1
   friction: 0
   damage: 200
+  speed: 100
+  w: 5
+  h: 5
+
+  # TODO: This should be automated somehow
   base = PIXI.BaseTexture.fromImage("assets/shared/graphics/bullets.png")
   textures = []
   for y in [0..10]
@@ -9,6 +14,7 @@ class Bullet extends Entity
     for x in [0..3]
       row.push(new PIXI.Texture(base, {x: x*5, y: y*5, width: 5, height: 5}))
     textures.push row
+
   constructor: (ship, simulator, level, bouncing) ->
     @ship = ship
     @simulator = simulator
@@ -21,8 +27,8 @@ class Bullet extends Entity
       Layer.layers['projectile'],
       simulator,
       new Vector2d(0,0).add(ship.pos).addPolar(ship.hw, ship.angle),
-      new Vector2d(0,0).add(ship.vel).addPolar(100, ship.angle),
-      5, 5
+      new Vector2d(0,0).add(ship.vel).addPolar(@speed, ship.angle),
+      @w, @h
     )
 
     movieRow = level
