@@ -34,11 +34,6 @@ class Ship extends Entity
   # Bullets
   fireEnergy: 20
   alive: true
-  safety:
-    west: Infinity
-    north: Infinity
-    east: -1
-    south: -1
 
   constructor: (layer, simulator, player, options) ->
     @posClamp = new Vector2d(0, 1024 * 16)
@@ -59,7 +54,6 @@ class Ship extends Entity
     @keys = options.keys
     @gunTimeout = @gunTimeoutDefault
     @safety = new Extent(Infinity, Infinity, -1, -1)
-
     @energy = @maxEnergy
 
     # TODO: Make asset jsons for this and other ships
@@ -116,11 +110,7 @@ class Ship extends Entity
     return unless entity.constructor == Tile
 
     if entity.index == 170
-      # TODO: Refactor with extent
-      @safety.west = Math.min(@safety.west, entity._extent.west)
-      @safety.north = Math.min(@safety.north, entity._extent.north)
-      @safety.east = Math.max(@safety.east, entity._extent.east)
-      @safety.south = Math.max(@safety.south, entity._extent.south)
+      @safety.minmax(entity._extent)
 
     # TODO: Where to store collision objects
     # collide = entity.index < 127

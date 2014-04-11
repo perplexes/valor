@@ -20,6 +20,13 @@ class Extent
     @lr.x >= extent.lr.x &&
     @lr.y >= extent.lr.y
 
+  minmax: (extent) ->
+    @ul.x = Math.min(@ul.x, extent.ul.x)
+    @ul.y = Math.min(@ul.y, extent.ul.y)
+    @lr.x = Math.max(@lr.x, extent.lr.x)
+    @lr.y = Math.max(@lr.y, extent.lr.y)
+    @
+
   clear: ->
     @ul.clear()
     @lr.clear()
