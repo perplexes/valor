@@ -3,6 +3,7 @@ class Simulator
     @scene = scene
     @layers = scene.layers
     @objects = new DLinkedList()
+    @collisions = []
     Simulator.simulator = @
 
   addObject: (object) ->
@@ -13,7 +14,8 @@ class Simulator
 
   # Ship -> Tile
   # Bullet -> Tile, Ship
-  simulate: (delta) ->
+  step: (delta) ->
+    @collisions = []
     @objects.each (object) =>
       object.simulate(delta)
 
@@ -22,5 +24,6 @@ class Simulator
         layer.tree.searchExpand(object._extent, 16, 16, (nearObject) ->
           return false if object == nearObject
           if Physics.collision(object._extent, nearObject._extent)
+            @collisions.push nearObject
             object.collide(nearObject)
         , @)

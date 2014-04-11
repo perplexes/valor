@@ -79,22 +79,26 @@ class Subspace
       # Update screen positions
       @scene.update()
 
-      # @drawDebugCollisions(@viewport, @ship, collisions, @onctx)
+      if @keys.debugCollisions
+        @drawDebugCollisions(@ship, @simulator.collisions)
+
       if @keys.debugMessages
         @drawDebug({
           ship: [@ship.pos.x, @ship.pos.y, @ship.rawAngle, @ship.angle],
           shipVel: [@ship.vel.x, @ship.vel.y],
-          safety: @ship.safety,
-          safe: @ship.safe,
-          fps: 1/delta * 1000,
+          # viewport: @scene.viewport,
+          # map: @map,
+          # safety: @ship.safety,
+          # safe: @ship.safe,
+          fps: 1/delta_s,
           keys: @keys,
           objects: @scene.objects(),
           children: @scene.stage.children.length,
           tiles: @mapLayer.entities,
           ships: @otherShipsLayer.entities,
           projectiles: @projectileLayer.entities,
-          o: [@othership.pos.x, @othership.pos.y, @othership.rawAngle],
-          simulating: @simulator.objects.length
+          # o: [@othership.pos.x, @othership.pos.y, @othership.rawAngle],
+          # simulating: @simulator.objects.length
           # angle: angle
         })
 
@@ -127,28 +131,36 @@ class Subspace
     $(@debug).html(inspect(obj).join('<br/>'))
 
   # TODO: Use pixi
-  drawDebugCollisions: (viewport, ship, tiles, ctx) ->
-    origin =
-      x: ship.x - viewport.width / 2
-      y: ship.y - viewport.height / 2
+  adjPoint = new Vector2d
+  drawDebugCollisions: (ship, objects) ->
+    unless @collisionGraphics
+      @collisionGraphics = new PIXI.Graphics
+      @scene.stage.addChild(@collisionGraphics)
 
-    for tile in tiles
-      ctx.save()
-      ctx.fillStyle = "rgba(255, 0, 0, 0.5)"
-      x = tile.min.x - origin.x
-      y = tile.min.y - origin.y
-      ctx.fillRect(x, y, 16, 16)
-      ctx.restore()
+    @collisionGraphics.clear()
+    graphics = @collisionGraphics
 
-    ctx.save()
-    ctx.fillStyle = "rgba(0,255,0,0.5)"
-    ctx.fillRect(
-      ship.x - ship.w / 2 - origin.x,
-      ship.y - ship.h / 2 - origin.y,
-      ship.w,
-      ship.h
-    )
-    ctx.restore()
+    graphics.beginFill(0x0000FF)
+    graphics.drawRect(0,0,50,50)
+    graphics.endFill()
+
+    # Tile color
+    graphics.beginFill(0xFF0000, 0.5)
+
+    for object in objects
+      adjPoint.clear().add(object._extent.ul).sub(@scene.viewport._extent.ul)
+      graphics.drawRect(adjPoint.x, adjPoint.y, object.w, object.h)
+
+    graphics.endFill()
+
+    # Ship color
+    graphics.beginFill(0x00FF00, 0.5)
+
+    adjPoint.clear().add(ship._extent.ul).sub(@scene.viewport._extent.ul)
+    graphics.drawRect(adjPoint.x, adjPoint.y, ship.w, ship.h)
+
+    graphics.endFill()
+    debugger if @keys.debugger
 
   # TODO: emit events
   keyListen: (e, set = true) ->
@@ -162,6 +174,7 @@ class Subspace
       when KeyEvent.DOM_VK_D then @keys.debugger = set
       when KeyEvent.DOM_VK_N then if set then @keys.noclip = !@keys.noclip
       when KeyEvent.DOM_VK_M then if set then @keys.debugMessages = !@keys.debugMessages
+      when KeyEvent.DOM_VK_C then if set then @keys.debugCollisions = !@keys.debugCollisions
       when KeyEvent.DOM_VK_SPACE then @keys.fire = set
       else listened = false
     if listened
@@ -169,9 +182,9 @@ class Subspace
       e.stopPropagation()
 
   handleKeys: (delta) ->
-    if @keys.debugger
-      @keys.debugger = false
-      debugger
+    # if @keys.debugger
+    #   @keys.debugger = false
+    #   debugger
 
 if (typeof KeyEvent == "undefined")
   KeyEvent =
