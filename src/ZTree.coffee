@@ -1,5 +1,9 @@
 class ZTree
   B = [0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF]
+  # 01010101010101010101010101010101
+  # 00110011001100110011001100110011
+  # 00001111000011110000111100001111
+  # 00000000111111110000000011111111
   S = [1, 2, 4, 8]
   constructor: () ->
     @tree = new RBTree((a, b) ->
@@ -31,21 +35,21 @@ class ZTree
 
     return x | (y << 1)
 
+  expandExtent = new Extent
   searchExpand: (extent, x, y, callback, scope) ->
-    @search(
-      extent.west - x,
-      extent.north - y,
-      extent.east + x,
-      extent.south + y,
+    expandExtent.clear().add(extent).expand(x, y)
+    @searchExtent(
+      expandExtent,
       callback,
-      scope)
+      scope
+    )
 
   searchExtent: (extent, callback, scope) ->
     @search(
-      extent.west,
-      extent.north,
-      extent.east,
-      extent.south,
+      extent.ul.x,
+      extent.ul.y,
+      extent.lr.x,
+      extent.lr.y,
       callback,
       scope
     )

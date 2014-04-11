@@ -9,8 +9,8 @@ class Physics
     # debugger if b.north == null
     # debugger if b.south == null
     # Exit with no intersection if found separated along an axis
-    return false if a.east < b.west || a.west > b.east
-    return false if a.south < b.north || a.north > b.south
+    return false if a.lr.x < b.ul.x || a.ul.x > b.lr.x
+    return false if a.lr.y < b.ul.y || a.ul.y > b.lr.y
    
     # No separating axis found, therefore there is at least one overlapping axis
     true
@@ -31,8 +31,7 @@ class Physics
   @overlap: (a, b) ->
     manifold.penetration = 0
 
-    normal.clear()
-    normal.add(b.pos).sub(a.pos)
+    normal.clear().add(b.pos).sub(a.pos)
 
     x_overlap = a.hw + b.hw - Math.abs(normal.x)
 
@@ -76,12 +75,11 @@ class Physics
   @resolve: (a, b) ->
     return null unless m = @overlap(a, b)
 
-    rv.clear()
-    rv.add(b.vel).sub(a.vel)
+    rv.clear().add(b.vel).sub(a.vel)
 
     vn = rv.dot(m.normal)
 
-    # Separating velocity
+    # Separating velocity, if it's > 0, they're moving apart
     return null if vn > 0
 
     e = a.bounciness
@@ -90,10 +88,9 @@ class Physics
     j = -(1 + e) * vn
     # j /= a.invmass + b.invmass
 
-    impulse.clear()
-    impulse.add(m.normal).scaleXY(j, j)
+    impulse.clear().add(m.normal).scaleXX(j).scaleXX(a.invmass)
 
-    a.vel.subXY(a.invmass * impulse.x, a.invmass * impulse.y)
+    a.vel.sub(impulse)
       # .scaleXY(a.friction, a.friction)
       
 
@@ -109,7 +106,8 @@ class Physics
     slop = 0.01
     c = Math.max(m.penetration - slop, 0)# * percent
 
-    a.pos.subXY(a.invmass * c * m.normal.x, a.invmass * c * m.normal.y)
+    m.normal.scaleXX(c * a.invmass)
+    a.pos.sub(m.normal)
     # b.pos.addXY(b.invmass * c * m.normal.x, b.invmass * c * m.normal.y)
 
       # Combines many surfaces into one surface

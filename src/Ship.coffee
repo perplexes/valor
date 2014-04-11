@@ -23,7 +23,7 @@ class Ship extends Entity
   # x: 5614
   # y: 743
   safe: false
-  maxSpeed: 500
+  maxSpeed: 500 # pixels / second
   noclip: false # TODO: Does setting this true mean it's shared across instances??
   # TODO: advanceTime with listeners for managing timers and stuff
   # Or, have global absolute time
@@ -58,11 +58,8 @@ class Ship extends Entity
     @options = options
     @keys = options.keys
     @gunTimeout = @gunTimeoutDefault
-    @safety =
-      west: Infinity
-      north: Infinity
-      east: -1
-      south: -1
+    @safety = new Extent(Infinity, Infinity, -1, -1)
+
     @energy = @maxEnergy
 
     # TODO: Make asset jsons for this and other ships
@@ -73,14 +70,14 @@ class Ship extends Entity
         @_textures.push(new PIXI.Texture(base, {x: x * 36 + 2, y: y * 36 + 2, width: 32, height: 32}))
 
     @_movie = new PIXI.MovieClip(@_textures)
-    @_movie.width = @w
-    @_movie.height = @h
+    @_movie.width = 32
+    @_movie.height = 32
     @_movie.anchor.x = 0.5
     @_movie.anchor.y = 0.5
 
     if @player
-      @_movie.position.x = layer.scene.viewport.hw
-      @_movie.position.y = layer.scene.viewport.hh
+      @_movie.position.x = layer.viewport.hw
+      @_movie.position.y = layer.viewport.hh
 
     @bullets = []
 
@@ -88,10 +85,8 @@ class Ship extends Entity
 
   update: ->
     # Ship must be surrounded by safezone to be considered safe
-    @safe = @safety.west <= @_extent.west &&
-            @safety.north <= @_extent.north &&
-            @safety.east >= @_extent.east &&
-            @safety.south >= @_extent.south
+    @safe = @safety.surrounds(@_extent)
+
     @angle = (Math.round(@rawAngle * 40) / 40) * Math.PI * 2
     texture = Math.round((@angle * @_textures.length) / (2 * Math.PI))
     i = Math.mod(texture, @_textures.length)
@@ -99,9 +94,11 @@ class Ship extends Entity
     super() unless @player
 
   simulate: (delta) ->
+    @vel.clamp(@velClamp)
+
     @gunTimeout -= delta if @gunTimeout > 0
-    @safety.west = @safety.north = Infinity
-    @safety.east = @safety.south = -1
+
+    @safety.reset()
 
     super(delta)
 
@@ -110,7 +107,7 @@ class Ship extends Entity
         bullet.expire() if bullet.lifetime > 0
       @bullets = []
 
-    @pos.clamp(@posClamp, @posClamp)
+    @pos.clamp(@posClamp)
 
     @tx = @pos.x / 16
     @ty = @pos.y / 16
@@ -119,6 +116,7 @@ class Ship extends Entity
     return unless entity.constructor == Tile
 
     if entity.index == 170
+      # TODO: Refactor with extent
       @safety.west = Math.min(@safety.west, entity._extent.west)
       @safety.north = Math.min(@safety.north, entity._extent.north)
       @safety.east = Math.max(@safety.east, entity._extent.east)
@@ -142,8 +140,9 @@ class Ship extends Entity
     # In increments of how many textures there are.
     @rawAngle += 0.7 * delta * x
 
+    # 400 .. pixels per second
+    # TODO: Parameterize
     @vel.addPolar(400 * delta * y, @angle)
-    @vel.clamp(@velClamp, @velClamp)
 
     # TODO: Disable in production
     @vel.clear() if keys.fullstop
@@ -162,6 +161,7 @@ class Ship extends Entity
 
   onDamage: (projectile, damage) ->
     return unless @alive
+    return if @safe
     # TODO: Damage from explosions nearby
     @energy -= damage
     if @energy <= 0

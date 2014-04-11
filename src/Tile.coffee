@@ -9,10 +9,14 @@ class Tile extends Entity
   _drawn: false
   mapNode: null
   invmass: 0
+  w: 16
+  h: 16
+  offset: new Vector2d(@::w/2, @::h/2)
 
   mapStruct = restruct.int32lu("struct")
   constructor: (tx, ty, index, texture, meta, map) ->
-    super(map.layer, null, new Vector2d(tx * 16 + 8, ty * 16 + 8), null, 16, 16)
+    pos = new Vector2d(tx, ty).scaleXY(@w, @h).add(@offset)
+    super(map.layer, null, pos, null, @w, @h)
 
     @tx = tx
     @ty = ty

@@ -1,10 +1,10 @@
 class Layer
   @layers = {}
-  constructor: (name, scene) ->
+  constructor: (name, viewport) ->
     @name = name
     Layer.layers[name] = @
     
-    @scene = scene
+    @viewport = viewport
     @tree = new ZTree()
     @container = new PIXI.DisplayObjectContainer()
     # "from space" for scene removal
@@ -12,11 +12,15 @@ class Layer
     # "to space" for keeping around
     @black = new DLinkedList()
 
-    @scene.addLayer(@)
-
   insert: (entity) ->
     entity._hasGametreeNode = @tree.insert(entity)
 
+  # TODO: Rename following methods, too confusing.
+  # remove vs. removeChild:
+  # remove removes it from being tracked in this layer's gametree for view/collision culling
+  # removeChild removes the display object from the objects being drawn to the Stage
+  # Maybe.. stopTracking, deregister, something
+  # and exuent :P
   remove: (entity) ->
     return unless entity._hasGametreeNode
     @tree.remove(entity)
@@ -43,7 +47,7 @@ class Layer
   update: (gametime) ->
     @entities = 0
     @gametime = gametime
-    @tree.searchExpand(@scene.viewport._extent, 16, 16, @updateObject, @)
+    @tree.searchExpand(@viewport._extent, 16, 16, @updateObject, @)
 
   # TODO: standardize property names (like Go??)
   updateObject: (entity) ->

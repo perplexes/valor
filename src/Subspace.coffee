@@ -74,7 +74,7 @@ class Subspace
       @othership.vel.clear().addPolar(r, angle)
 
       # Run simulation
-      @simulator.simulate(delta_s)
+      @simulator.step(delta_s)
 
       # Update screen positions
       @scene.update()
