@@ -11,15 +11,15 @@ class Effect extends Entity
       for x in [0..cols-1]
         textures.push(new PIXI.Texture(base, {x: x*tWidth, y: y*tHeight, width: tWidth, height: tHeight}))
 
-    effects[name] = textures
+    effects[name] = {w: width, h: height, textures: textures}
 
   @load("explode0", "assets/shared/graphics/explode0.png", 112, 16, 1, 7)
   @load("explode1", "assets/shared/graphics/explode1.png", 288, 288, 6, 6)
 
-  constructor: (textures, pos, vel) ->
-    @movie = new PIXI.MovieClip(textures)
-    @movie.width = 16
-    @movie.height = 16
+  constructor: (effectObj, pos, vel) ->
+    @movie = new PIXI.MovieClip(effectObj.textures)
+    @movie.width = effectObj.width
+    @movie.height = effectObj.height
     @movie.anchor.x = 0.5
     @movie.anchor.y = 0.5
     @movie.animationSpeed = 0.5
