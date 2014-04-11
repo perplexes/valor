@@ -17,6 +17,8 @@ class Subspace
     console.log('init')
     @debug = document.getElementById('debug')
 
+    @initStats()
+
     @keys = {debugMessages: false}
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
@@ -56,6 +58,7 @@ class Subspace
 
     # TODO: profiling
     draw = (ms) =>
+      @stats.begin()
       delta = ms - lastTime
       # We stopped the game, just assume a frame
       delta = 16 if delta > 1000
@@ -103,6 +106,7 @@ class Subspace
         })
 
       @scene.render()
+      @stats.end()
       requestAnimationFrame(draw)
     draw(lastTime)
 
@@ -185,6 +189,18 @@ class Subspace
     # if @keys.debugger
     #   @keys.debugger = false
     #   debugger
+
+  initStats: ->
+    @stats = new Stats()
+    @stats.setMode(0) # fps, 1: ms
+
+    # Align top-left
+    @stats.domElement.style.position = 'absolute'
+    @stats.domElement.style.right = '0px'
+    @stats.domElement.style.top = '0px'
+    @stats.domElement.style.zIndex = '10'
+
+    document.body.appendChild( @stats.domElement )
 
 if (typeof KeyEvent == "undefined")
   KeyEvent =
