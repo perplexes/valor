@@ -1,0 +1,23 @@
+require([
+  "vendor/restruct.js/restruct.js",
+  "vendor/jDataView/src/jDataView.js",
+  "vendor/jParser/src/jparser.js",
+  "vendor/js_bintrees/dist/rbtree.js",
+  "lib/models/Vector2d.js",
+  "lib/models/Extent.js",
+  "lib/models/Entity.js",
+  "lib/models/DLinkedList.js",
+  "lib/models/ZTree.js",
+  "lib/models/Viewport.js",
+  "lib/models/Layer.js",
+  "lib/models/Scene.js",
+  "lib/models/Simulator.js",
+  "lib/models/ArrayTree.js",
+  "lib/models/Physics.js",
+  "lib/models/Starfield.js",
+  "lib/models/Tile.js",
+  "lib/models/Map.js",
+  "lib/models/Bullet.js",
+  "lib/models/Ship.js",
+  "lib/models/Subspace.js"
+])

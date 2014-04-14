@@ -43,6 +43,9 @@
 - [ ] configuration with yaml
 - [ ] debug config pane to adjust paramaters during gameplay, serialize to yaml (but in same order as old config)
 
+# Bugs
+- [ ] improve collision resolution part 2: bullets can go through walls
+
 # Random
 - [ ] Use vendorer ruby gem for the js vendor files.
 - [ ] Figure out require.js
