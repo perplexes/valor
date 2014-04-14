@@ -11,6 +11,7 @@ class Scene
   renderer: null
   layers: {}
   views: {}
+  debug: document.getElementById('debug')
   layerOrder: [
     "Starfield",
     "Map",
@@ -25,12 +26,12 @@ class Scene
     @game = game
     @client = client
 
-    @debug = document.getElementById('debug')
+    @initPixi()
 
     for name in @layerOrder
       doc = new PIXI.DisplayObjectContainer()
       @stage.addChild(doc)
-      layers[name] = doc
+      @layers[name] = doc
 
     @width = document.body.clientWidth
     @height = window.innerHeight
@@ -38,7 +39,7 @@ class Scene
     @viewport = new Viewport(@width, @height)
     @viewport.pos = game.ship.pos
 
-    @starfield = new Starfield(layers["Starfield"], @viewport)
+    @starfield = new Starfield(@layers["Starfield"], @viewport)
 
   initPixi: ->
     @stage = new PIXI.Stage(0, false)
@@ -59,21 +60,21 @@ class Scene
     for hash, view in @views
       view.displayed = false
 
-    game.staticGraph.searchExpand(@viewport._extent, 16, 16, @updateEntity, @)
-    game.dynamicGraph.searchExpand(@viewport._extent, 16, 16, @updateEntity, @)
+    game.simulator.staticTree.searchExpand(@viewport._extent, 16, 16, @updateEntity, @)
+    game.simulator.dynamicTree.searchExpand(@viewport._extent, 16, 16, @updateEntity, @)
     @renderer.render(@stage)
 
     for hash, view in @views
       unless view.displayed
         view.remove()
-        delete views[hash]
+        delete @views[hash]
 
   updateEntity: (entity) ->
-    view = @views[entity.hash] ||= View.build(entity)
+    view = @views[entity.hash] ||= View.build(@, entity)
     updated = view.update(@viewport)
     unless updated
       view.remove()
-      delete views[entity.hash]
+      delete @views[entity.hash]
 
   objects: ->
     sum = 0

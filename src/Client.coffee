@@ -14,6 +14,7 @@ class Client
     # Update screen positions, then render
     game.register(@scene)
 
+    @initStats()
     game.before = => @stats.begin()
     game.after  = => @stats.end()
 
@@ -28,7 +29,7 @@ class Client
   step: (game, timestamp, delta_s) ->
     # Events
     # TODO: Clean this
-    @events.push event(timestamp)
+    @events.push @newEvent(timestamp)
 
     # TODO: Better name? Process events?
     @game.ship.onKeys(@keys, @game.simulator, delta_s)
@@ -137,7 +138,7 @@ class Client
       e.preventDefault()
       e.stopPropagation()
 
-  event: (timestamp) ->
+  newEvent: (timestamp) ->
     timestamp: timestamp,
     left: @keys.left,
     right: @keys.right,
@@ -156,6 +157,13 @@ class Client
     @stats.domElement.style.zIndex = '10'
 
     document.body.appendChild( @stats.domElement )
+
+document.addEventListener 'DOMContentLoaded', ->
+  console.log "DOMContentLoaded"
+  Asset.preload()
+  game = new Game
+  client = new Client(game)
+  client.start()
 
 if (typeof KeyEvent == "undefined")
   KeyEvent =

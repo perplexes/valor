@@ -14,7 +14,8 @@ class View
   # TODO: pool
   @build: (scene, entity) ->
     view = new viewMap[entity.constructor.name](entity)
-    view.layer = view.layerFor(scene, entity)
+    layerName = view.layerFor(scene, entity)
+    view.layer = scene.layers[layerName]
     view.layer.addChild(view.displayObject)
     view
 
@@ -26,7 +27,7 @@ class View
 
   update: (viewport) ->
     return false unless @entity
-    return false unless @entity.lifetime > 0
+    return false unless @entity.alive()
     return false unless @displayObject
 
     @displayed = true
@@ -41,8 +42,8 @@ class View
     true
 
   layerFor: (scene, entity) ->
-    layerName = layerMap[constructor.name]
-    scene.layers[layerName]
+    layerMap[constructor.name]
 
   remove: ->
-    layer.removeChild(@displayObject)
+    return true unless @layer
+    @layer.removeChild(@displayObject)

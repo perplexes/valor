@@ -5,7 +5,7 @@ Number.prototype.clamp = function(min, max) {
 `
 
 class Game
-  @observers: []
+  observers: []
 
   constructor: ->
     @simulator = new Simulator

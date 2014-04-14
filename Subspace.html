@@ -7,12 +7,47 @@
             Subspace: Valor
         </title>
         <style type="text/css">* { margin: 0; padding: 0; overflow: hidden; }</style>
-        <script type="text/javascript" data-main="lib/browser" src="vendor/require-2.1.11.js"></script>
+        <!-- main -->
+        <script type="text/javascript" src="vendor/restruct.js/restruct.js"></script>
+        <script type="text/javascript" src="vendor/jDataView/src/jDataView.js"></script>
+        <script type="text/javascript" src="vendor/jParser/src/jparser.js"></script>
+        <script type="text/javascript" src="vendor/js_bintrees/dist/rbtree.js"></script>
+        <script type="text/javascript" src="lib/models/Vector2d.js"></script>
+        <script type="text/javascript" src="lib/models/DLinkedList.js"></script>
+        <script type="text/javascript" src="lib/models/ArrayTree.js"></script>
+        <script type="text/javascript" src="lib/models/Extent.js"></script>
+        <script type="text/javascript" src="lib/models/ZTree.js"></script>
+        
+        <script type="text/javascript" src="lib/models/Entity.js"></script>
+        <script type="text/javascript" src="lib/models/Physics.js"></script>
+        <script type="text/javascript" src="lib/models/Ship.js"></script>
+        <script type="text/javascript" src="lib/models/Bullet.js"></script>
+        <script type="text/javascript" src="lib/models/Tile.js"></script>
+        <script type="text/javascript" src="lib/models/Effect.js"></script>
+        <script type="text/javascript" src="lib/models/AI.js"></script>
+        <script type="text/javascript" src="lib/models/Simulator.js"></script>
+        <script type="text/javascript" src="lib/models/Entity.js"></script>
+        <script type="text/javascript" src="lib/Game.js"></script>
+
+        <!-- client -->
+        <script type="text/javascript" src="vendor/pixi-1.5.2.dev.js"></script>
+        <script type="text/javascript" src="vendor/jquery-2.0.3.js"></script>
+        <script type="text/javascript" src="vendor/bmpimage/bmpimage2.js"></script>
+        <script type="text/javascript" src="vendor/stats.min.js"></script>
+        <script type="text/javascript" src="lib/views/View.js"></script>
+        <script type="text/javascript" src="lib/views/Asset.js"></script>
+        <script type="text/javascript" src="lib/views/BulletView.js"></script>
+        <script type="text/javascript" src="lib/views/Scene.js"></script>
+        <script type="text/javascript" src="lib/views/Map.js"></script>
+        <script type="text/javascript" src="lib/views/Viewport.js"></script>
+        <script type="text/javascript" src="lib/views/TileView.js"></script>
+        <script type="text/javascript" src="lib/views/ShipView.js"></script>
+        <script type="text/javascript" src="lib/views/EffectView.js"></script>
+        <script type="text/javascript" src="lib/views/Starfield.js"></script>
+        <script type="text/javascript" src="lib/Client.js"></script>
     </head>
     <body style="background: black">
         <p id="debug" style="color:white;z-index:1000;position:absolute;font-family:monospace">debug</p>
-        <canvas style="display: none;" id="offscreen"></canvas>
-        <canvas id="onscreen"></canvas>
         <noscript>
             Nup.
         </noscript>

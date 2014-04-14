@@ -66,3 +66,7 @@ class Entity
   expire: ->
     @lifetime = 0
     @simulator.remove(@) if @simulator?
+
+  alive: ->
+    return true unless @lifetime
+    @lifetime > 0

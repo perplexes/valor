@@ -33,7 +33,6 @@ class Ship extends Entity
   energy: @::maxEnergy
   # Bullets
   fireEnergy: 20
-  alive: true
 
   constructor: (simulator, player, options) ->
     @posClamp = new Vector2d(0, 1024 * 16)
@@ -121,17 +120,20 @@ class Ship extends Entity
         @bullets.push(new Bullet(@, simulator, 2, true))
         @gunTimeout = @gunTimeoutDefault
 
-    @noclip = @keys.noclip
+    @noclip = keys.noclip
 
   onDamage: (projectile, damage) ->
-    return unless @alive
+    return unless @alive()
     return if @safe
     # TODO: Damage from explosions nearby
     @energy -= damage
     if @energy <= 0
       @explode()
 
+  alive: ->
+    return false if @energy <= 0
+    super()
+
   explode: ->
-    @alive = false
     @expire()
     Effect.create('explode1', @pos, @vel)
