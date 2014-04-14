@@ -10,6 +10,7 @@ class Scene
   stage: null
   renderer: null
   layers: {}
+  views: {}
   layerOrder: [
     "Starfield",
     "Map",
@@ -38,7 +39,6 @@ class Scene
     @viewport.pos = game.ship.pos
 
     @starfield = new Starfield(layers["Starfield"], @viewport)
-    @views = {}
 
   initPixi: ->
     @stage = new PIXI.Stage(0, false)

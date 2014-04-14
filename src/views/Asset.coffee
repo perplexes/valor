@@ -3,6 +3,8 @@ class Asset
 
   # TODO: Should this be cols, rows instead?
   @load: (name, width, height, rows, cols, path = null, baseTexture = null) ->
+    return assets[name] if assets[name]
+
     baseTexture ||= PIXI.BaseTexture.fromImage(path)
     baseTexture.width = width
     baseTexture.height = height
@@ -15,9 +17,10 @@ class Asset
 
     assets[name] = {w: width, h: height, textures: textures}
 
-  @movie: (name, speed, looop, play) ->
+  @movie: (name, speed, looop, play, textures) ->
     asset = assets[name]
-    movie = new PIXI.MovieClip(asset.textures)
+    textures ||= asset.textures
+    movie = new PIXI.MovieClip(textures)
     movie.width = asset.w
     movie.height = asset.w
     movie.anchor.x = 0.5
@@ -26,7 +29,3 @@ class Asset
     movie.loop = looop
     movie.play() if play
     movie
-
-  # Some effects to preload
-  @load("explode0", "assets/shared/graphics/explode0.png", 112, 16, 1, 7)
-  @load("explode1", "assets/shared/graphics/explode1.png", 288, 288, 6, 6)

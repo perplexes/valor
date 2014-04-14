@@ -1,4 +1,6 @@
 class ShipView extends View
+  View.extended(@, "Other ships")
+
   constructor: (entity) ->
     # TODO: This might need an object of options (it has a 2px offset, since the ships are 32px)
     Asset.load("ship#{entity.options.ship}", 360, 144, 4, 10, "assets/shared/graphics/ship#{entity.options.ship}.png")
@@ -15,3 +17,9 @@ class ShipView extends View
     texture = Math.round((@entity.angle * @displayObject.textures.length) / (2 * Math.PI))
     i = Math.mod(texture, @displayObject.textures.length)
     @displayObject.gotoAndStop(i)
+
+  layerFor: (scene, entity) ->
+    if entity.player
+      "Selfship"
+    else
+      "Other ships"

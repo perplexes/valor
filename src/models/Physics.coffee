@@ -1,13 +1,5 @@
 class Physics
   @collision: (a, b) ->
-    # debugger if a.west == null
-    # debugger if a.east == null
-    # debugger if a.north == null
-    # debugger if a.south == null
-    # debugger if b.west == null
-    # debugger if b.east == null
-    # debugger if b.north == null
-    # debugger if b.south == null
     # Exit with no intersection if found separated along an axis
     return false if a.lr.x < b.ul.x || a.ul.x > b.lr.x
     return false if a.lr.y < b.ul.y || a.ul.y > b.lr.y
@@ -101,7 +93,6 @@ class Physics
     # TODO: special case for stopping on a wall?
 
     # LERP for float drift
-    # TODO: Switch to exact integers
     percent = Math.abs(vn / a.maxSpeed)# * 6 (this should be something to counteract dx * delta / 1000)
     slop = 0.01
     c = Math.max(m.penetration - slop, 0)# * percent

@@ -30,6 +30,7 @@ class Client
     # TODO: Clean this
     @events.push event(timestamp)
 
+    # TODO: Better name? Process events?
     @game.ship.onKeys(@keys, @game.simulator, delta_s)
 
     if @keys.debugCollisions
@@ -94,9 +95,9 @@ class Client
     @collisionGraphics.clear()
     graphics = @collisionGraphics
 
-    graphics.beginFill(0x0000FF)
-    graphics.drawRect(0,0,50,50)
-    graphics.endFill()
+    # graphics.beginFill(0x0000FF)
+    # graphics.drawRect(0,0,50,50)
+    # graphics.endFill()
 
     # Tile color
     graphics.beginFill(0xFF0000, 0.5)

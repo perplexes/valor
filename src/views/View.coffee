@@ -13,12 +13,9 @@ class View
 
   # TODO: pool
   @build: (scene, entity) ->
-    layerName = layerMap[view.constructor.name]
-    layer = scene.layers[layerName]
-
     view = new viewMap[entity.constructor.name](entity)
-    view.layer = layer
-    layer.addChild(view.displayObject)
+    view.layer = view.layerFor(scene, entity)
+    view.layer.addChild(view.displayObject)
     view
 
   constructor: (entity, displayObject) ->
@@ -42,6 +39,10 @@ class View
     @displayObject.position.y = @doPos.y
 
     true
+
+  layerFor: (scene, entity) ->
+    layerName = layerMap[constructor.name]
+    scene.layers[layerName]
 
   remove: ->
     layer.removeChild(@displayObject)
