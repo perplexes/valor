@@ -25,7 +25,11 @@ class Game
   register: (observer) ->
     @observers.push(observer)
 
-  step: (timestamp, callback) ->
+  start: (callback) ->
+    @callback = callback
+    @step(0)
+
+  step: (timestamp) ->
     @before() if @before?
 
     @last ||= 0
@@ -42,4 +46,4 @@ class Game
 
     @after() if @after?
 
-    callback.apply(@, @step)
+    @callback.apply(@, @step)

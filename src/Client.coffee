@@ -24,7 +24,7 @@ class Client
       TileView.load(bmpData)
 
   start: ->
-    @game.step(0, requestAnimationFrame)
+    @game.start(requestAnimationFrame)
 
   step: (game, timestamp, delta_s) ->
     # Events
