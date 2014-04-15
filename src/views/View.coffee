@@ -14,6 +14,8 @@ class View
   # TODO: pool
   @build: (scene, entity) ->
     view = new viewMap[entity.constructor.name](entity)
+    return view unless view.displayObject
+
     layerName = view.layerFor(scene, entity)
     view.layer = scene.layers[layerName]
     view.layer.addChild(view.displayObject)
@@ -42,8 +44,9 @@ class View
     true
 
   layerFor: (scene, entity) ->
-    layerMap[constructor.name]
+    layerMap[this.constructor.name]
 
   remove: ->
-    return true unless @layer
+    return unless @layer
+    return unless @displayObject
     @layer.removeChild(@displayObject)

@@ -9,11 +9,11 @@ class Map
   @load: (callback) ->
     oReq = new XMLHttpRequest()
     # TODO: Parameterize, drag n drop
-    oReq.open "GET", "../arenas/trench9.lvl", true
+    oReq.open "GET", "assets/arenas/trench9.lvl", true
     oReq.responseType = "arraybuffer"
     oReq.onload = (oEvent) =>
-      parsed = @parseLevel(oEvent)
-      callback(parsed)
+      [bmpData, tiles] = @parseLevel(oEvent)
+      callback(bmpData, tiles)
 
     oReq.send null
 
@@ -30,4 +30,4 @@ class Map
     bmp_size = bmpLength.unpack(a.subarray(2, 6)).length
     bmp_data = a.subarray(0, bmp_size)
 
-    [bmp_data, Tile.fromFile(a, bmp_size, canvas, @)]
+    [bmp_data, Tile.fromFile(a, bmp_size, @)]

@@ -1,9 +1,9 @@
 class Asset
-  assets = {}
+  @assets = {}
 
   # TODO: Should this be cols, rows instead?
   @load: (name, width, height, rows, cols, path = null, baseTexture = null) ->
-    return assets[name] if assets[name]
+    return @assets[name] if @assets[name]
 
     baseTexture ||= PIXI.BaseTexture.fromImage(path)
     baseTexture.width = width
@@ -15,10 +15,10 @@ class Asset
       for x in [0..cols-1]
         textures.push(new PIXI.Texture(baseTexture, {x: x*tWidth, y: y*tHeight, width: tWidth, height: tHeight}))
 
-    assets[name] = {w: width, h: height, textures: textures}
+    @assets[name] = {w: width, h: height, textures: textures}
 
   @movie: (name, speed, looop, play, textures) ->
-    asset = assets[name]
+    asset = @assets[name]
     unless asset
       throw "Unknown asset: #{name}"
     textures ||= asset.textures

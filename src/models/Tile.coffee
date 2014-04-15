@@ -23,7 +23,7 @@ class Tile extends Entity
     @meta = meta
     @map = map
 
-  @fromFile: (array, offset, spriteSheet, map) ->
+  @fromFile: (array, offset, map) ->
     tiles = []
     i = offset
     while i < array.length

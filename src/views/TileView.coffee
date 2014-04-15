@@ -1,11 +1,13 @@
 class TileView extends View
+  View.extended(@, "Map")
+
   @spriteMapWidth = 19 # in tiles
   @spriteMapHeight = 10 # in tiles
   baseTexture = null
-  textures = []
+  @textures = []
 
   constructor: (tile) ->
-    return unless texture = Asset.assets[tile.index]
+    return super(tile) unless texture = @constructor.textures[tile.index]
 
     # TODO: pool
     displayObject = new PIXI.Sprite(texture)
@@ -21,9 +23,11 @@ class TileView extends View
     canvas.name = "tileset"
     bmp.drawToCanvas(canvas)
 
-    Asset.load(
+    asset = Asset.load(
       "tiles",
       304, 160,
       @spriteMapHeight, @spriteMapWidth,
       null,
       new PIXI.BaseTexture(canvas))
+
+    @textures = asset.textures
