@@ -7,15 +7,16 @@ class ShipView extends View
     super(entity, movie)
 
   update: (viewport) ->
+    super(viewport)
+
     if @entity.player
       @displayObject.position.x = viewport.hw
       @displayObject.position.y = viewport.hh
-    else
-      super(viewport)
 
     texture = Math.round((@entity.angle * @displayObject.textures.length) / (2 * Math.PI))
     i = Math.mod(texture, @displayObject.textures.length)
     @displayObject.gotoAndStop(i)
+    true
 
   layerFor: (scene, entity) ->
     if entity.player

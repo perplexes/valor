@@ -57,26 +57,31 @@ class Scene
     @viewport.extent()
     @starfield.update()
 
-    for hash, view in @views
+    for hash, view of @views
       view.displayed = false
 
-    game.simulator.staticTree.searchExpand(@viewport._extent, 16, 16, @updateEntity, @)
-    game.simulator.dynamicTree.searchExpand(@viewport._extent, 16, 16, @updateEntity, @)
-    @renderer.render(@stage)
+    game.simulator.staticTree.searchExpand(@viewport._extent, 16, 16, @buildView, @)
+    game.simulator.dynamicTree.searchExpand(@viewport._extent, 16, 16, @buildView, @)
 
-    for hash, view in @views
-      unless view.displayed
+    for hash, view of @views
+      updated = view.update(@viewport)
+      unless view.displayed && updated
         view.remove()
         delete @views[hash]
 
-  updateEntity: (entity) ->
-    view = @views[entity.hash] ||= View.build(@, entity)
-    updated = view.update(@viewport)
-    unless updated
-      view.remove()
-      delete @views[entity.hash]
+    @renderer.render(@stage)
+
+  buildView: (entity) ->
+    view = @views[entity.hash]
+    unless view
+      view = View.build(@, entity)
+      return unless view.displayObject
+      @views[entity.hash] = view
+
+    if view
+      view.displayed = true
 
   objects: ->
     sum = 0
-    sum += layer.children.length for name, layer in @layers
+    sum += layer.children.length for name, layer of @layers
     sum

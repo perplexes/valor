@@ -33,6 +33,6 @@ class Bullet extends Entity
       @expire()
       Effect.create('explode0', @pos, null)
 
-  simulate: ->
+  simulate: (delta_s) ->
     @expire() if @ship.safe
-    super()
+    super(delta_s)

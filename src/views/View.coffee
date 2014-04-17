@@ -24,15 +24,12 @@ class View
   constructor: (entity, displayObject) ->
     @entity = entity
     @displayObject = displayObject
-    @displayed = false
     @hash = (objectCounter += 1)
 
   update: (viewport) ->
     return false unless @entity
     return false unless @entity.alive()
     return false unless @displayObject
-
-    @displayed = true
 
     @doPos.clear().
       add(@entity.pos).

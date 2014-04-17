@@ -4,6 +4,7 @@ class Simulator
     @dynamicTree = new ZTree
     @dynamicEntities = new DLinkedList
     @collisions = {}
+    @collObjs = []
     # TODO: Track down who uses this and have them go through game instead maybe
     Simulator.simulator = @
 
@@ -24,19 +25,28 @@ class Simulator
   # Perf test - see if we're using the search too much.
   step: (game, timestamp, delta_s) ->
     @collisions = {}
+    @collObjs = []
     @dynamicEntities.each (entity) =>
       entity.simulate(delta_s)
 
       for tree in [@staticTree, @dynamicTree]
         tree.searchExpand(entity._extent, 16, 16, (nearEntity) ->
           return false if entity == nearEntity
-          return false if @collisions[entity.hash]
-          return false if @collisions[nearEntity.hash]
+          pair = @pair(entity.hash, nearEntity.hash)
+          return false if @collisions[pair]
 
           if Physics.collision(entity._extent, nearEntity._extent)
             entity.collide(nearEntity)
             nearEntity.collide(entity)
 
-            @collisions[entity.hash] = entity
-            @collisions[nearEntity.hash] = nearEntity
+            @collisions[pair] = true
+            @collObjs.push(nearEntity)
+            @collObjs.push(entity)
         , @)
+
+  # http://stackoverflow.com/a/13871379
+  pair: (a, b) ->
+    if a >= b
+      a * a + a + b
+    else
+      a + b * b

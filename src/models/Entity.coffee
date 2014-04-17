@@ -32,9 +32,10 @@ class Entity
     @_extent = new Extent(@pos.x - hw, @pos.y - hh, @pos.x + hw, @pos.y + hh)
     @extent()
 
+    @hash = (objectCounter += 1)
+    # Simulator needs the hash
     @simulator.insert(@) if @simulator?
 
-    @hash = (objectCounter += 1)
 
   simulate: (delta_s) ->
     # TODO: Better place for this?
@@ -43,9 +44,9 @@ class Entity
         @expire()
         return
       else
-        @lifetime -= delta
+        @lifetime -= delta_s
 
-    unless @vel.isZero()
+    if @simulator? && !@vel.isZero()
       @scaledV.clear().add(@vel).scaleXX(delta_s)
       @simulator.dynamicTree.remove(@)
       @pos.add(@scaledV)
@@ -64,10 +65,12 @@ class Entity
     @_extent.lr.y = @pos.y + @hh
     @_extent
 
+  # TODO: When do we put this back in the pool?
   expire: ->
     @lifetime = 0
     @simulator.remove(@) if @simulator?
+    delete @simulator if @simulator?
 
   alive: ->
-    return true unless @lifetime
+    return true if @lifetime == null
     @lifetime > 0

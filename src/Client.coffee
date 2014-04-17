@@ -8,6 +8,9 @@ class Client
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
+    window.game = game
+    window.client = @
+
     @scene = new Scene(game, @)
 
     game.register(new AI)
@@ -19,7 +22,7 @@ class Client
     game.before = => @stats.begin()
     game.after  = => @stats.end()
 
-    @keys = {debugMessages: true}
+    @keys = {debugMessages: false}
 
     game.load (bmpData, tiles) ->
       TileView.load(bmpData)
@@ -40,7 +43,7 @@ class Client
     game.ship.onKeys(ev, game.simulator, delta_s)
 
     if @keys.debugCollisions
-      @drawDebugCollisions(game.ship, game.simulator.collisions)
+      @drawDebugCollisions(game.ship, game.simulator.collObjs)
 
     if @keys.debugMessages
       @drawDebug({
@@ -53,6 +56,7 @@ class Client
         # fps: 1/delta_s,
         keys: ev,
         objects: @scene.objects(),
+        collisions: game.simulator.collObjs.length,
         # children: @scene.stage.children.length,
         tiles: @scene.layers["Map"].children.length,
         # ships: @otherShipsLayer.entities,

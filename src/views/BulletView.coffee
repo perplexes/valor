@@ -4,5 +4,6 @@ class BulletView extends View
   constructor: (bullet) ->
     row = bullet.level
     row += 5 if bullet.bouncing
-    movie = Asset.movie("bullets", 0.5, true, true, asset.textures[row])
+    asset = Asset.assets["bullets"]
+    movie = Asset.movie("bullets", 0.5, true, true, asset.row(row))
     super(bullet, movie)

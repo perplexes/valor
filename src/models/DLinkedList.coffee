@@ -20,7 +20,9 @@ class DLLNode
   remove: ->
     @prev.next = @next
     @next.prev = @prev
-    @next = @prev = null
+    @prev = null
+    # We keep @next around in case we're in the middle of iterating using it
+    # TODO: Track down why the iterator would stop working in this case.
     @
 
 # Head ----- Tail
@@ -42,8 +44,8 @@ class DLinkedList
 
   remove: (hash) ->
     @length -= 1
-    nodes[hash].remove()
-    delete nodes[hash]
+    @nodes[hash].remove()
+    delete this.nodes[hash]
 
   each: (callback) ->
     cur = @head.next
