@@ -2,15 +2,18 @@ class Simulator
   constructor: ->
     @staticTree = new ZTree
     @dynamicTree = new ZTree
+    @dynamicEntities = new DLinkedList
     @collisions = {}
     # TODO: Track down who uses this and have them go through game instead maybe
     Simulator.simulator = @
 
   insert: (entity) ->
     @dynamicTree.insert(entity)
+    @dynamicEntities.insert(entity, entity.hash)
 
   remove: (entity) ->
     @dynamicTree.remove(entity)
+    @dynamicEntities.remove(entity.hash)
 
   insertStatic: (entity) ->
     @staticTree.insert(entity)
@@ -21,7 +24,7 @@ class Simulator
   # Perf test - see if we're using the search too much.
   step: (game, timestamp, delta_s) ->
     @collisions = {}
-    @dynamicTree.each (entity) =>
+    @dynamicEntities.each (entity) =>
       entity.simulate(delta_s)
 
       for tree in [@staticTree, @dynamicTree]

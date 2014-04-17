@@ -36,7 +36,7 @@ class Entity
 
     @hash = (objectCounter += 1)
 
-  simulate: (delta) ->
+  simulate: (delta_s) ->
     # TODO: Better place for this?
     if @lifetime
       if @lifetime <= 0
@@ -45,11 +45,12 @@ class Entity
       else
         @lifetime -= delta
 
-    @scaledV.clear().add(@vel).scaleXX(delta)
-    @simulator.remove(@)
-    @pos.add(@scaledV)
-    @simulator.insert(@)
-    @extent()
+    unless @vel.isZero()
+      @scaledV.clear().add(@vel).scaleXX(delta_s)
+      @simulator.dynamicTree.remove(@)
+      @pos.add(@scaledV)
+      @simulator.dynamicTree.insert(@)
+      @extent()
 
   # TODO: Put in the simulator instead?
   collide: (entity) ->

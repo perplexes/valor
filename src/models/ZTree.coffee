@@ -21,6 +21,12 @@ class ZTree
   each: (callback) ->
     @tree.each(callback)
 
+  all: ->
+    all = []
+    @tree.each (entity) ->
+      all.push entity
+    all
+
   # Interleave lower 16 bits of x and y, so the bits of x
   # are in the even positions and bits from y in the odd
   # z gets the resulting 32-bit Morton Number.

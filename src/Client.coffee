@@ -4,6 +4,7 @@ class Client
     @game = game
     @events = []
 
+    @debug = document.getElementById('debug')
     document.addEventListener "keydown", (e) => @keyListen(e, true)
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
@@ -18,7 +19,7 @@ class Client
     game.before = => @stats.begin()
     game.after  = => @stats.end()
 
-    @keys = {debugMessages: false}
+    @keys = {debugMessages: true}
 
     game.load (bmpData, tiles) ->
       TileView.load(bmpData)
@@ -29,29 +30,33 @@ class Client
   step: (game, timestamp, delta_s) ->
     # Events
     # TODO: Clean this
-    @events.push @newEvent(timestamp)
+    ev = @newEvent(timestamp)
+    window.keys = ev
+    # @events.push ev
+
+    # console.log ev
 
     # TODO: Better name? Process events?
-    @game.ship.onKeys(@keys, @game.simulator, delta_s)
+    game.ship.onKeys(ev, game.simulator, delta_s)
 
     if @keys.debugCollisions
-      @drawDebugCollisions(@game.ship, @game.simulator.collisions)
+      @drawDebugCollisions(game.ship, game.simulator.collisions)
 
     if @keys.debugMessages
       @drawDebug({
-        ship: [@ship.pos.x, @ship.pos.y, @ship.rawAngle, @ship.angle],
-        shipVel: [@ship.vel.x, @ship.vel.y],
+        ship: [game.ship.pos.x, game.ship.pos.y, game.ship.rawAngle, game.ship.angle],
+        shipVel: [game.ship.vel.x, game.ship.vel.y],
         # viewport: @scene.viewport,
         # map: @map,
-        # safety: @ship.safety,
-        # safe: @ship.safe,
-        fps: 1/delta_s,
-        keys: @keys,
+        # safety: game.ship.safety,
+        # safe: game.ship.safe,
+        # fps: 1/delta_s,
+        keys: ev,
         objects: @scene.objects(),
-        children: @scene.stage.children.length,
-        tiles: @mapLayer.entities,
-        ships: @otherShipsLayer.entities,
-        projectiles: @projectileLayer.entities,
+        # children: @scene.stage.children.length,
+        tiles: @scene.layers["Map"].children.length,
+        # ships: @otherShipsLayer.entities,
+        projectiles: @scene.layers["Projectiles"].children.length,
         # o: [@othership.pos.x, @othership.pos.y, @othership.rawAngle],
         # simulating: @simulator.objects.length
         # angle: angle
@@ -119,7 +124,7 @@ class Client
     debugger if @keys.debugger
 
 
-  # TODO: emit events
+  # TODO: don't keep memory here, flip based on previous event
   keyListen: (e, set = true) ->
     listened = true
     switch e.keyCode
@@ -128,7 +133,7 @@ class Client
       when KeyEvent.DOM_VK_UP then @keys.up = set
       when KeyEvent.DOM_VK_DOWN then @keys.down = set
       when KeyEvent.DOM_VK_S then @keys.fullstop = set
-      when KeyEvent.DOM_VK_D then @keys.debugger = set
+      when KeyEvent.DOM_VK_D then if set then @keys.debug = !@keys.debug
       when KeyEvent.DOM_VK_N then if set then @keys.noclip = !@keys.noclip
       when KeyEvent.DOM_VK_M then if set then @keys.debugMessages = !@keys.debugMessages
       when KeyEvent.DOM_VK_C then if set then @keys.debugCollisions = !@keys.debugCollisions
@@ -144,7 +149,8 @@ class Client
     right: @keys.right,
     up: @keys.up,
     down: @keys.down,
-    fire: @keys.fire
+    fire: @keys.fire,
+    debug: @keys.debug
 
   initStats: ->
     @stats = new Stats()

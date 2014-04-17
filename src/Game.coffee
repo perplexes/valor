@@ -13,8 +13,8 @@ class Game
 
     # This should happen when the server starts a replication to us
     # or it's single player mode.
-    @othership = new Ship(@simulator, false, {ship: 1})
-    @ship = new Ship(@simulator, true, {ship: 0, keys: @keys})
+    @ship = new Ship(@simulator, true, {ship: 0})
+    @othership = new Ship(@simulator, false, {ship: 1, pos: @ship.pos.clone().addXX(32)})
 
   load: (callback) ->
     Map.load (bmpData, tiles) =>

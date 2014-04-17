@@ -14,8 +14,8 @@ class DLLNode
     @next = prev.next
     @next.prev = prev.next = @
 
-  visit: (callback, scope) ->
-    callback.call(scope, @value)
+  visit: (callback) ->
+    callback(@value)
 
   remove: ->
     @prev.next = @next
@@ -45,11 +45,11 @@ class DLinkedList
     nodes[hash].remove()
     delete nodes[hash]
 
-  each: (callback, scope) ->
+  each: (callback) ->
     cur = @head.next
     while cur != @head
       next = cur.next
-      cur.visit(callback, scope)
+      cur.visit(callback)
       cur = next
     null
 

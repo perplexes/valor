@@ -6,6 +6,12 @@ class Vector2d
     @__x = @x
     @__y = @y
 
+  @array: (array) ->
+    new @(array[0], array[1])
+
+  clone: ->
+    new Vector2d(@x, @y)
+
   # Set to initial values. Usually 0.
   # TODO: Might not be performant. (More accesses than just x = y = 0)
   clear: ->
@@ -39,6 +45,9 @@ class Vector2d
     @x += x
     @y += y
     @
+
+  addXX: (x) ->
+    @addXY(x, x)
 
   sub: (v) ->
     debugger if typeof v == 'undefined'
@@ -104,3 +113,6 @@ class Vector2d
     @x = @x.clamp(x1, x2)
     @y = @y.clamp(y1, y2)
     @
+
+  isZero: ->
+    @x == @y == 0

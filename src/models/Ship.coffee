@@ -10,18 +10,6 @@
 class Ship extends Entity
   rawAngle: 0
   angle: 0
-  # Near circles
-  # x: 513 * 16
-  # y: 397 * 16
-  # Safety
-  # x: 8196
-  # y: 12135
-  # Outside safety
-  # x: 8197
-  # y: 11986
-  # Weird text bug
-  # x: 5614
-  # y: 743
   safe: false
   maxSpeed: 500 # pixels / second
   noclip: false # TODO: Does setting this true mean it's shared across instances??
@@ -33,37 +21,43 @@ class Ship extends Entity
   energy: @::maxEnergy
   # Bullets
   fireEnergy: 20
+  locations:
+    nearSafe: [8136, 11428],
+    touchSafe: [8136, 11784],
+    circles: [513 * 16, 397 * 16]
+    weirdText: [5614, 743]
 
   constructor: (simulator, player, options) ->
     @posClamp = new Vector2d(0, 1024 * 16)
     @velClamp = new Vector2d(-@maxSpeed, @maxSpeed)
 
+    loc = @locations[options.location] || @locations.nearSafe
+    pos = null
+    if options.pos
+      pos = options.pos 
+    else
+      pos = Vector2d.array(loc)
+
     super(
       simulator,
-      # new Vector2d(8196, 12135), # safety
-      # new Vector2d(8136, 11784), # Touching safety wall
-      new Vector2d(8136, 11428),
+      pos,
       new Vector2d(0, 0), #vel
       32, 32 # w,h
     )
 
     @player = player
     @options = options
-    @keys = options.keys
     @gunTimeout = @gunTimeoutDefault
     @safety = new Extent(Infinity, Infinity, -1, -1)
     @energy = @maxEnergy
     @bullets = []
 
-  simulate: (delta) ->
+  simulate: (delta_s) ->
     @vel.clamp(@velClamp)
 
-    @gunTimeout -= delta if @gunTimeout > 0
+    @gunTimeout -= delta_s if @gunTimeout > 0
 
-    # Ship must be surrounded by safezone to be considered safe
-    @angle = (Math.round(@rawAngle * 40) / 40) * Math.PI * 2
-
-    super(delta)
+    super(delta_s)
 
     @safe = @safety.surrounds(@_extent)
 
@@ -102,6 +96,7 @@ class Ship extends Entity
 
     # In increments of how many textures there are.
     @rawAngle += 0.7 * delta_s * x
+    @angle = (Math.round(@rawAngle * 40) / 40) * Math.PI * 2
 
     # 400 .. pixels per second
     # TODO: Parameterize
