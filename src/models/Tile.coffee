@@ -1,3 +1,18 @@
+# 191: Invisible on screen, Visible on radar, Ships can go through them, Items bounce off it, Thors go through it. (if you "launch" an item while in it, the item will float suspended in space)
+# 192-215: Invisible on screen, Visible on radar, Solid block (like any other tile)
+# 216: a small asteroid, eveyone already knows about this...
+# 217: a medium asteroid, everyone alreay knows about this...
+# 218: another small asteroid, just the same as the other one, accept the gfx's are alittle diffrent
+# 219: a spacestation, everyone knows about this...
+# 220: a wormhole, everyone knows about this...
+# 221-240: Invisible on screen, Visible on radar, Solid block (like any other tile)
+# 241: Invisible on screen, Visible on radar, Ship can go through it but Items dissapear when they touch it.
+# 242: Invisible on screen, Invisible on radar, Warps your ship on contact, items bounce off it, Thors dissapear on contact (!)
+# 243-251: Invisible on screen, Invisible on radar, Solid block (like any other tile)
+# 252: Visible on screen (Animated NME door), Invisible on radar, Items go through it, your ship gets warped after a random amount of time (0-2 seconds) while floating on it.
+# 253: Visible on screen (Animated Team door), Invisible on radar, Items go through it, so does your ship.
+# 254: Invisible on screen, Invisible on radar, Items go through it, So does your ship. idk what its used for, but it seems you cant door while on/near it.
+# 255: Visible On screen (Animated Green Prize), Invisible on radar, Items go through it, So does your Ship. This is a green, but it doesent show up on radar, and no matter how many times you fly over it, you will never pick it up, ever.
 class Tile extends Entity
   tx: 0
   ty: 0
