@@ -1,3 +1,7 @@
+Entity = require("./Entity.js")
+Vector2d = require("./Vector2d.js")
+restruct = require("restruct")
+
 # 191: Invisible on screen, Visible on radar, Ships can go through them, Items bounce off it, Thors go through it. (if you "launch" an item while in it, the item will float suspended in space)
 # 192-215: Invisible on screen, Visible on radar, Solid block (like any other tile)
 # 216: a small asteroid, eveyone already knows about this...
@@ -54,3 +58,5 @@ class Tile extends Entity
       tiles.push(tile)
       i += 4
     tiles
+
+module.exports = Tile

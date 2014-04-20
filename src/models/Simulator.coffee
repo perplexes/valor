@@ -1,3 +1,7 @@
+ZTree = require("./ZTree.js")
+DLinkedList = require("./DLinkedList.js")
+Physics = require("./Physics.js")
+
 class Simulator
   constructor: ->
     @staticTree = new ZTree
@@ -50,3 +54,5 @@ class Simulator
       a * a + a + b
     else
       a + b * b
+
+module.exports = Simulator

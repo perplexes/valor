@@ -1,3 +1,5 @@
+Vector2d = require("./Vector2d.js")
+
 class Physics
   @collision: (a, b) ->
     # Exit with no intersection if found separated along an axis
@@ -126,3 +128,5 @@ class Physics
   #   surface.x = surface.west + ((surface.east - surface.west) / 2)
   #   surface.y = surface.north + ((surface.south - surface.north) / 2)
   #   surface
+
+module.exports = Physics

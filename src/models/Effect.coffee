@@ -1,5 +1,8 @@
+Entity = require("./Entity.js")
+
 # This one is a little weird, it's an entity and view since it can move.
 # TODO: Are effects always animated?
+# TODO: Effect on server side?
 class Effect extends Entity
   movie: null
   constructor: (pos, vel, width, height, movie) ->

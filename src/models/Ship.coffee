@@ -1,3 +1,10 @@
+Entity = require("./Entity.js")
+Vector2d = require("./Vector2d.js")
+Bullet = require("./Bullet.js")
+Effect = require("./Effect.js")
+Extent = require("./Extent.js")
+Tile = require("./Tile.js")
+
 # Use a mod that can deal with negative numbers
 `Math.mod = function(a,b) {
     var r = a % b;
@@ -120,3 +127,5 @@ class Ship extends Entity
   explode: ->
     @expire()
     Effect.create('explode1', @pos, @vel)
+
+module.exports = Ship

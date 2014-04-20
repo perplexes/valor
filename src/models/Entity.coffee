@@ -1,3 +1,6 @@
+Vector2d = require("./Vector2d.js")
+Extent = require("./Extent.js")
+
 # TODO: touching pos should update extent
 class Entity
   layer: null
@@ -74,3 +77,5 @@ class Entity
   alive: ->
     return true if @lifetime == null
     @lifetime > 0
+
+module.exports = Entity

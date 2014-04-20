@@ -1,3 +1,6 @@
+Extent = require("./Extent.js")
+RBTree = require('bintrees').RBTree
+
 class ZTree
   B = [0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF]
   # 01010101010101010101010101010101
@@ -227,4 +230,6 @@ class ZTree
 
     # for p in [19..0]
     #   for v in [0..10]
-    #       console.log [p, v, tree.unsetbits(p, v)] 
+    #       console.log [p, v, tree.unsetbits(p, v)]
+
+module.exports = ZTree

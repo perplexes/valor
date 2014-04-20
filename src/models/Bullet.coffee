@@ -1,3 +1,7 @@
+Entity = require("./Entity.js")
+Vector2d = require("./Vector2d.js")
+Effect = require("./Effect.js")
+
 class Bullet extends Entity
   bounciness: 1
   friction: 0

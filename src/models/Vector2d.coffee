@@ -116,3 +116,5 @@ class Vector2d
 
   isZero: ->
     @x == @y == 0
+
+module.exports = Vector2d

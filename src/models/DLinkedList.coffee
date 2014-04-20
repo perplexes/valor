@@ -32,6 +32,9 @@ class DLinkedList
     @length = 0
     @nodes = {}
 
+  at: (hash) ->
+    @nodes[hash].value
+
   insert: (value, hash) ->
     @length += 1
     # TODO: object pool
@@ -48,14 +51,8 @@ class DLinkedList
     delete this.nodes[hash]
 
   each: (callback) ->
-    cur = @head.next
-    was_null = false
-    while cur != @head
-      next = cur.next
-      was_null = next == null
-      cur.visit(callback)
-      debugger if next == null
-      cur = next
+    for hash, node of @nodes
+      callback(node.value, hash)
     null
 
   all: ->
@@ -68,3 +65,5 @@ class DLinkedList
     count = 0
     @each -> count += 1
     count
+
+module.exports = DLinkedList

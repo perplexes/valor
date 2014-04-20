@@ -1,3 +1,8 @@
+Simulator = require("./models/Simulator.js")
+Ship = require("./models/Ship.js")
+Map = require("./models/Map.js")
+
+
 `
 Number.prototype.clamp = function(min, max) {
   return Math.min(Math.max(this, min), max);
@@ -26,6 +31,7 @@ class Game
     @observers.push(observer)
 
   start: (callback) ->
+    console.log("game.start")
     @callback = callback
     @step(0)
 
@@ -46,4 +52,9 @@ class Game
 
     @after() if @after?
 
-    @callback.call(window, @step)
+    if window?
+      @callback.call(window, @step)
+    else
+      @callback(@step)
+
+module.exports = Game

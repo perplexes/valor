@@ -1,3 +1,5 @@
+Vector2d = require("./Vector2d.js")
+
 class Extent
   constructor: (x1, y1, x2, y2) ->
     @ul = new Vector2d(x1, y1)
@@ -36,3 +38,5 @@ class Extent
     @ul.reset()
     @lr.reset()
     @
+
+module.exports = Extent
