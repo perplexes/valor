@@ -20,7 +20,7 @@ class DLLNode
   remove: ->
     @prev.next = @next
     @next.prev = @prev
-    @prev = null
+    @prev = @next = null
     # We keep @next around in case we're in the middle of iterating using it
     # TODO: Track down why the iterator would stop working in this case.
     @
@@ -49,9 +49,12 @@ class DLinkedList
 
   each: (callback) ->
     cur = @head.next
+    was_null = false
     while cur != @head
       next = cur.next
+      was_null = next == null
       cur.visit(callback)
+      debugger if next == null
       cur = next
     null
 
@@ -60,3 +63,8 @@ class DLinkedList
     @each (o) ->
       res.push o
     res
+
+  count: ->
+    count = 0
+    @each -> count += 1
+    count
