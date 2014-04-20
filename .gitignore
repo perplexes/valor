@@ -1,7 +1,3 @@
-#*html
+node_modules
 lib/*.js
-src/*.js
-ElmFiles/*.elmo
-ElmFiles/*.js
-elm-runtime.js
 reference/*
