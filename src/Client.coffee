@@ -9,7 +9,7 @@ class Client
     document.addEventListener "keyup", (e) => @keyListen(e, false)
 
     window.game = game
-    window.client = @
+    window.client = client = @
 
     @scene = new Scene(game, @)
 
@@ -23,24 +23,40 @@ class Client
     game.after  = => @stats.end()
 
     @keys = {debugMessages: false}
+    @ship = game.ship
+    @pendingEvents = new DLinkedList
+    @serverEvents = []
 
-    game.load (bmpData, tiles) ->
-      TileView.load(bmpData)
+    @ws = new WebSocket('ws://localhost:8080')
+    
+    times = {}
+
+    # TODO: Sort out chain of events here and use promises?
+    @ws.onopen = (evt) =>
+      @send type: 'connect'
+      game.load (bmpData, tiles) ->
+        TileView.load(bmpData)
+        client.start()
+
+    @ws.onmessage = (evt) =>
+      @serverEvents.push(JSON.parse(evt.data))
 
   start: ->
     @game.start(requestAnimationFrame)
 
   step: (game, timestamp, delta_s) ->
+    @receive(@serverEvents)
+
     # Events
     # TODO: Clean this
-    ev = @newEvent(timestamp)
-    window.keys = ev
-    # @events.push ev
-
+    ev = @newEvent(timestamp, delta_s)
+    @pendingEvents.insert(ev, timestamp)
+    @send(ev)
     # console.log ev
 
     # TODO: Better name? Process events?
-    game.ship.onKeys(ev, game.simulator, delta_s)
+    game.ship.processInput(ev, game.simulator, delta_s)
+    
 
     if @keys.debugCollisions
       @drawDebugCollisions(game.ship, game.simulator.collObjs)
@@ -54,7 +70,9 @@ class Client
         # safety: game.ship.safety,
         # safe: game.ship.safe,
         # fps: 1/delta_s,
-        keys: ev,
+        keys: @keys,
+        ev: ev,
+        pending: @pendingEvents.count(),
         objects: @scene.objects(),
         collisions: game.simulator.collObjs.length,
         # children: @scene.stage.children.length,
@@ -66,10 +84,71 @@ class Client
         # angle: angle
       })
 
-  objects: ->
-    sum = 0
-    sum += layer.container.children.length for layer in @layers
-    sum
+  # TODO: Lifecycle, server id vs local id (or always guid)
+  # TODO: Event types, other entities
+  receive: (events) ->
+    for ev in events
+      @ship.pos.x = ev.x
+      @ship.pos.y = ev.y
+      @ship.vel.x = ev.dx
+      @ship.vel.y = ev.dy
+      @pendingEvents.each (pev) =>
+        if pev.timestamp <= ev.timestamp
+          @pendingEvents.remove(pev.timestamp)
+        else
+          @ship.processInput(pev)
+
+  send: (ev) ->
+    @ws.send(JSON.stringify(ev))
+
+  # TODO: don't keep memory here, flip based on previous event
+  keyListen: (e, set = true) ->
+    listened = true
+    switch e.keyCode
+      when KeyEvent.DOM_VK_LEFT then @keys.left = set
+      when KeyEvent.DOM_VK_RIGHT then @keys.right = set
+      when KeyEvent.DOM_VK_UP then @keys.up = set
+      when KeyEvent.DOM_VK_DOWN then @keys.down = set
+      when KeyEvent.DOM_VK_S then @keys.fullstop = set
+      when KeyEvent.DOM_VK_D then if set then @keys.debug = !@keys.debug
+      when KeyEvent.DOM_VK_N then if set then @keys.noclip = !@keys.noclip
+      when KeyEvent.DOM_VK_M then if set then @keys.debugMessages = !@keys.debugMessages
+      when KeyEvent.DOM_VK_C then if set then @keys.debugCollisions = !@keys.debugCollisions
+      when KeyEvent.DOM_VK_SPACE then @keys.fire = set
+      else listened = false
+    if listened
+      e.preventDefault()
+      e.stopPropagation()
+
+  # TODO: Probably just have dt_s as a field
+  newEvent: (timestamp, dt_s) ->
+    ev =
+      timestamp: timestamp
+      x: 0
+      y: 0
+      fire: 0
+
+    ev.x -= dt_s if @keys.left
+    ev.x += dt_s if @keys.right
+    ev.y -= dt_s if @keys.down
+    ev.y += dt_s if @keys.up
+
+    ev.fire = dt_s if @keys.fire
+
+    ev
+
+  # TODO: Use for network latency?
+  initStats: ->
+    @stats = new Stats()
+    @stats.setMode(0) # 0: fps, 1: ms
+
+    # Align top-left
+    @stats.domElement.style.position = 'absolute'
+    @stats.domElement.style.right = '0px'
+    @stats.domElement.style.top = '0px'
+    @stats.domElement.style.zIndex = '10'
+
+    document.body.appendChild( @stats.domElement )
 
   # TODO: Use webgl text instead of element, faster?
   # TODO: Put in scene perhaps? Or a debug layer?
@@ -127,53 +206,16 @@ class Client
     graphics.endFill()
     debugger if @keys.debugger
 
-
-  # TODO: don't keep memory here, flip based on previous event
-  keyListen: (e, set = true) ->
-    listened = true
-    switch e.keyCode
-      when KeyEvent.DOM_VK_LEFT then @keys.left = set
-      when KeyEvent.DOM_VK_RIGHT then @keys.right = set
-      when KeyEvent.DOM_VK_UP then @keys.up = set
-      when KeyEvent.DOM_VK_DOWN then @keys.down = set
-      when KeyEvent.DOM_VK_S then @keys.fullstop = set
-      when KeyEvent.DOM_VK_D then if set then @keys.debug = !@keys.debug
-      when KeyEvent.DOM_VK_N then if set then @keys.noclip = !@keys.noclip
-      when KeyEvent.DOM_VK_M then if set then @keys.debugMessages = !@keys.debugMessages
-      when KeyEvent.DOM_VK_C then if set then @keys.debugCollisions = !@keys.debugCollisions
-      when KeyEvent.DOM_VK_SPACE then @keys.fire = set
-      else listened = false
-    if listened
-      e.preventDefault()
-      e.stopPropagation()
-
-  newEvent: (timestamp) ->
-    timestamp: timestamp,
-    left: @keys.left,
-    right: @keys.right,
-    up: @keys.up,
-    down: @keys.down,
-    fire: @keys.fire,
-    debug: @keys.debug
-
-  initStats: ->
-    @stats = new Stats()
-    @stats.setMode(0) # 0: fps, 1: ms
-
-    # Align top-left
-    @stats.domElement.style.position = 'absolute'
-    @stats.domElement.style.right = '0px'
-    @stats.domElement.style.top = '0px'
-    @stats.domElement.style.zIndex = '10'
-
-    document.body.appendChild( @stats.domElement )
+  objects: ->
+    sum = 0
+    sum += layer.container.children.length for layer in @layers
+    sum
 
 document.addEventListener 'DOMContentLoaded', ->
   console.log "DOMContentLoaded"
   Asset.preload()
   game = new Game
   client = new Client(game)
-  client.start()
 
 if (typeof KeyEvent == "undefined")
   KeyEvent =

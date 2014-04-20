@@ -83,29 +83,16 @@ class Ship extends Entity
     # collide = entity.index < 127
     super(entity) if !@noclip && entity.index != 170
       
-  onKeys: (keys, simulator, delta_s) ->
-    # Rotation
-    x = 0
-    x -= 1 if keys.left
-    x += 1 if keys.right 
-
-    # Thrust
-    y = 0
-    y += 1 if keys.up
-    y -= 1 if keys.down
-
+  processInput: (ev, simulator) ->
     # In increments of how many textures there are.
-    @rawAngle += 0.7 * delta_s * x
+    @rawAngle += 0.7 * ev.x
     @angle = (Math.round(@rawAngle * 40) / 40) * Math.PI * 2
 
     # 400 .. pixels per second
     # TODO: Parameterize
-    @vel.addPolar(400 * delta_s * y, @angle)
+    @vel.addPolar(400 * ev.y, @angle)
 
-    # TODO: Disable in production
-    @vel.clear() if keys.fullstop
-
-    if keys.fire
+    if ev.fire > 0
       if @safe
         @vel.clear()
       else if @gunTimeout <= 0 && @energy >= @fireEnergy
@@ -115,7 +102,7 @@ class Ship extends Entity
         @bullets.push(new Bullet(@, simulator, 2, true))
         @gunTimeout = @gunTimeoutDefault
 
-    @noclip = keys.noclip
+    # @noclip = keys.noclip > 0
 
   onDamage: (projectile, damage) ->
     return unless @alive()
@@ -123,6 +110,7 @@ class Ship extends Entity
     # TODO: Damage from explosions nearby
     @energy -= damage
     if @energy <= 0
+      # TODO: Under server authority
       @explode()
 
   alive: ->
