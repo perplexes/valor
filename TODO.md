@@ -49,6 +49,9 @@
 # Random
 - [ ] Use vendorer ruby gem for the js vendor files.
 - [ ] Figure out require.js
+- [ ] Use tamper for asset json, package asssets all together?
+- [ ] Assets.json ... hson?
+- [ ] assets json for movies within tilesets (tiles.bmp force fields, bullets have like 10 movies inside it)
 
 # Research
 - [x] pixi.js
