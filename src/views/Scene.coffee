@@ -48,7 +48,7 @@ class Scene
     @renderer.view.style.top = "0px"
     @renderer.view.style.left = "0px"
     document.body.appendChild(@renderer.view)
-    $(window).resize ->
+    $(window).resize =>
       @width = document.body.clientWidth
       @height = window.innerHeight
       @renderer.resize(@width, @height)
