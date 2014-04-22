@@ -1,5 +1,6 @@
 restruct = require("restruct")
-Tile = require("./Tile.js")
+Tile = require("./Tile")
+
 class Map
   spriteWidth: 16
   spriteHeight: 16 # in pixels

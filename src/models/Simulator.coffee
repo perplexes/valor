@@ -1,6 +1,6 @@
-ZTree = require("./ZTree.js")
-DLinkedList = require("./DLinkedList.js")
-Physics = require("./Physics.js")
+ZTree = require("./ZTree")
+DLinkedList = require("./DLinkedList")
+Physics = require("./Physics")
 
 class Simulator
   constructor: ->
@@ -30,8 +30,10 @@ class Simulator
   step: (game, timestamp, delta_s) ->
     @collisions = {}
     @collObjs = []
+    @simulated = []
     @dynamicEntities.each (entity) =>
       entity.simulate(delta_s)
+      @simulated.push entity
 
       for tree in [@staticTree, @dynamicTree]
         tree.searchExpand(entity._extent, 16, 16, (nearEntity) ->

@@ -1,3 +1,6 @@
+View = require './View'
+Asset = require './Asset'
+
 class ShipView extends View
   View.extended(@, "Other ships")
 
@@ -23,3 +26,5 @@ class ShipView extends View
       "Selfship"
     else
       "Other ships"
+
+module.exports = ShipView

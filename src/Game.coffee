@@ -1,6 +1,6 @@
-Simulator = require("./models/Simulator.js")
-Ship = require("./models/Ship.js")
-Map = require("./models/Map.js")
+Simulator = require("./models/Simulator")
+Ship = require("./models/Ship")
+Map = require("./models/Map")
 
 
 `
@@ -14,12 +14,6 @@ class Game
 
   constructor: ->
     @simulator = new Simulator
-    @register(@simulator)
-
-    # This should happen when the server starts a replication to us
-    # or it's single player mode.
-    @ship = new Ship(@simulator, true, {ship: 0})
-    @othership = new Ship(@simulator, false, {ship: 1, pos: @ship.pos.clone().addXX(32)})
 
   load: (callback) ->
     Map.load (bmpData, tiles) =>
@@ -30,12 +24,23 @@ class Game
   register: (observer) ->
     @observers.push(observer)
 
+  # All the state that this entity is interested in observing
+  state: (entity) ->
+    entities = []
+    @simulator.dynamicTree.searchExpand(entity._extent, 1280, 800, (nearEntity) ->
+      entities.push(nearEntity.serialize())
+    , @)
+    entities
+
   start: (callback) ->
     console.log("game.start")
+    # Put simulate step at the end?
+    @register(@simulator)
     @callback = callback
     @step(0)
 
   step: (timestamp) =>
+    console.log timestamp
     @before() if @before?
 
     @last ||= 0

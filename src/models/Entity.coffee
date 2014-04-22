@@ -1,8 +1,11 @@
-Vector2d = require("./Vector2d.js")
-Extent = require("./Extent.js")
+Vector2d = require("./Vector2d")
+Extent = require("./Extent")
+Physics = require("./Physics")
 
 # TODO: touching pos should update extent
 class Entity
+  entityMap = {}
+
   layer: null
   simulator: null
   pos: new Vector2d(0,0) # Vector2d
@@ -39,6 +42,8 @@ class Entity
     # Simulator needs the hash
     @simulator.insert(@) if @simulator?
 
+    # Trigger after-initialize
+    @sync({})
 
   simulate: (delta_s) ->
     # TODO: Better place for this?
@@ -50,9 +55,11 @@ class Entity
         @lifetime -= delta_s
 
     if @simulator? && !@vel.isZero()
+      console.log(delta_s, @vel, @pos)
       @scaledV.clear().add(@vel).scaleXX(delta_s)
       @simulator.dynamicTree.remove(@)
       @pos.add(@scaledV)
+      console.log(delta_s, @vel, @pos)
       @simulator.dynamicTree.insert(@)
       @extent()
 
@@ -77,5 +84,33 @@ class Entity
   alive: ->
     return true if @lifetime == null
     @lifetime > 0
+
+  serialize: (obj) ->
+    obj.pos = @pos
+    obj.vel = @vel
+    obj.w = @w
+    obj.h = @h
+    obj.hash = @hash
+    obj.klass = @constructor.name
+    obj
+
+  sync: (obj) ->
+    for key, value of obj
+      if key == "pos" || key == "vel"
+        @[key].x = value.x
+        @[key].y = value.y
+      else
+        @[key] = value
+
+  @deserialize: (game, obj) ->
+    entity = new entityMap[obj.klass]()
+    entity.simulator = game.simulator
+    entity.sync(obj)
+    entity.simulator.insert(entity)
+    entity.extent()
+    entity
+
+  @extended: (klass) ->
+    entityMap[klass.name] = klass
 
 module.exports = Entity

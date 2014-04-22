@@ -33,6 +33,7 @@ class DLinkedList
     @nodes = {}
 
   at: (hash) ->
+    return null unless @nodes[hash]?
     @nodes[hash].value
 
   insert: (value, hash) ->

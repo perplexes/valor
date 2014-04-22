@@ -1,5 +1,5 @@
-Entity = require("./Entity.js")
-Vector2d = require("./Vector2d.js")
+Entity = require("./Entity")
+Vector2d = require("./Vector2d")
 restruct = require("restruct")
 
 # 191: Invisible on screen, Visible on radar, Ships can go through them, Items bounce off it, Thors go through it. (if you "launch" an item while in it, the item will float suspended in space)
@@ -18,6 +18,8 @@ restruct = require("restruct")
 # 254: Invisible on screen, Invisible on radar, Items go through it, So does your ship. idk what its used for, but it seems you cant door while on/near it.
 # 255: Visible On screen (Animated Green Prize), Invisible on radar, Items go through it, So does your Ship. This is a green, but it doesent show up on radar, and no matter how many times you fly over it, you will never pick it up, ever.
 class Tile extends Entity
+  Entity.extended(@)
+
   tx: 0
   ty: 0
   index: 0

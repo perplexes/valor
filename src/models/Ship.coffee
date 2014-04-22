@@ -1,9 +1,9 @@
-Entity = require("./Entity.js")
-Vector2d = require("./Vector2d.js")
-Bullet = require("./Bullet.js")
-Effect = require("./Effect.js")
-Extent = require("./Extent.js")
-Tile = require("./Tile.js")
+Entity = require("./Entity")
+Vector2d = require("./Vector2d")
+Bullet = require("./Bullet")
+Effect = require("./Effect")
+Extent = require("./Extent")
+Tile = require("./Tile")
 
 # Use a mod that can deal with negative numbers
 `Math.mod = function(a,b) {
@@ -15,16 +15,18 @@ Tile = require("./Tile.js")
 `
 
 class Ship extends Entity
+  Entity.extended(@)
+
   rawAngle: 0
   angle: 0
   safe: false
   maxSpeed: 500 # pixels / second
+  maxEnergy: 1000
   noclip: false # TODO: Does setting this true mean it's shared across instances??
   # TODO: advanceTime with listeners for managing timers and stuff
   # Or, have global absolute time
   gunTimeoutDefault: 0.5
   gunTimeout: 0
-  maxEnergy: 1000
   energy: @::maxEnergy
   # Bullets
   fireEnergy: 20
@@ -34,10 +36,19 @@ class Ship extends Entity
     circles: [513 * 16, 397 * 16]
     weirdText: [5614, 743]
 
-  constructor: (simulator, player, options) ->
-    @posClamp = new Vector2d(0, 1024 * 16)
-    @velClamp = new Vector2d(-@maxSpeed, @maxSpeed)
+  # TODO: Follow unreal role/field replication strategy
+  serialize: ->
+    super
+      angle: @angle,
+      maxSpeed: @maxSpeed,
+      maxEnergy: @maxEnergy,
+      gunTimeoutDefault: @gunTimeoutDefault,
+      gunTimeout: @gunTimeout,
+      energy: @energy,
+      fireEnergy: @fireEnergy,
+      options: @options
 
+  constructor: (simulator, player = false, options = {}) ->
     loc = @locations[options.location] || @locations.nearSafe
     pos = null
     if options.pos
@@ -54,10 +65,6 @@ class Ship extends Entity
 
     @player = player
     @options = options
-    @gunTimeout = @gunTimeoutDefault
-    @safety = new Extent(Infinity, Infinity, -1, -1)
-    @energy = @maxEnergy
-    @bullets = []
 
   simulate: (delta_s) ->
     @vel.clamp(@velClamp)
@@ -89,7 +96,8 @@ class Ship extends Entity
     # TODO: Where to store collision objects
     # collide = entity.index < 127
     super(entity) if !@noclip && entity.index != 170
-      
+  
+  # Process? Apply?
   processInput: (ev, simulator) ->
     # In increments of how many textures there are.
     @rawAngle += 0.7 * ev.x
@@ -127,5 +135,18 @@ class Ship extends Entity
   explode: ->
     @expire()
     Effect.create('explode1', @pos, @vel)
+
+  sync: (obj) ->
+    super(obj)
+
+    # TODO: Parameter based on map
+    @posClamp = new Vector2d(0, 1024 * 16)
+    # TODO: After init/resync on replication
+    @velClamp = new Vector2d(-@maxSpeed, @maxSpeed)
+    @gunTimeout = @gunTimeoutDefault
+    @safety = new Extent(Infinity, Infinity, -1, -1)
+    @energy = @maxEnergy
+    @bullets = []
+
 
 module.exports = Ship

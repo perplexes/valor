@@ -1,3 +1,5 @@
+Vector2d = require '../models/Vector2d'
+
 class View
   doPos: new Vector2d(0,0)
   viewMap = {}
@@ -47,3 +49,5 @@ class View
     return unless @layer
     return unless @displayObject
     @layer.removeChild(@displayObject)
+
+module.exports = View

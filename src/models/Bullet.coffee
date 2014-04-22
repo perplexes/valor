@@ -1,6 +1,6 @@
-Entity = require("./Entity.js")
-Vector2d = require("./Vector2d.js")
-Effect = require("./Effect.js")
+Entity = require("./Entity")
+Vector2d = require("./Vector2d")
+Effect = require("./Effect")
 
 class Bullet extends Entity
   bounciness: 1
@@ -40,3 +40,5 @@ class Bullet extends Entity
   simulate: (delta_s) ->
     @expire() if @ship.safe
     super(delta_s)
+
+module.exports = Bullet

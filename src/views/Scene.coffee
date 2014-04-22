@@ -1,3 +1,8 @@
+PIXI = require '../../vendor/pixi-1.5.2.dev.js'
+Viewport = require './Viewport'
+Starfield = require './Starfield'
+View = require './View'
+
 # Layer order:
 # Starfield
 # Map
@@ -37,7 +42,6 @@ class Scene
     @height = window.innerHeight
 
     @viewport = new Viewport(@width, @height)
-    @viewport.pos = game.ship.pos
 
     @starfield = new Starfield(@layers["Starfield"], @viewport)
 
@@ -48,7 +52,7 @@ class Scene
     @renderer.view.style.top = "0px"
     @renderer.view.style.left = "0px"
     document.body.appendChild(@renderer.view)
-    $(window).resize =>
+    window.onresize = =>
       @width = document.body.clientWidth
       @height = window.innerHeight
       @renderer.resize(@width, @height)
@@ -85,3 +89,5 @@ class Scene
     sum = 0
     sum += layer.children.length for name, layer of @layers
     sum
+
+module.exports = Scene

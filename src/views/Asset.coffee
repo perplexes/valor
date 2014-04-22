@@ -1,3 +1,5 @@
+PIXI = require '../../vendor/pixi-1.5.2.dev.js'
+
 class Asset
   @assets = {}
 
@@ -55,3 +57,5 @@ class Asset
     @load("bullets", 20, 50, 10, 4, "assets/shared/graphics/bullets.png")
     @load("ship0", 360, 144, 4, 10, "assets/shared/graphics/ship0.png")
     @load("ship1", 360, 144, 4, 10, "assets/shared/graphics/ship1.png")
+
+module.exports = Asset

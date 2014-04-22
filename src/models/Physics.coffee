@@ -1,4 +1,4 @@
-Vector2d = require("./Vector2d.js")
+Vector2d = require("./Vector2d")
 
 class Physics
   @collision: (a, b) ->

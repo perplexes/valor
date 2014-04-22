@@ -1,4 +1,4 @@
-Extent = require("./Extent.js")
+Extent = require("./Extent")
 RBTree = require('bintrees').RBTree
 
 class ZTree

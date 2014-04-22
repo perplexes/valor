@@ -1,3 +1,5 @@
+PIXI = require '../../vendor/pixi-1.5.2.dev.js'
+
 # TODO: Use RenderTexture?
 class Starfield
   LEVELS = 6
@@ -64,3 +66,5 @@ class Starfield
   updateLevel: (level) ->
     level._displayObject.tilePosition.x = -@viewport.pos.x / level.ratio
     level._displayObject.tilePosition.y = -@viewport.pos.y / level.ratio
+
+module.exports = Starfield

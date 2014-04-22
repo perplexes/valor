@@ -1,3 +1,29 @@
+# TODO: View needs to be in here? :(
+# View = require './views/View'
+Scene = require './views/Scene'
+DLinkedList = require './models/DLinkedList'
+Stats = require './Stats'
+Vector2d = require './models/Vector2d'
+PIXI = require '../vendor/pixi-1.5.2.dev.js'
+Game = require './Game'
+Asset = require './views/Asset'
+AI = require './models/AI'
+
+BulletView = require './views/BulletView'
+EffectView = require './views/EffectView'
+ShipView = require './views/ShipView'
+TileView = require './views/TileView'
+
+Entity = require("./models/Entity")
+Physics = require("./models/Physics")
+Ship = require("./models/Ship")
+Bullet = require("./models/Bullet")
+Tile = require("./models/Tile")
+Effect = require("./models/Effect")
+AI = require("./models/AI")
+Simulator = require("./models/Simulator")
+Game = require("./Game")
+
 # TODO: Settings
 class Client
   constructor: (game) ->
@@ -13,7 +39,6 @@ class Client
 
     @scene = new Scene(game, @)
 
-    game.register(new AI)
     game.register(@)
     # Update screen positions, then render
     game.register(@scene)
@@ -23,7 +48,6 @@ class Client
     game.after  = => @stats.end()
 
     @keys = {debugMessages: false}
-    @ship = game.ship
     @pendingEvents = new DLinkedList
     @serverEvents = []
 
@@ -33,19 +57,29 @@ class Client
 
     # TODO: Sort out chain of events here and use promises?
     @ws.onopen = (evt) =>
-      @send type: 'connect'
-      game.load (bmpData, tiles) ->
+      @send type: 'join'
+      console.log("Sent join")
+      game.load (bmpData, tiles) =>
         TileView.load(bmpData)
-        client.start()
+        # client.start()
 
-    @ws.onmessage = (evt) =>
-      @serverEvents.push(JSON.parse(evt.data))
+    @ws.onmessage = (message) =>
+      # console.log("#{Date.now()} <-", message)
+      ev = JSON.parse(message.data)
+      if ev.type == 'connected'
+        # great
+      else if ev.type == 'joined'
+        @receive([ev], true)
+        @start()
+      else
+        @serverEvents.push(ev)
 
   start: ->
     @game.start(requestAnimationFrame)
 
   step: (game, timestamp, delta_s) ->
     @receive(@serverEvents)
+    @serverEvents = []
 
     # Events
     # TODO: Clean this
@@ -55,20 +89,21 @@ class Client
     # console.log ev
 
     # TODO: Better name? Process events?
-    game.ship.processInput(ev, game.simulator, delta_s)
+    @ship.processInput(ev, game.simulator, delta_s)
     
 
     if @keys.debugCollisions
-      @drawDebugCollisions(game.ship, game.simulator.collObjs)
+      @drawDebugCollisions(@ship, game.simulator.collObjs)
 
     if @keys.debugMessages
       @drawDebug({
-        ship: [game.ship.pos.x, game.ship.pos.y, game.ship.rawAngle, game.ship.angle],
-        shipVel: [game.ship.vel.x, game.ship.vel.y],
+        viewport: [@scene.viewport.pos.x, @scene.viewport.pos.y],
+        ship: [@ship.pos.x, @ship.pos.y, @ship.rawAngle, @ship.angle],
+        shipVel: [@ship.vel.x, @ship.vel.y],
         # viewport: @scene.viewport,
         # map: @map,
-        # safety: game.ship.safety,
-        # safe: game.ship.safe,
+        # safety: @ship.safety,
+        # safe: @ship.safe,
         # fps: 1/delta_s,
         keys: @keys,
         ev: ev,
@@ -86,20 +121,32 @@ class Client
 
   # TODO: Lifecycle, server id vs local id (or always guid)
   # TODO: Event types, other entities
-  receive: (events) ->
+  receive: (events, firstSync) ->
     for ev in events
-      @ship.pos.x = ev.x
-      @ship.pos.y = ev.y
-      @ship.vel.x = ev.dx
-      @ship.vel.y = ev.dy
+      for entityData in ev.entities
+        entity = @game.simulator.dynamicEntities.at(entityData.hash)
+        if entity
+          entity.sync(entityData)
+        else
+          entity = Entity.deserialize(@game, entityData)
+          if entityData.hash == ev.shipHash && firstSync
+            @ship = entity
+            @ship.player = true
+            # TODO: Better way to do this
+            @scene.viewport.pos = @ship.pos
+
       @pendingEvents.each (pev) =>
-        if pev.timestamp <= ev.timestamp
+        if pev.timestamp <= ev.ack
           @pendingEvents.remove(pev.timestamp)
         else
           @ship.processInput(pev)
 
   send: (ev) ->
-    @ws.send(JSON.stringify(ev))
+    unless ev.timestamp?
+      ev.timestamp = Date.now()
+    # console.log("#{Date.now()} ->", ev)
+    json = JSON.stringify(ev)
+    @ws.send(json)
 
   # TODO: don't keep memory here, flip based on previous event
   keyListen: (e, set = true) ->
@@ -119,6 +166,7 @@ class Client
     if listened
       e.preventDefault()
       e.stopPropagation()
+    console.log @keys
 
   # TODO: Probably just have dt_s as a field
   newEvent: (timestamp, dt_s) ->
@@ -173,7 +221,7 @@ class Client
             str += rep
         str
 
-    $(@debug).html(inspect(obj).join('<br/>'))
+    @debug.innerHTML = inspect(obj).join('<br/>')
 
   adjPoint = new Vector2d
   drawDebugCollisions: (ship, objects) ->
@@ -211,11 +259,14 @@ class Client
     sum += layer.container.children.length for layer in @layers
     sum
 
+# TODO: Is this really the best place for this?
 document.addEventListener 'DOMContentLoaded', ->
   console.log "DOMContentLoaded"
   Asset.preload()
   game = new Game
   client = new Client(game)
+  # Moved to wait for server connection
+  # client.start()
 
 if (typeof KeyEvent == "undefined")
   KeyEvent =

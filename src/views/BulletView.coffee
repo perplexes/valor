@@ -1,3 +1,6 @@
+View = require './View'
+Asset = require './Asset'
+
 class BulletView extends View
   View.extended(@, "Projectiles")
 
@@ -7,3 +10,5 @@ class BulletView extends View
     asset = Asset.assets["bullets"]
     movie = Asset.movie("bullets", 0.5, true, true, asset.row(row))
     super(bullet, movie)
+
+module.exports = BulletView

@@ -1,3 +1,9 @@
+View = require './View'
+PIXI = require '../../vendor/pixi-1.5.2.dev.js'
+BMPImage = require '../../vendor/bmpimage/bmpimage2.js'
+Asset = require './Asset'
+
+# TODO: Should Asset handle PIXI texture stuff?
 class TileView extends View
   View.extended(@, "Map")
 
@@ -31,3 +37,5 @@ class TileView extends View
       new PIXI.BaseTexture(canvas))
 
     @textures = asset.textures
+
+module.exports = TileView

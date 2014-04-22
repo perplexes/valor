@@ -1,4 +1,4 @@
-Vector2d = require("./Vector2d.js")
+Vector2d = require("./Vector2d")
 
 class Extent
   constructor: (x1, y1, x2, y2) ->

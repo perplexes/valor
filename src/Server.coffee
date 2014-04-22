@@ -1,45 +1,58 @@
 restruct = require("restruct")
-# jDataView = require("../vendor/jDataView/src/jDataView.js")
 jParser = require('jParser')
 RBTree = require('bintrees').RBTree
-Vector2d = require("./models/Vector2d.js")
-DLinkedList = require("./models/DLinkedList.js")
-ArrayTree = require("./models/ArrayTree.js")
-Extent = require("./models/Extent.js")
-ZTree = require("./models/ZTree.js")
+Vector2d = require("./models/Vector2d")
+DLinkedList = require("./models/DLinkedList")
+ArrayTree = require("./models/ArrayTree")
+Extent = require("./models/Extent")
+ZTree = require("./models/ZTree")
         
-Entity = require("./models/Entity.js")
-Physics = require("./models/Physics.js")
-Ship = require("./models/Ship.js")
-Bullet = require("./models/Bullet.js")
-Tile = require("./models/Tile.js")
-Effect = require("./models/Effect.js")
-AI = require("./models/AI.js")
-Simulator = require("./models/Simulator.js")
-Entity = require("./models/Entity.js")
-Game = require("./Game.js")
+Entity = require("./models/Entity")
+Physics = require("./models/Physics")
+Ship = require("./models/Ship")
+Bullet = require("./models/Bullet")
+Tile = require("./models/Tile")
+Effect = require("./models/Effect")
+AI = require("./models/AI")
+Simulator = require("./models/Simulator")
+Game = require("./Game")
 
 WebSocketServer = require('ws').Server
 class Server
-  frequency: 100 # ms
+  frequency: 500 # ms
   constructor: ->
     @clientEvents = []
     @clients = new DLinkedList
+    console.log @clients
     @clientCount = 0
+    @entities = {}
+    @clientMeta = {}
 
     @wss = new WebSocketServer({port: 8080});
-    @wss.on 'connection', (ws) ->
+    @wss.on 'connection', (ws) =>
       client = @clientCount++
       @clients.insert(ws, client)
-      @send(ws, {type: 'connected'})
+      meta = @clientMeta[client] = {}
+      @send(ws, client, {type: 'connected'})
 
-      ws.on 'message', (json) ->
+      ws.on 'message', (json) =>
         ev = JSON.parse(json)
-        console.log "<- ", ev
-        @clientEvents.push ev
+        ev.client = client
+        meta.ack = ev.timestamp
+        if ev.type == "join"
+          ship = new Ship(@game.simulator, false, {ship: 0})
+          @entities[client] = ship
+          @sendGameState(ws, @game, client)
+        else
+          meta.joined = true
+          @clientEvents.push ev
+
+      ws.on 'close', => @disconnect(client)
 
     @game = new Game
     @game.register(@)
+    @game.after = =>
+      console.log('Simulated:', @game.simulator.simulated.length)
     # @game.before = ->
       # console.log('Tick')
 
@@ -48,30 +61,58 @@ class Server
       @start()
 
   requestServerTick: (next) =>
-    delta_ms = Date.now() - @last
+    now = Date.now()
+    delta_ms =  now - @last
+    # console.log(@last, Date.now(), delta_ms)
     if delta_ms >= @frequency
-      callback = => next(delta_ms)
+      callback = => next(now - @started)
       setTimeout callback, 0
+      @last = now
     else
       callback = => @requestServerTick(next)
       setTimeout callback, @frequency - delta_ms
 
   start: =>
-    @last = Date.now()
+    @last = @started = Date.now()
     @game.start(@requestServerTick)
 
   step: (game, timestamp, delta_s) ->
     @receive(@clientEvents)
-    @clients.each (ws, id) =>
-      @send(ws, game.state)
+    @clientEvents = []
+    @clients.each (ws, client) =>
+      if @clientMeta[client] && @clientMeta[client].joined
+        @sendGameState(ws, game, client)
 
+  # TODO: a receive on a WS should verify client_id belongs to it
   receive: (events) ->
-    # for ev in events
+    for ev in events
+      if @clients.at(ev.client)
+        console.log "#{Date.now()} <-", ev
+        @entities[ev.client].processInput(ev)
       # switch on type? handlers?
 
-  send: (ws, obj) ->
-    console.log("->", obj)
+  sendGameState: (ws, game, client) ->
+    type = if @clientMeta[client].joined then 'update' else 'joined'
+    output =
+      shipHash: @entities[client].hash
+      entities: game.state(@entities[client])
+      ack: @clientMeta[client].ack
+      type: type
+    @send(ws, client, output)
+
+  send: (ws, client, obj) ->
+    return @disconnect(client) unless ws.readyState == 1
+    obj.timestamp = Date.now()
     json = JSON.stringify(obj)
-    ws.send(obj)
+    console.log("#{Date.now()} ->", json)
+    ws.send(json)
+
+  disconnect: (client) ->
+    return unless @clients.at(client)
+    @clients.remove(client)
+    delete @clientMeta[client]
+    entity = @entities[client]
+    delete @entities[client]
+    entity.expire()
 
 new Server
