@@ -55,11 +55,9 @@ class Entity
         @lifetime -= delta_s
 
     if @simulator? && !@vel.isZero()
-      console.log(delta_s, @vel, @pos)
       @scaledV.clear().add(@vel).scaleXX(delta_s)
       @simulator.dynamicTree.remove(@)
       @pos.add(@scaledV)
-      console.log(delta_s, @vel, @pos)
       @simulator.dynamicTree.insert(@)
       @extent()
 

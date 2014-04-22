@@ -40,7 +40,6 @@ class Game
     @step(0)
 
   step: (timestamp) =>
-    console.log timestamp
     @before() if @before?
 
     @last ||= 0

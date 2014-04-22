@@ -39,7 +39,7 @@ class Ship extends Entity
   # TODO: Follow unreal role/field replication strategy
   serialize: ->
     super
-      angle: @angle,
+      rawAngle: @rawAngle,
       maxSpeed: @maxSpeed,
       maxEnergy: @maxEnergy,
       gunTimeoutDefault: @gunTimeoutDefault,

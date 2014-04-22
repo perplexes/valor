@@ -84,8 +84,10 @@ class Client
     # Events
     # TODO: Clean this
     ev = @newEvent(timestamp, delta_s)
+    # if @keys.listened
     @pendingEvents.insert(ev, timestamp)
     @send(ev)
+      # @keys.listened = false
     # console.log ev
 
     # TODO: Better name? Process events?
@@ -129,17 +131,18 @@ class Client
           entity.sync(entityData)
         else
           entity = Entity.deserialize(@game, entityData)
-          if entityData.hash == ev.shipHash && firstSync
+
+        if entityData.hash == ev.shipHash
+          if firstSync
             @ship = entity
             @ship.player = true
             # TODO: Better way to do this
             @scene.viewport.pos = @ship.pos
-
-      @pendingEvents.each (pev) =>
-        if pev.timestamp <= ev.ack
-          @pendingEvents.remove(pev.timestamp)
-        else
-          @ship.processInput(pev)
+          @pendingEvents.each (pev) =>
+            if pev.timestamp <= ev.ack
+              @pendingEvents.remove(pev.timestamp)
+            else
+              @ship.processInput(pev)
 
   send: (ev) ->
     unless ev.timestamp?
@@ -150,7 +153,7 @@ class Client
 
   # TODO: don't keep memory here, flip based on previous event
   keyListen: (e, set = true) ->
-    listened = true
+    @keys.listened = true
     switch e.keyCode
       when KeyEvent.DOM_VK_LEFT then @keys.left = set
       when KeyEvent.DOM_VK_RIGHT then @keys.right = set
@@ -162,8 +165,8 @@ class Client
       when KeyEvent.DOM_VK_M then if set then @keys.debugMessages = !@keys.debugMessages
       when KeyEvent.DOM_VK_C then if set then @keys.debugCollisions = !@keys.debugCollisions
       when KeyEvent.DOM_VK_SPACE then @keys.fire = set
-      else listened = false
-    if listened
+      else @keys.listened = false
+    if @keys.listened
       e.preventDefault()
       e.stopPropagation()
     console.log @keys

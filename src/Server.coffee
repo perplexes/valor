@@ -19,7 +19,7 @@ Game = require("./Game")
 
 WebSocketServer = require('ws').Server
 class Server
-  frequency: 500 # ms
+  frequency: 100 # ms
   constructor: ->
     @clientEvents = []
     @clients = new DLinkedList
