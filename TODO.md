@@ -102,3 +102,16 @@ x bind extent obj to things that need it so we don't need to make new functions 
 Different layers for selfship/othership
 
 Show tile damage, battle scars
+
+--
+network reconcil. is still janky, probably because we're not doing smoothing, but it could be something else.
+On this MBA 2014 w/ Ubuntu, FPS is down to 20. need to test on other machines.
+you can go through walls if you're going fast enough. this is something like
+
+max speed (500px/s) / server physics speed (100ms, or 10 times/s)
+
+if our block width is 16 px, then, what is the maximum speed at this physics timing?
+
+30fps =~ 500px/s if the largest colliding block is 16px
+
+need reconnect/disconnect
