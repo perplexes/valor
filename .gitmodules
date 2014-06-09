@@ -1,6 +1,6 @@
 [submodule "vendor/bmpimage"]
     path = vendor/bmpimage
-    url = https://bitbucket.org/rreverser/bmpimage.git
+    url = https://github.com/perplexes/BMPImage.git
 [submodule "vendor/restruct.js"]
 	path = vendor/restruct.js
 	url = https://github.com/rfw/restruct.js.git
