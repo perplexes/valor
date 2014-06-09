@@ -47,7 +47,10 @@ class Scene
 
   initPixi: ->
     @stage = new PIXI.Stage(0, false)
-    @renderer = PIXI.autoDetectRenderer(@width, @height, document.createElement( 'canvas' ), false, false)
+    canvas = document.createElement( 'canvas' )
+    canvas.width = @width
+    canvas.height = @height
+    @renderer = PIXI.autoDetectRenderer(@width, @height, canvas, false, false)
     @renderer.view.style.position = "absolute"
     @renderer.view.style.top = "0px"
     @renderer.view.style.left = "0px"
@@ -56,6 +59,7 @@ class Scene
       @width = document.body.clientWidth
       @height = window.innerHeight
       @renderer.resize(@width, @height)
+      @viewport.resize(@width, @height)
 
   step: (game, timestamp, delta_s) ->
     @viewport.extent()
