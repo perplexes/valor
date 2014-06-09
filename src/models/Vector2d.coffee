@@ -117,4 +117,7 @@ class Vector2d
   isZero: ->
     @x == @y == 0
 
+  length: ->
+    Math.sqrt(@x*@x + @y*@y)
+
 module.exports = Vector2d

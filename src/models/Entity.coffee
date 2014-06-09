@@ -92,11 +92,24 @@ class Entity
     obj.klass = @constructor.name
     obj
 
+  diff = new Vector2d
   sync: (obj) ->
     for key, value of obj
-      if key == "pos" || key == "vel"
-        @[key].x = value.x
-        @[key].y = value.y
+      # Smooth positional updates
+      # Derivatives are better to update in jumps
+      if key == "pos"
+        diff.clear().add(@pos).sub(value)
+        distance = diff.length()
+
+        if distance > 2
+          @pos.clear().add(value)
+        else if distance > 0.1
+          diff.scaleXX(0.1)
+          @pos.add(diff)
+
+      else if key == "vel"
+        @vel.x = value.x
+        @vel.y = value.y
       else
         @[key] = value
 
