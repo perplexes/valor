@@ -102,7 +102,7 @@ class Server
 
   send: (ws, client, obj) ->
     return @disconnect(client) unless ws.readyState == 1
-    obj.timestamp = Date.now()
+    obj.timestamp = Date.now() | 0
     json = JSON.stringify(obj)
     console.log("#{Date.now()} ->", json)
     ws.send(json)

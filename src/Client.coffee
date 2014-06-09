@@ -83,9 +83,9 @@ class Client
 
     # Events
     # TODO: Clean this
-    ev = @newEvent(timestamp, delta_s)
+    ev = @newEvent(timestamp|0, delta_s)
     # if @keys.listened
-    @pendingEvents.insert(ev, timestamp)
+    @pendingEvents.insert(ev, timestamp|0)
     @send(ev)
       # @keys.listened = false
     # console.log ev
@@ -174,7 +174,7 @@ class Client
   # TODO: Probably just have dt_s as a field
   newEvent: (timestamp, dt_s) ->
     ev =
-      timestamp: timestamp
+      timestamp: timestamp | 0
       x: 0
       y: 0
       fire: 0
