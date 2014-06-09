@@ -33,6 +33,7 @@ class Server
       client = @clientCount++
       @clients.insert(ws, client)
       meta = @clientMeta[client] = {}
+      console.log("Connected:", client)
       @send(ws, client, {type: 'connected'})
 
       ws.on 'message', (json) =>
@@ -52,7 +53,7 @@ class Server
     @game = new Game
     @game.register(@)
     @game.after = =>
-      console.log('Simulated:', @game.simulator.simulated.length)
+      # console.log('Simulated:', @game.simulator.simulated.length)
     # @game.before = ->
       # console.log('Tick')
 
@@ -87,7 +88,7 @@ class Server
   receive: (events) ->
     for ev in events
       if @clients.at(ev.client)
-        console.log "#{Date.now()} <-", ev
+        # console.log "#{Date.now()} <-", ev
         @entities[ev.client].processInput(ev)
       # switch on type? handlers?
 
@@ -104,7 +105,7 @@ class Server
     return @disconnect(client) unless ws.readyState == 1
     obj.timestamp = Date.now() | 0
     json = JSON.stringify(obj)
-    console.log("#{Date.now()} ->", json)
+    # console.log("#{Date.now()} ->", json)
     ws.send(json)
 
   disconnect: (client) ->

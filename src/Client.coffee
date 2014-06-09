@@ -268,6 +268,7 @@ document.addEventListener 'DOMContentLoaded', ->
   Asset.preload()
   game = new Game
   client = new Client(game)
+  console.log(client.scene)
   # Moved to wait for server connection
   # client.start()
 
