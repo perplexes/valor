@@ -1,0 +1,34 @@
+{
+  "name": "valor",
+  "version": "0.0.0",
+  "description": "Subspace clone in HTML5",
+  "main": "Subspace.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "bintrees": "^1.0.0",
+    "coffeeify": "^0.6.0",
+    "jParser": "^1.0.2",
+    "norman": "^0.1.0",
+    "restruct": "^0.1.3",
+    "watchify": "^0.10.2",
+    "ws": "^0.4.31"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.7.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/perplexes/valor.git"
+  },
+  "author": "Colin Curtin",
+  "license": "PPL",
+  "bugs": {
+    "url": "https://github.com/perplexes/valor/issues"
+  },
+  "homepage": "https://github.com/perplexes/valor"
+}
