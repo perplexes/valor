@@ -104,14 +104,23 @@ Different layers for selfship/othership
 Show tile damage, battle scars
 
 --
-network reconcil. is still janky, probably because we're not doing smoothing, but it could be something else.
+x network reconcil. is still janky, probably because we're not doing smoothing, but it could be something else.
 On this MBA 2014 w/ Ubuntu, FPS is down to 20. need to test on other machines.
-you can go through walls if you're going fast enough. this is something like
+
+x you can go through walls if you're going fast enough. this is something like
 
 max speed (500px/s) / server physics speed (100ms, or 10 times/s)
 
 if our block width is 16 px, then, what is the maximum speed at this physics timing?
 
-30fps =~ 500px/s if the largest colliding block is 16px
+30fps =~ 500px/s if the largest colliding block is 16px (to not have it totally go through - but if it's mid-way, then it's more frequent)
+
+(increased server loop fps :/)
 
 need reconnect/disconnect
+
+Received negative timestamp on client - why?
+
+WebRTC looks ready http://www.html5rocks.com/en/tutorials/webrtc/datachannels/
+
+Also capnproto, need to make my own in JS/CS I guess.
