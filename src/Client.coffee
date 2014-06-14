@@ -51,7 +51,7 @@ class Client
     @pendingEvents = new DLinkedList
     @serverEvents = []
 
-    @ws = new WebSocket('ws://localhost:8080')
+    @ws = new WebSocket("ws://#{window.location.hostname}:8080")
     
     times = {}
 
