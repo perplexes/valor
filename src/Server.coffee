@@ -50,14 +50,17 @@ class Server
         ev.client = client
         meta.ack = ev.timestamp
         if ev.type == "join"
-          ship = new Ship(@game.simulator, false, {ship: 0})
+          console.log("Join:", ev.shipType)
+          ship = new Ship(@game.simulator, false, {ship: ev.shipType || 0})
           @entities[client] = ship
           @sendGameState(ws, @game, client)
         else
           meta.joined = true
           @clientEvents.push ev
 
-      ws.on 'close', => @disconnect(client)
+      ws.on 'close', =>
+        console.log("Disconnected:", client)
+        @disconnect(client)
 
     @game = new Game
     @game.register(@)
