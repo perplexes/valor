@@ -17,6 +17,8 @@ AI = require("./models/AI")
 Simulator = require("./models/Simulator")
 Game = require("./Game")
 
+pnow = require("performance-now")
+
 WebSocketServer = require('ws').Server
 class Server
   frequency: 32 # ms
@@ -55,7 +57,23 @@ class Server
     @game.after = =>
       # console.log('Simulated:', @game.simulator.simulated.length)
     # @game.before = ->
+    samples = []
+    sampleStart = pnow()
+    @game.before = =>
+      sampleStart = pnow()
       # console.log('Tick')
+    @game.after = =>
+      samples.push(pnow() - sampleStart)
+
+    setInterval ->
+      a = 0
+      for i in samples
+        a += i
+      avg = a/samples.length
+      
+      samples = []
+      console.log(avg * 1000 | 0, "us")
+    , 1000
 
     @game.load (bmpData, tiles) =>
       console.log("@game.load")
