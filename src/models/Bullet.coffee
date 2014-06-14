@@ -26,13 +26,13 @@ class Bullet extends Entity
     )
 
   collide: (object) ->
-    if object.constructor == Tile
+    if object.constructor.name == "Tile"
       if object.index == 170
         return
       else if @bouncing
         super(object)
 
-    if object.constructor == Ship && object != @ship
+    if object.constructor.name == "Ship" && object != @ship
       object.onDamage(@, @damage)
       @expire()
       Effect.create('explode0', @pos, null)
