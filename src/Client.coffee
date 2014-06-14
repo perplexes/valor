@@ -157,7 +157,7 @@ class Client
 
   send: (ev) ->
     unless ev.timestamp?
-      ev.timestamp = Date.now()
+      ev.timestamp = Date.now() | 0
     # console.log("#{Date.now()} ->", ev)
     json = JSON.stringify(ev)
     @ws.send(json)
