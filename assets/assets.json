@@ -320,8 +320,8 @@
       "url": "assets/shared/graphics/over2.png",
       "width": 320,
       "height": 96,
-      "columns": 3,
-      "rows": 10,
+      "columns": 10,
+      "rows": 3,
       "loop": true,
       "speed": 0.5,
       "play": true

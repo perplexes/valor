@@ -12,11 +12,25 @@ class TileView extends View
   baseTexture = null
   @textures = []
 
+  # TODO: Pool?
   constructor: (tile) ->
-    return super(tile) unless texture = @constructor.textures[tile.index]
+    displayObject = null
+    if tile.index == 216
+      displayObject = Asset.movie("over1", 0.5, true, true)
+    else if tile.index == 217
+      displayObject = Asset.movie("over2", 0.3, true, true)
+      # 32x32
+    else if tile.index == 219
+      displayObject = Asset.movie("over4", 0.2, true, true)
+      # 96x92
+    else if tile.index == 220
+      displayObject = Asset.movie("over5", 0.5, true, true)
 
-    # TODO: pool
-    displayObject = new PIXI.Sprite(texture)
+    else if texture = @constructor.textures[tile.index]
+      displayObject = new PIXI.Sprite(texture)
+
+    return super(tile) unless displayObject
+
     displayObject.anchor.x = 0.5
     displayObject.anchor.y = 0.5
 

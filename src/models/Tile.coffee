@@ -33,9 +33,23 @@ class Tile extends Entity
   offset: new Vector2d(@::w/2, @::h/2)
 
   mapStruct = restruct.int32lu("struct")
+  # TODO: Resize special tiles to be the size of their texture
+  # But what is their origin? (ul)
   constructor: (tx, ty, index, texture, meta, map) ->
     pos = new Vector2d(tx, ty).scaleXY(@w, @h).add(@offset)
-    super(null, pos, null, @w, @h)
+    w = @w
+    h = @h
+    # Medium asteroid
+    if index == 217
+      w = h = 32
+    # Station
+    else if index == 219
+      w = h = 96
+    # Wormhole
+    else if index == 220
+      w = h = 80
+
+    super(null, pos, null, w, h)
 
     @tx = tx
     @ty = ty
