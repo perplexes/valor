@@ -54,19 +54,26 @@ class Client
     times = {}
 
     # TODO: Sort out chain of events here and use promises?
+    @connected = false
     @ws.onopen = (evt) =>
-      @send type: 'join'
+      @connected = true
+      @send(type: 'join', shipType: Math.random() * 8 | 0)
       console.log("Sent join")
       game.load (bmpData, tiles) =>
         TileView.load(bmpData)
         # client.start()
 
+    @ws.onclose = (evt) =>
+      console.log("Disconnected")
+      @connected = false
+
     @ws.onmessage = (message) =>
       # console.log("#{Date.now()} <-", message)
       ev = JSON.parse(message.data)
       if ev.type == 'connected'
-        # great
+        console.log("connected")
       else if ev.type == 'joined'
+        console.log("joined")
         @receive([ev], true)
         @start()
       else
@@ -83,12 +90,14 @@ class Client
     # TODO: Clean this
     ev = @newEvent(timestamp|0, delta_s)
     # if @keys.listened
-    @pendingEvents.insert(ev, timestamp|0)
-    @send(ev)
+    if @connected
+      @pendingEvents.insert(ev, timestamp|0)
+      @send(ev)
       # @keys.listened = false
     # console.log ev
 
     # TODO: Better name? Process events?
+    # TODO: When disconnected?
     @ship.processInput(ev, game.simulator, delta_s)
     
 
@@ -97,6 +106,7 @@ class Client
 
     if @keys.debugMessages
       @drawDebug({
+        connected: @connected,
         viewport: [@scene.viewport.pos.x, @scene.viewport.pos.y],
         ship: [@ship.pos.x, @ship.pos.y, @ship.rawAngle, @ship.angle],
         shipVel: [@ship.vel.x, @ship.vel.y],
@@ -138,6 +148,7 @@ class Client
             @ship.player = true
             # TODO: Better way to do this
             @scene.viewport.pos = @ship.pos
+          # TODO: If we receive out of order?
           @pendingEvents.each (pev) =>
             if pev.timestamp <= ev.ack
               @pendingEvents.remove(pev.timestamp)
@@ -159,17 +170,18 @@ class Client
       when KeyEvent.DOM_VK_RIGHT then @keys.right = set
       when KeyEvent.DOM_VK_UP then @keys.up = set
       when KeyEvent.DOM_VK_DOWN then @keys.down = set
-      when KeyEvent.DOM_VK_S then @keys.fullstop = set
+      when KeyEvent.DOM_VK_SPACE then @keys.fire = set
+
+      when KeyEvent.DOM_VK_S then @ws.close()
       when KeyEvent.DOM_VK_D then if set then @keys.debug = !@keys.debug
       when KeyEvent.DOM_VK_N then if set then @keys.noclip = !@keys.noclip
       when KeyEvent.DOM_VK_M then if set then @keys.debugMessages = !@keys.debugMessages
       when KeyEvent.DOM_VK_C then if set then @keys.debugCollisions = !@keys.debugCollisions
-      when KeyEvent.DOM_VK_SPACE then @keys.fire = set
       else @keys.listened = false
     if @keys.listened
       e.preventDefault()
       e.stopPropagation()
-    console.log @keys
+    # console.log @keys
 
   # TODO: Probably just have dt_s as a field
   newEvent: (timestamp, dt_s) ->
