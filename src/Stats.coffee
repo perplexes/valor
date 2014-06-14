@@ -1,3 +1,3 @@
 # mrdoob stats shim for browserify
-require '../vendor/stats.min.js'
+require '../vendor/stats.modified.js'
 module.exports = window.Stats

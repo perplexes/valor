@@ -44,8 +44,6 @@ class Client
     game.register(@scene)
 
     @initStats()
-    game.before = => @stats.begin()
-    game.after  = => @stats.end()
 
     @keys = {debugMessages: false}
     @pendingEvents = new DLinkedList
@@ -125,6 +123,8 @@ class Client
   # TODO: Event types, other entities
   receive: (events, firstSync) ->
     for ev in events
+      # TODO: Assumes it's *2 for RTT
+      @latency.frame((Date.now() - ev.timestamp) * 2, Date.now())
       for entityData in ev.entities
         entity = @game.simulator.dynamicEntities.at(entityData.hash)
         if entity
@@ -193,13 +193,27 @@ class Client
     @stats = new Stats()
     @stats.setMode(0) # 0: fps, 1: ms
 
-    # Align top-left
+    # Align top-right
     @stats.domElement.style.position = 'absolute'
     @stats.domElement.style.right = '0px'
     @stats.domElement.style.top = '0px'
     @stats.domElement.style.zIndex = '10'
 
     document.body.appendChild( @stats.domElement )
+
+    game.before = => @stats.begin()
+    game.after  = => @stats.end()
+
+    @latency = new Stats()
+    @latency.setMode(1)
+
+    # Align top-right below fps
+    @latency.domElement.style.position = 'absolute'
+    @latency.domElement.style.right = '0px'
+    @latency.domElement.style.top = '50px'
+    @latency.domElement.style.zIndex = '10'
+
+    document.body.appendChild( @latency.domElement )
 
   # TODO: Use webgl text instead of element, faster?
   # TODO: Put in scene perhaps? Or a debug layer?
