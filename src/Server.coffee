@@ -20,6 +20,13 @@ Game = require("./Game")
 pnow = require("performance-now")
 
 WebSocketServer = require('ws').Server
+
+`
+Math.rand = function(min, max) {
+  return (Math.random() * max | 0) + min;
+}
+`
+
 class Server
   frequency: 32 # ms
   constructor: ->
@@ -54,9 +61,16 @@ class Server
 
     @game = new Game
     @game.register(@)
-    @game.after = =>
-      # console.log('Simulated:', @game.simulator.simulated.length)
-    # @game.before = ->
+
+    # for i in [0..400]
+    #   ship = new Ship(@game.simulator, false, {ship: 0})
+    #   x = Math.rand(-i*16, i*16)
+    #   y = Math.rand(-i*16, i*16)
+    #   ship.pos.addXY(x, y)
+    #   dx = Math.rand(-100, 100)
+    #   dy = Math.rand(-100, 100)
+    #   ship.vel.addXY(dx, dy)
+
     samples = []
     sampleStart = pnow()
     @game.before = =>
