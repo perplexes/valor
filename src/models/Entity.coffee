@@ -28,6 +28,9 @@ class Entity
   friction: 0.8
 
   constructor: (simulator, pos, vel, w, h) ->
+    @init(simulator, pos, vel, w, h)
+
+  init: (simulator, pos, vel, w, h) ->
     @simulator = simulator if simulator?
     @pos = pos if pos?
     @vel = vel if vel?
@@ -44,6 +47,9 @@ class Entity
 
     # Trigger after-initialize
     @sync({})
+
+  resize: (w, h) ->
+    @init(@simulator, @pos, @vel, w, h)
 
   simulate: (delta_s) ->
     # TODO: Better place for this?
