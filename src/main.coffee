@@ -14,7 +14,7 @@ require([
   "lib/models/Extent.js",
   "lib/models/Tile.js",
   "lib/models/Effect.js",
-  "lib/models/ZTree.js",
+  "lib/models/UBTree.js",
   "lib/models/AI.js",
   "lib/models/Simulator.js",
   "lib/models/Entity.js",

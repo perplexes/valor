@@ -1,11 +1,11 @@
-ZTree = require("./ZTree")
+UBTree = require("./UBTree")
 DLinkedList = require("./DLinkedList")
 Physics = require("./Physics")
 
 class Simulator
   constructor: ->
-    @staticTree = new ZTree
-    @dynamicTree = new ZTree
+    @staticTree = new UBTree
+    @dynamicTree = new UBTree
     @dynamicEntities = new DLinkedList
     @collisions = {}
     @collObjs = []

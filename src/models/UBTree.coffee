@@ -1,7 +1,10 @@
 Extent = require("./Extent")
 RBTree = require('bintrees').RBTree
 
-class ZTree
+# http://en.wikipedia.org/wiki/UB-tree
+# http://www.vision-tools.com/h-tropf/multidimensionalrangequery.pdf
+# https://gist.github.com/s-l-teichmann/4014664
+class UBTree
   B = [0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF]
   # 01010101010101010101010101010101
   # 00110011001100110011001100110011
@@ -208,7 +211,7 @@ class ZTree
     bigmin
 
   @test: ->
-    tree = new ZTree
+    tree = new UBTree
     for x in [0..9]
       for y in [0..17]
         tree.insert
@@ -232,4 +235,4 @@ class ZTree
     #   for v in [0..10]
     #       console.log [p, v, tree.unsetbits(p, v)]
 
-module.exports = ZTree
+module.exports = UBTree
