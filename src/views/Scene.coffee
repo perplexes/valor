@@ -31,15 +31,15 @@ class Scene
     @game = game
     @client = client
 
+    @width = document.body.clientWidth
+    @height = window.innerHeight
+
     @initPixi()
 
     for name in @layerOrder
       doc = new PIXI.DisplayObjectContainer()
       @stage.addChild(doc)
       @layers[name] = doc
-
-    @width = document.body.clientWidth
-    @height = window.innerHeight
 
     @viewport = new Viewport(@width, @height)
 
