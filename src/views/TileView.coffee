@@ -1,5 +1,5 @@
 View = require './View'
-PIXI = require '../../vendor/pixi-1.5.2.dev.js'
+PIXI = require '../../vendor/pixi.js/bin/pixi.dev.js'
 BMPImage = require '../../vendor/bmpimage/bmpimage2.js'
 Asset = require './Asset'
 

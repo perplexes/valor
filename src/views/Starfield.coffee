@@ -1,4 +1,4 @@
-PIXI = require '../../vendor/pixi-1.5.2.dev.js'
+PIXI = require '../../vendor/pixi.js/bin/pixi.dev.js'
 
 # TODO: Use RenderTexture?
 class Starfield
