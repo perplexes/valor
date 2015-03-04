@@ -151,6 +151,4 @@ class Server
     entity.expire()
     delete @entities[client]
 
-connect = require("connect")
-connect().use(connect.static(__dirname + "../../")).listen(8000)
 new Server
