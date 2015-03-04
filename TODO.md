@@ -124,3 +124,23 @@ Received negative timestamp on client - why?
 WebRTC looks ready http://www.html5rocks.com/en/tutorials/webrtc/datachannels/
 
 Also capnproto, need to make my own in JS/CS I guess.
+
+
+--
+2/27/15
+
+Screen size isn't getting detected correctly.
+Consider updateing pixi again
+
+--
+3/1/15
+
+Ah, figured out the screen size issue. Just had to rearrange where we detect it.
+Update pixi, that went fine.
+Fixed the map - just needed to get jparser/jdataview under npm control
+
+Okay: I want things to move pixel by pixel, so I need to get rid of floats entirely. This is part of a larger push toward deterministic physics and rendering. IIRC, the z-tree was preventing this because it has a limit on integer size of 65535 without some futzing.
+
+Map sizes are ..
+
+Ah, we could have multiple 

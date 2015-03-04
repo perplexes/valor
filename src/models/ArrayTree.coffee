@@ -1,3 +1,5 @@
+# This is for testing, since it's so slow
+# But it's simple to reason about :)
 class ArrayTree
   constructor: () ->
     @array = []
