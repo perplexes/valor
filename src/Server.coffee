@@ -148,8 +148,8 @@ class Server
     @clients.remove(client)
     delete @clientMeta[client]
     entity = @entities[client]
-    delete @entities[client]
     entity.expire()
+    delete @entities[client]
 
 connect = require("connect")
 connect().use(connect.static(__dirname + "../../")).listen(8000)
