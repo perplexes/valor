@@ -1,5 +1,5 @@
 web:
-	python -m SimpleHTTPServer
+	node_modules/http-server/bin/http-server -p 8000
 
 # To compile the MP server
 watch:
