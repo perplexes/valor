@@ -1,19 +1,19 @@
 web:
-	node_modules/http-server/bin/http-server -p 8000
+	node_modules/.bin/http-server -p 8000
 
 # To compile the MP server
 watch:
 #	coffee --watch --map --bare --compile --output lib/ src/
-	node_modules/coffee-script/bin/coffee --watch --bare --compile --output lib/ src/
+	node_modules/.bin/coffee --watch --bare --compile --output lib/ src/
 
 server:
 	node lib/Server.js
 
 client:
-	node node_modules/watchify/bin/cmd.js -v --debug -t coffeeify --extension=".coffee" src/Client.coffee -o Subspace.js
+	node_modules/.bin/watchify -v --debug -t coffeeify --extension=".coffee" src/Client.coffee -o Subspace.js
 
 all:
-	node node_modules/foreman/nf.js start
+	SUDO_USER=root node_modules/.bin/nf start
 
 setup:
 	git submodule init
@@ -21,10 +21,17 @@ setup:
 	npm install
 
 # OSX only
-docker:
+local_docker: setup
+	sudo boot2docker down
+
+	sudo VBoxManage modifyvm "boot2docker-vm" --natpf1 delete tcp-port8000;
+	sudo VBoxManage modifyvm "boot2docker-vm" --natpf1 delete udp-port8000;
+	sudo VBoxManage modifyvm "boot2docker-vm" --natpf1 delete tcp-port8080;
+	sudo VBoxManage modifyvm "boot2docker-vm" --natpf1 delete udp-port8080;
+
 	sudo boot2docker init
 	sudo boot2docker up
 	$(sudo boot2docker shellinit)
 	docker build -t "valor" .
-	docker run valore -p 8000:8000 -p 8080:8080
+	docker run -i -t -p 8000:8000 -p 8080:8080 valor
 	open http://`sudo boot2docker ip`:8000
