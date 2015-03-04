@@ -4,7 +4,7 @@ Scene = require './views/Scene'
 DLinkedList = require './models/DLinkedList'
 Stats = require './Stats'
 Vector2d = require './models/Vector2d'
-PIXI = require '../vendor/pixi-1.5.2.dev.js'
+PIXI = require '../vendor/pixi.js/bin/pixi.dev.js'
 Game = require './Game'
 Asset = require './views/Asset'
 AI = require './models/AI'
@@ -200,7 +200,6 @@ class Client
 
     ev
 
-  # TODO: Use for network latency?
   initStats: ->
     @stats = new Stats()
     @stats.setMode(0) # 0: fps, 1: ms
