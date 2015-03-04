@@ -43,9 +43,15 @@
 - [ ] configuration with yaml
 - [ ] debug config pane to adjust paramaters during gameplay, serialize to yaml (but in same order as old config)
 
+# Bugs
+- [ ] improve collision resolution part 2: bullets can go through walls
+
 # Random
 - [ ] Use vendorer ruby gem for the js vendor files.
 - [ ] Figure out require.js
+- [ ] Use tamper for asset json, package asssets all together?
+- [ ] Assets.json ... hson?
+- [ ] assets json for movies within tilesets (tiles.bmp force fields, bullets have like 10 movies inside it)
 
 # Research
 - [x] pixi.js
@@ -96,3 +102,45 @@ x bind extent obj to things that need it so we don't need to make new functions 
 Different layers for selfship/othership
 
 Show tile damage, battle scars
+
+--
+x network reconcil. is still janky, probably because we're not doing smoothing, but it could be something else.
+On this MBA 2014 w/ Ubuntu, FPS is down to 20. need to test on other machines.
+
+x you can go through walls if you're going fast enough. this is something like
+
+max speed (500px/s) / server physics speed (100ms, or 10 times/s)
+
+if our block width is 16 px, then, what is the maximum speed at this physics timing?
+
+30fps =~ 500px/s if the largest colliding block is 16px (to not have it totally go through - but if it's mid-way, then it's more frequent)
+
+(increased server loop fps :/)
+
+need reconnect/disconnect
+
+Received negative timestamp on client - why?
+
+WebRTC looks ready http://www.html5rocks.com/en/tutorials/webrtc/datachannels/
+
+Also capnproto, need to make my own in JS/CS I guess.
+
+
+--
+2/27/15
+
+Screen size isn't getting detected correctly.
+Consider updateing pixi again
+
+--
+3/1/15
+
+Ah, figured out the screen size issue. Just had to rearrange where we detect it.
+Update pixi, that went fine.
+Fixed the map - just needed to get jparser/jdataview under npm control
+
+Okay: I want things to move pixel by pixel, so I need to get rid of floats entirely. This is part of a larger push toward deterministic physics and rendering. IIRC, the z-tree was preventing this because it has a limit on integer size of 65535 without some futzing.
+
+Map sizes are ..
+
+Ah, we could have multiple 
