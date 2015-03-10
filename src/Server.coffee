@@ -30,9 +30,6 @@ Math.rand = function(min, max) {
 class Server
   frequency: 32 # ms
   constructor: ->
-    @clientEvents = []
-    @clients = new DLinkedList
-    console.log @clients
     @entities = {}
 
     wsst = new WebSocketServerTransport({port: 8080})
