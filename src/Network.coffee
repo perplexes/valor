@@ -64,3 +64,5 @@ class Network
   step: (game, timestamp, delta_s) ->
     if timestamp - lastFlush > 32 #ms
       flush()
+
+    lastFlush = timestamp
