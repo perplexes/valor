@@ -28,4 +28,6 @@ class WebSocketServerTransport
 
     @clients.each (client) ->
       client.dispatch("step", client)
+      # Don't use client#step
+      # it won't align perfectly with server tick
       client.flush()

@@ -49,20 +49,26 @@ class Client
 
     @network = new Network(window.location.hostname)
 
+    # connect
+    # -> join
+    # <- connected
+    # <- joined (with first ship event sync)
+    # -> keys keys keys
+    # <- gamestate gamestate gamestate
     @network.on "open", ->
       @network.send(type: 'join', shipType: Math.random() * 8 | 0)
-      console.log("Sent join")
+      console.log("[Client] Sent join")
       game.load (bmpData, tiles) =>
         TileView.load(bmpData)
 
     @network.on "close", ->
-      console.log("Disconnected")
+      console.log("[Client] Disconnected")
 
     @network.on "connected", ->
-      console.log("connected")
+      console.log("[Client] Connected")
 
     @network.on "joined", (ev) =>
-      console.log("joined")
+      console.log("[Client] Joined")
       @receive([ev], true)
       @start()
 
@@ -277,11 +283,11 @@ class Client
 
 # TODO: Is this really the best place for this?
 document.addEventListener 'DOMContentLoaded', ->
-  console.log "DOMContentLoaded"
+  console.log "[Client] DOMContentLoaded"
   Asset.preload()
   game = new Game
   client = new Client(game)
-  console.log(client.scene)
+  console.log("[Client]", client.scene)
   # Moved to wait for server connection
   # client.start()
 

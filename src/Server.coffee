@@ -40,7 +40,7 @@ class Server
       client.enqueue(type: "connected")
 
       client.on "join", (ev) =>
-        console.log("Join:", ev.shipType)
+        console.log("[Server] Join:", ev.shipType)
         ship = new Ship(@game.simulator, false, {ship: ev.shipType || 0})
         @entities[client] = ship
         @sendGameState(client)
@@ -54,7 +54,7 @@ class Server
         @sendGameState(client)
 
       client.on "close", (client) =>
-        console.log("Disconnected:", client)
+        console.log("[Server] Disconnected:", client)
         @disconnect(client)
 
     @game = new Game
@@ -85,11 +85,11 @@ class Server
       avg = a/samples.length
       
       samples = []
-      console.log(avg * 1000 | 0, "us")
+      console.log("[Server]", avg * 1000 | 0, "us")
     , 1000
 
     @game.load (bmpData, tiles) =>
-      console.log("@game.load")
+      console.log("[Server] @game.load")
       @start()
 
   requestServerTick: (next) =>

@@ -45,6 +45,8 @@ class Network
       data.timestamp = Date.now() | 0
 
     sendBuffer.insert(data, data.timestamp)
+    # TODO: Should this be in here?
+    # Maybe should be in client...
     if data.type == "keys"
       pendingEvents.insert(data, data.timestamp)
 
