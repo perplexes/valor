@@ -46,38 +46,31 @@ class Client
     @initStats()
 
     @keys = {debugMessages: false}
-    @pendingEvents = new DLinkedList
-    @serverEvents = []
 
-    @ws = new WebSocket("ws://#{window.location.hostname}:8080")
-    
-    times = {}
+    @network = new Network(window.location.hostname)
 
-    # TODO: Sort out chain of events here and use promises?
-    @connected = false
-    @ws.onopen = (evt) =>
-      @connected = true
-      @send(type: 'join', shipType: Math.random() * 8 | 0)
+    @network.on "open", ->
+      @network.send(type: 'join', shipType: Math.random() * 8 | 0)
       console.log("Sent join")
       game.load (bmpData, tiles) =>
         TileView.load(bmpData)
-        # client.start()
 
-    @ws.onclose = (evt) =>
+    @network.on "close", ->
       console.log("Disconnected")
-      @connected = false
 
-    @ws.onmessage = (message) =>
-      # console.log("#{Date.now()} <-", message)
-      ev = JSON.parse(message.data)
-      if ev.type == 'connected'
-        console.log("connected")
-      else if ev.type == 'joined'
-        console.log("joined")
-        @receive([ev], true)
-        @start()
-      else
-        @serverEvents.push(ev)
+    @network.on "connected", ->
+      console.log("connected")
+
+    @network.on "joined", (ev) =>
+      console.log("joined")
+      @receive([ev], true)
+      @start()
+
+    @network.on "update", (ev) =>
+      @serverEvents.push(ev)
+
+    # Then flush what's in the queue
+    game.register(@network)
 
   start: ->
     @game.start(requestAnimationFrame)
@@ -87,19 +80,12 @@ class Client
     @serverEvents = []
 
     # Events
-    # TODO: Clean this
     ev = @newEvent(timestamp|0, delta_s)
-    # if @keys.listened
-    if @connected
-      @pendingEvents.insert(ev, timestamp|0)
-      @send(ev)
-      # @keys.listened = false
-    # console.log ev
+    @network.enqueue(ev)
 
     # TODO: Better name? Process events?
     # TODO: When disconnected?
     @ship.processInput(ev, game.simulator, delta_s)
-    
 
     if @keys.debugCollisions
       @drawDebugCollisions(@ship, game.simulator.collObjs)
@@ -134,6 +120,7 @@ class Client
   receive: (events, firstSync) ->
     for ev in events
       # TODO: Assumes it's *2 for RTT
+      # TODO: Echo client timestamp back to calc
       @latency.frame((Date.now() - ev.timestamp) * 2, Date.now())
       for entityData in ev.entities
         entity = @game.simulator.dynamicEntities.at(entityData.hash)
@@ -160,7 +147,7 @@ class Client
       ev.timestamp = Date.now() | 0
     # console.log("#{Date.now()} ->", ev)
     json = JSON.stringify(ev)
-    @ws.send(json)
+    @network.enqueue(json)
 
   # TODO: don't keep memory here, flip based on previous event
   keyListen: (e, set = true) ->
@@ -187,6 +174,7 @@ class Client
   newEvent: (timestamp, dt_s) ->
     ev =
       timestamp: timestamp | 0
+      type: "keys"
       x: 0
       y: 0
       fire: 0

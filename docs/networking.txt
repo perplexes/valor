@@ -1,35 +1,39 @@
-need to separate model & view - does that mean I need a controller? I guess the main object (Subspace) is the controller
+"Networking for Physics Programmers": http://bit.ly/9CFzWb page 63
+"Netorked Physics:" http://gafferongames.com/game-physics/networked-physics/
+http://www.html5rocks.com/en/tutorials/webrtc/datachannels/
+http://chimera.labs.oreilly.com/books/1230000000545/ch18.html
+https://github.com/js-platform/node-webrtc
+git clone https://code.google.com/p/cubeslam/
+https://github.com/muaz-khan/WebRTC-Experiment/tree/master/DataChannel
+http://www.html5rocks.com/en/tutorials/webrtc/infrastructure/
+https://pusher.com/tutorials/webrtc_chat
+https://code.google.com/p/cubeslam/source/checkout
+https://bitbucket.org/webrtc/codelab
+http://www.html5rocks.com/en/tutorials/webrtc/basics/
+https://github.com/samdutton/simpl/blob/master/rtcdatachannel/js/main.js
+http://simpl.info/rtcdatachannel/
+http://www.html5rocks.com/en/tutorials/webrtc/datachannels/
+https://github.com/iStefo/uni/blob/master/computer_networks/exam.md
+http://gafferongames.com/networking-for-game-programmers/floating-point-determinism/
 
-Entities have a simulate step, a collision notification, a draw step (really just adjusting the display object's position)
+Aim for: 64kbps, 30pps, 2.133kb/packet, ~266bytes/packet
+Determinism:
+  The floats used in doing client side prediction are not the same as received by the server, resulting in a lot of snaps.
+  We need to switch to integers, or somehow simulate the json, or use not-json + float32
+  https://blog.mozilla.org/javascript/2013/11/07/efficient-float32-arithmetic-in-javascript/
+  https://github.com/creationix/msgpack-js-browser.git
+  https://github.com/creationix/msgpack-js
+  Let's try msgpack!
+  Use stats.js or hack it to display error
+  use client/server logs to replay and see error (expected vs actual)
 
-we also have these layers which are linked lists of display objects.
+Debugging:
+  Graph view from https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
 
-Each entity type has a display object that knows how to draw itself which is based on an object's properties
-
-one way to do it is observer/message based where when an entity is created, we can grab a DO from the pool and put it into a layer if it's in the viewport. that's the game graph/scene graph crossover
-
-objects that aren't in the scene anymore are released to the pool.
-
-we hold display objects in a hash with key: entity.hash, value: do
-
-(do we need to keep track of the reverse?)
-
-so we need a (game object? scenegraph? game graph?) for the map (since it's static, it can be an AVL later), and a graph for everything else.
-
-I guess the objects are the ones that tell us what they're interested in. but - should they know about each other? like: if a bomb goes off near a ship, then it'll take damage proportional to how close it is. but how does that collision happen? is it on the bomb's collision method, and it says - ah, this is a tile, so draw a circle from me and find the objects in it - they're going to take damage. taking damage for a mine means that it explodes, which triggers other mines, etc. but would that happen all on one physics step?
-
-the scene is client-side only.
-layers are inappropriate. the objects inside them just have a certain drawing order. but pixi might force us to use certain display object containers within the scene to separate the layers.
-
-so I want to construct a scene that:
-  creates a bunch of layers for the right entities
-  scans for what is in-frame (or a little beyond)
-    if it doesn't exist already, creates the appropriate DO for it and inserts it in the right layer {Type: Layer} hash somewhere
-    call step on each (move the DO to where the entity says it is + viewport adj)
-
-^^ Maybe there's like a ShipView that does all the asset/DO shit?
-so the scene knows about the static/dynamic trees - do the layers know? are the layers responsible for anything or are they just DOCs?
-they do GC, too.. but we can do that on the scene's update step.
-
-the starfield is also just browser - so put that in scene
-fuck, even the map and tile parsing stuff needs to be broken out into data/view
+Random:
+We have to convert to integer to search in the collision tree, is this slow? Do we have to? (Perhaps only on add/remove)
+http://jsperf.com/float-to-int-conversion-comparison
+103,664,858/second says we don't have to worry too much
+https://github.com/spencertipping/flotsam
+http://feclib.sourceforge.net/
+http://jerasure.org/

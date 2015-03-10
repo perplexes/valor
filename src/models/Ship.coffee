@@ -81,7 +81,7 @@ class Ship extends Entity
 
     if @safe
       for bullet in @bullets
-        bullet.expire() if bullet.lifetime > 0
+        bullet.expireNow() if bullet.lifetime > 0
       @bullets = []
 
     @safety.reset()
@@ -127,18 +127,16 @@ class Ship extends Entity
     return unless @alive()
     return if @safe
     # TODO: Damage from explosions nearby
+    # #alive will now return false, so should expire ship
     @energy -= damage
-    if @energy <= 0
-      # TODO: Under server authority
-      @explode()
 
   alive: ->
     return false if @energy <= 0
     super()
 
-  explode: ->
-    @expire()
-    Effect.create('explode1', @pos, @vel)
+  onExpire: ->
+    if @energy <= 0
+      Effect.create('explode1', @pos, @vel)
 
   sync: (obj) ->
     super(obj)

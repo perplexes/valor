@@ -5,8 +5,8 @@ Vector2d = require("./models/Vector2d")
 DLinkedList = require("./models/DLinkedList")
 ArrayTree = require("./models/ArrayTree")
 Extent = require("./models/Extent")
-ZTree = require("./models/ZTree")
-        
+UBTree = require("./models/UBTree")
+
 Entity = require("./models/Entity")
 Physics = require("./models/Physics")
 Ship = require("./models/Ship")
@@ -17,9 +17,9 @@ AI = require("./models/AI")
 Simulator = require("./models/Simulator")
 Game = require("./Game")
 
-pnow = require("performance-now")
+WebSocketServerTransport = require("./network/WebSocketServerTransport")
 
-WebSocketServer = require('ws').Server
+pnow = require("performance-now")
 
 `
 Math.rand = function(min, max) {
@@ -33,37 +33,33 @@ class Server
     @clientEvents = []
     @clients = new DLinkedList
     console.log @clients
-    @clientCount = 0
     @entities = {}
-    @clientMeta = {}
 
-    @wss = new WebSocketServer({port: 8080});
-    @wss.on 'connection', (ws) =>
-      client = @clientCount++
-      @clients.insert(ws, client)
-      meta = @clientMeta[client] = {}
-      console.log("Connected:", client)
-      @send(ws, client, {type: 'connected'})
+    wsst = new WebSocketServerTransport({port: 8080})
+    wsst.on "connection", (client) =>
+      client.enqueue(type: "connected")
 
-      ws.on 'message', (json) =>
-        ev = JSON.parse(json)
-        ev.client = client
-        meta.ack = ev.timestamp
-        if ev.type == "join"
-          console.log("Join:", ev.shipType)
-          ship = new Ship(@game.simulator, false, {ship: ev.shipType || 0})
-          @entities[client] = ship
-          @sendGameState(ws, @game, client)
-        else
-          meta.joined = true
-          @clientEvents.push ev
+      client.on "join", (ev) =>
+        console.log("Join:", ev.shipType)
+        ship = new Ship(@game.simulator, false, {ship: ev.shipType || 0})
+        @entities[client] = ship
+        @sendGameState(client)
 
-      ws.on 'close', =>
+      client.on "receive", (client) =>
+        client.receiveBuffer.each (ev) =>
+          @entities[client].processInput(ev)
+          client.meta.ack = ev.timestamp
+
+      client.on "step", (client) =>
+        @sendGameState(client)
+
+      client.on "close", (client) =>
         console.log("Disconnected:", client)
         @disconnect(client)
 
     @game = new Game
     @game.register(@)
+    @game.register(wsst)
 
     # for i in [0..400]
     #   ship = new Ship(@game.simulator, false, {ship: 0})
@@ -113,11 +109,7 @@ class Server
     @game.start(@requestServerTick)
 
   step: (game, timestamp, delta_s) ->
-    @receive(@clientEvents)
-    @clientEvents = []
-    @clients.each (ws, client) =>
-      if @clientMeta[client] && @clientMeta[client].joined
-        @sendGameState(ws, game, client)
+    # Handled by network code?
 
   # TODO: a receive on a WS should verify client_id belongs to it
   receive: (events) ->
@@ -127,28 +119,21 @@ class Server
         @entities[ev.client].processInput(ev)
       # switch on type? handlers?
 
-  sendGameState: (ws, game, client) ->
-    type = if @clientMeta[client].joined then 'update' else 'joined'
+  sendGameState: (client) ->
+    type = if client.meta.joined then 'gamestate' else 'joined'
     output =
       shipHash: @entities[client].hash
-      entities: game.state(@entities[client])
-      ack: @clientMeta[client].ack
+      entities: @game.state(@entities[client])
+      ack: client.meta.ack
       type: type
-    @send(ws, client, output)
+    client.enqueue(output)
 
-  send: (ws, client, obj) ->
-    return @disconnect(client) unless ws.readyState == 1
-    obj.timestamp = Date.now()
-    json = JSON.stringify(obj)
-    # console.log("#{Date.now()} ->", json)
-    ws.send(json)
-
+  # TODO: Sweep the simulator and other trees here
+  # Unless the simulator is responsible for that
   disconnect: (client) ->
-    return unless @clients.at(client)
-    @clients.remove(client)
-    delete @clientMeta[client]
+    console.log "[Server] Disconnecting:", client
     entity = @entities[client]
-    entity.expire()
+    entity.expireNow()
     delete @entities[client]
 
 new Server

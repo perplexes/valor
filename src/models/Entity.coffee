@@ -80,12 +80,17 @@ class Entity
     @_extent
 
   # TODO: When do we put this back in the pool?
-  expire: ->
+  expireNow: ->
     @lifetime = 0
+    # TODO: This should happen in the game loop
     @simulator.remove(@) if @simulator?
     delete @simulator if @simulator?
 
+  onExpire: ->
+    
+
   alive: ->
+    # There's no timer on this
     return true if @lifetime == null
     @lifetime > 0
 

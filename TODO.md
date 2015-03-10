@@ -144,3 +144,33 @@ Okay: I want things to move pixel by pixel, so I need to get rid of floats entir
 Map sizes are ..
 
 Ah, we could have multiple 
+
+--
+3/5/2015
+
+Ragalie had a good idea for objects that spawn other objects: their id could be #{id of parent}.#{timestamp of event that created it}
+that way it's deterministic and syncronized across clients
+
+So we need now: an object pool (how?), and an object spawner that will do the id trick.
+
+bullets:
+  spawned when the player presses fire (space)
+    and they have enough energy
+    and it's been enough time since the last time they fired (if they fired)
+  it removes that much energy from their ship's energy
+  it spawns a new bullet object that moves in the vector of the ship + angle of ship
+  will travel until:
+    it hits a ship (and plays a bullet explode effect)
+      somehow decreases that ship's energy by (??) only on the authority (server) side
+    it hits a wall and is not bouncy
+  if bouncy:
+    will bounce off walls 5? times, then turn not bouncy
+  once expired:
+    gets cleaned up by object sweeper every tick
+
+Vector2d should also have a pool
+
+--
+3/9/2015
+
+Maybe should split assets into their own repo since it's huge, then do git submodule or something
