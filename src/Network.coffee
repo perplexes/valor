@@ -21,11 +21,16 @@ class Network
       @connected = false
 
     @on "message", (message) =>
-      ev = JSON.parse(message.data)
-      if ev.type == "gamestate" || ev.type == "keys"
-        receiveBuffer.insert(ev, ev.timestamp)
-      else
-        dispatch(ev.type, ev)
+      batch = JSON.parse(message.data)
+      for event in batch
+        @receiveEvent(ev)
+
+  receiveEvent: (event) ->
+    if ev.type == "gamestate" || ev.type == "keys"
+      receiveBuffer.insert(ev, ev.timestamp)
+    # connected/join/part/etc messages are synchronous
+    else
+      dispatch(ev.type, ev)
 
   on: (event, function) ->
     if typeof(eventHandlers[event]) === "undefined"
