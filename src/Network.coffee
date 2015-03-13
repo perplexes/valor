@@ -1,4 +1,6 @@
 DLinkedList = require("./models/DLinkedList")
+JSONSerializer = require("./network/JSONSerializer")
+MessagePackSerializer = require("./network/MessagePackSerializer")
 
 class Network
   connected: false
@@ -15,6 +17,7 @@ class Network
   # new WST("ws://#{host}:8080"
   constructor: (transport) ->
     @transport = transport
+    @serializer = new MessagePackSerializer
 
     @on "open", =>
       @connected = true
@@ -22,8 +25,8 @@ class Network
     @on "close", =>
       @connected = false
 
-    @on "message", (json) =>
-      batch = JSON.parse(json)
+    @on "message", (raw) =>
+      batch = @serializer.deserialize(raw)
       # console.log("[Network] <- ", batch)
       # TODO:
       # This may not be optimal
@@ -76,11 +79,11 @@ class Network
     return null unless @connected
     return null unless @sendDirty
 
-    message = @sendBuffer.all()
+    obj = @sendBuffer.all()
     # console.log("[Network] -> ", message)
 
-    json = JSON.stringify(message)
-    @transport.send(json)
+    raw = @serializer.serialize(obj)
+    @transport.send(raw)
     @sendBuffer.reset()
     @sendDirty = false
 

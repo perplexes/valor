@@ -12,11 +12,17 @@ class WebSocketTransport
 
     # Client side WebSocket
     if typeof(ws.onopen) == "object"
+      if @network.serializer.constructor.name == "MessagePackSerializer"
+        ws.binaryType = "arraybuffer"
+
       ws.onopen = (data) =>
         @network.dispatch("open", data)
 
       ws.onmessage = (messageEvent) =>
-        @network.dispatch("message", messageEvent.data)
+        if @network.serializer.constructor.name == "MessagePackSerializer"
+          @network.dispatch("message", new Uint8Array(messageEvent.data))
+        else
+          @network.dispatch("message", messageEvent.data)
 
       ws.onclose = (data) =>
         @network.dispatch("close", data)

@@ -50,7 +50,7 @@ class Ship extends Entity
       options: @options
 
   constructor: (simulator, player = false, options = {}) ->
-    loc = @locations[options.location] || @locations.nearSafe
+    loc = @locations[options.location] || @locations.circles
     pos = null
     unless typeof(options) == "object"
       throw "Invalid options, should be object"

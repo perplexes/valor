@@ -44,6 +44,7 @@ class Vector2d
     debugger if typeof y != 'number'
     @x += x
     @y += y
+    @floor()
     @
 
   addXX: (x) ->
@@ -80,6 +81,7 @@ class Vector2d
     debugger if y == NaN
     @x *= x
     @y *= y
+    @floor()
     @
 
   scaleXX: (x) ->
@@ -112,6 +114,12 @@ class Vector2d
     debugger if typeof y2 != 'number'
     @x = @x.clamp(x1, x2)
     @y = @y.clamp(y1, y2)
+    @floor()
+    @
+
+  floor: ->
+    @x = Math.floor(@x * 100) / 100
+    @y = Math.floor(@y * 100) / 100
     @
 
   isZero: ->

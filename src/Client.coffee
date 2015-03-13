@@ -101,6 +101,7 @@ class Client
 
     # Events
     ev = @newEvent(timestamp|0, delta_s)
+    @pendingEvents.insert(ev, ev.timestamp)
     @network.enqueue(ev)
 
     # TODO: Better name? Process events?
@@ -180,6 +181,9 @@ class Client
 
   # TODO: Probably just have dt_s as a field
   newEvent: (timestamp, dt_s) ->
+
+    dt_s_r = Math.floor(dt_s * 1000)/1000
+
     ev =
       timestamp: timestamp | 0
       type: "keys"
@@ -187,14 +191,12 @@ class Client
       y: 0
       fire: 0
 
-    ev.x -= dt_s if @keys.left
-    ev.x += dt_s if @keys.right
-    ev.y -= dt_s if @keys.down
-    ev.y += dt_s if @keys.up
+    ev.x -= dt_s_r if @keys.left
+    ev.x += dt_s_r if @keys.right
+    ev.y -= dt_s_r if @keys.down
+    ev.y += dt_s_r if @keys.up
 
-    ev.fire = dt_s if @keys.fire
-
-    @pendingEvents.insert(ev, ev.timestamp)
+    ev.fire = dt_s_r if @keys.fire
 
     ev
 
