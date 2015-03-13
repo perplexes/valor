@@ -24,8 +24,12 @@ AI = require("./models/AI")
 Simulator = require("./models/Simulator")
 Game = require("./Game")
 
+WST = require("./network/WebSocketTransport")
+
 # TODO: Settings
 class Client
+  pendingEvents: new DLinkedList
+
   constructor: (game) ->
     @game = game
     @events = []
@@ -47,7 +51,7 @@ class Client
 
     @keys = {debugMessages: false}
 
-    @network = new Network(window.location.hostname)
+    @network = WST.default("ws://#{window.location.hostname}:8080")
 
     # connect
     # -> join
@@ -55,8 +59,9 @@ class Client
     # <- joined (with first ship event sync)
     # -> keys keys keys
     # <- gamestate gamestate gamestate
-    @network.on "open", ->
-      @network.send(type: 'join', shipType: Math.random() * 8 | 0)
+    @network.on "open", =>
+      @network.enqueue(type: 'join', shipType: Math.random() * 8 | 0)
+      @network.flush()
       console.log("[Client] Sent join")
       game.load (bmpData, tiles) =>
         TileView.load(bmpData)
@@ -69,21 +74,30 @@ class Client
 
     @network.on "joined", (ev) =>
       console.log("[Client] Joined")
-      @receive([ev], true)
+      @ship = Entity.deserialize(@game, ev.ship)
+      @ship.player = true
+      # TODO: Better way to do this
+      @scene.viewport.pos = @ship.pos
       @start()
+      @network.enqueue(type: 'gamestart')
 
-    @network.on "update", (ev) =>
-      @serverEvents.push(ev)
+    @network.on "pong", (ev) =>
+      # console.log("[Client] PONG", game.last, ev.ack, game.last - ev.ack, Date.now())
+      @latency.frame((game.last | 0) - ev.ack, Date.now())
 
     # Then flush what's in the queue
     game.register(@network)
+
+    setInterval =>
+      @network.enqueue(type: "ping", timestamp: game.last | 0)
+    , 1000
 
   start: ->
     @game.start(requestAnimationFrame)
 
   step: (game, timestamp, delta_s) ->
-    @receive(@serverEvents)
-    @serverEvents = []
+    @network.receive (ev) =>
+      @receive(ev)
 
     # Events
     ev = @newEvent(timestamp|0, delta_s)
@@ -110,6 +124,7 @@ class Client
         keys: @keys,
         ev: ev,
         pending: @pendingEvents.count(),
+        lastEvent: @lastEvent,
         objects: @scene.objects(),
         collisions: game.simulator.collObjs.length,
         # children: @scene.stage.children.length,
@@ -123,37 +138,24 @@ class Client
 
   # TODO: Lifecycle, server id vs local id (or always guid)
   # TODO: Event types, other entities
-  receive: (events, firstSync) ->
-    for ev in events
-      # TODO: Assumes it's *2 for RTT
-      # TODO: Echo client timestamp back to calc
-      @latency.frame((Date.now() - ev.timestamp) * 2, Date.now())
-      for entityData in ev.entities
-        entity = @game.simulator.dynamicEntities.at(entityData.hash)
-        if entity
-          entity.sync(entityData)
-        else
-          entity = Entity.deserialize(@game, entityData)
+  receive: (ev) ->
+    @lastEvent = ev
+    # console.log("[Client] ack:", ev.ack, ev.timestamp)
+    for entityData in ev.entities
+      entity = @game.simulator.dynamicEntities.at(entityData.hash)
+      if entity
+        entity.sync(entityData)
+      else
+        entity = Entity.deserialize(@game, entityData)
 
-        if entityData.hash == ev.shipHash
-          if firstSync
-            @ship = entity
-            @ship.player = true
-            # TODO: Better way to do this
-            @scene.viewport.pos = @ship.pos
-          # TODO: If we receive out of order?
-          @pendingEvents.each (pev) =>
-            if pev.timestamp <= ev.ack
-              @pendingEvents.remove(pev.timestamp)
-            else
-              @ship.processInput(pev)
-
-  send: (ev) ->
-    unless ev.timestamp?
-      ev.timestamp = Date.now() | 0
-    # console.log("#{Date.now()} ->", ev)
-    json = JSON.stringify(ev)
-    @network.enqueue(json)
+      if entityData.hash == ev.shipHash
+        # TODO: If we receive out of order?
+        @pendingEvents.each (pev) =>
+          debugger if @keys.debug
+          if pev.timestamp <= ev.ack
+            @pendingEvents.remove(pev.timestamp)
+          else
+            @ship.processInput(pev)
 
   # TODO: don't keep memory here, flip based on previous event
   keyListen: (e, set = true) ->
@@ -191,6 +193,8 @@ class Client
     ev.y += dt_s if @keys.up
 
     ev.fire = dt_s if @keys.fire
+
+    @pendingEvents.insert(ev, ev.timestamp)
 
     ev
 
@@ -274,7 +278,7 @@ class Client
     graphics.drawRect(adjPoint.x, adjPoint.y, ship.w, ship.h)
 
     graphics.endFill()
-    debugger if @keys.debugger
+    debugger if @keys.debug
 
   objects: ->
     sum = 0

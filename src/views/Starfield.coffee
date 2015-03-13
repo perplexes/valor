@@ -29,7 +29,7 @@ class Starfield
     # buffer.id = "tile#{ratio}"
     # document.body.appendChild(buffer)
     ctx = buffer.getContext('2d')
-    ctx.webkitImageSmoothingEnabled = false
+    ctx.imageSmoothingEnabled = false
     # ctx.save()
     # ctx.fillStyle = 'black'
     # ctx.fillRect(0,0,1024,1024)

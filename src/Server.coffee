@@ -33,26 +33,36 @@ class Server
     @entities = {}
 
     wsst = new WebSocketServerTransport({port: 8080})
-    wsst.on "connection", (client) =>
+    wsst.onConnection (client) =>
       client.enqueue(type: "connected")
+      client.on "close", (client) =>
+        console.log("[Server] Disconnected:", client)
+        @disconnect(client)
+
+      client.on "ping", (data) =>
+        client.enqueue(type: "pong", ack: data.timestamp)
 
       client.on "join", (ev) =>
         console.log("[Server] Join:", ev.shipType)
         ship = new Ship(@game.simulator, false, {ship: ev.shipType || 0})
         @entities[client] = ship
-        @sendGameState(client)
+        client.meta.joined = true
+        client.enqueue(type: "joined", ship: ship.serialize())
+        client.flush()
 
-      client.on "receive", (client) =>
-        client.receiveBuffer.each (ev) =>
-          @entities[client].processInput(ev)
-          client.meta.ack = ev.timestamp
+        client.on "gamestart", (ev) =>
+          # TODO: adaptive jitter buffer
+          # TODO: reorder packets
+          client.on "receive", (client) =>
+            client.receive (ev) =>
+              # debugger
+              # console.log("[Server] receive", ev)
+              @entities[client].processInput(ev)
+              client.meta.ack = ev.timestamp
 
-      client.on "step", (client) =>
-        @sendGameState(client)
+          client.on "step", (client) =>
+            @sendGameState(client)
 
-      client.on "close", (client) =>
-        console.log("[Server] Disconnected:", client)
-        @disconnect(client)
 
     @game = new Game
     @game.register(@)
@@ -108,21 +118,13 @@ class Server
   step: (game, timestamp, delta_s) ->
     # Handled by network code?
 
-  # TODO: a receive on a WS should verify client_id belongs to it
-  receive: (events) ->
-    for ev in events
-      if @clients.at(ev.client)
-        # console.log "#{Date.now()} <-", ev
-        @entities[ev.client].processInput(ev)
-      # switch on type? handlers?
-
   sendGameState: (client) ->
-    type = if client.meta.joined then 'gamestate' else 'joined'
+    # console.log("[Server] sendGameState", client.meta.ack)
     output =
       shipHash: @entities[client].hash
       entities: @game.state(@entities[client])
       ack: client.meta.ack
-      type: type
+      type: "gamestate"
     client.enqueue(output)
 
   # TODO: Sweep the simulator and other trees here
@@ -130,7 +132,8 @@ class Server
   disconnect: (client) ->
     console.log "[Server] Disconnecting:", client
     entity = @entities[client]
-    entity.expireNow()
-    delete @entities[client]
+    if entity?
+      entity.expireNow()
+      delete @entities[client]
 
 new Server

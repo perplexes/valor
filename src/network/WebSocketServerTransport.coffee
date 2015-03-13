@@ -1,4 +1,7 @@
-WebSocketServer = require('ws').Server
+WebSocketServer = require("ws").Server
+WebSocketTransport = require("./WebSocketTransport")
+Network = require("../Network")
+DLinkedList = require("../models/DLinkedList")
 
 class WebSocketServerTransport
   wss: null
@@ -9,17 +12,17 @@ class WebSocketServerTransport
     @wss = new WebSocketServer(port: 8080)
     @wss.on "connection", (ws) =>
       client = @clientCount++
-      network = new Network(ws)
+      wst = new WebSocketTransport(ws)
+      network = wst.network
+      network.connected = true
       @clients.insert(network, client)
 
-      console.log("Connected:", client, ws)
+      console.log("[WSST] Connected:", client, ws.upgradeReq.connection.remoteAddress)
 
-      ws.on "message", (data) =>
-        network.dispatch("message", data)
-
-      ws.on "close", (data) =>
-        network.dispatch("close", data)
+      network.on "close", (data) =>
         @clients.remove(client)
+
+      @onConnectionCallback(network)
 
   step: (game, timestamp, delta_s) ->
     @clients.each (client) ->
@@ -31,3 +34,8 @@ class WebSocketServerTransport
       # Don't use client#step
       # it won't align perfectly with server tick
       client.flush()
+
+  onConnection: (callback) ->
+    @onConnectionCallback = callback
+
+module.exports = WebSocketServerTransport

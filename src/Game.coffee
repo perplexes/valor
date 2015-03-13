@@ -26,7 +26,7 @@ class Game
 
   # All the state that this entity is interested in observing
   # TODO: This is probably the size of their minimap
-  # - ships that are hidden from them (cloak)
+  # - minus ships that are hidden from them (cloak)
   state: (entity) ->
     entities = []
     @simulator.dynamicTree.searchExpand(entity._extent, 1280, 800, (nearEntity) ->

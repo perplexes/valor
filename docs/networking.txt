@@ -30,6 +30,9 @@ Determinism:
 Debugging:
   Graph view from https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
 
+New networking code:
+  Want something that will be pretty general for client/server. 
+
 Random:
 We have to convert to integer to search in the collision tree, is this slow? Do we have to? (Perhaps only on add/remove)
 http://jsperf.com/float-to-int-conversion-comparison
