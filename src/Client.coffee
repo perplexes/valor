@@ -139,6 +139,7 @@ class Client
 
   # TODO: Lifecycle, server id vs local id (or always guid)
   # TODO: Event types, other entities
+  diff = new Vector2d
   receive: (ev) ->
     @lastEvent = ev
     # console.log("[Client] ack:", ev.ack, ev.timestamp)
@@ -152,11 +153,14 @@ class Client
       if entityData.hash == ev.shipHash
         # TODO: If we receive out of order?
         @pendingEvents.each (pev) =>
-          debugger if @keys.debug
           if pev.timestamp <= ev.ack
             @pendingEvents.remove(pev.timestamp)
           else
             @ship.processInput(pev)
+        diff.clear().add(@ship.lastPos).sub(@ship.pos)
+        debugger if @keys.debug;
+        err = Math.floor(diff.length() * 100)
+        @errorStats.frame(err, Date.now())
 
   # TODO: don't keep memory here, flip based on previous event
   keyListen: (e, set = true) ->
@@ -177,6 +181,10 @@ class Client
     if @keys.listened
       e.preventDefault()
       e.stopPropagation()
+      if @keys.debug
+        window.keysDebug = true
+      else
+        window.keysDebug = false
     # console.log @keys
 
   # TODO: Probably just have dt_s as a field
@@ -225,6 +233,17 @@ class Client
     @latency.domElement.style.zIndex = '10'
 
     document.body.appendChild( @latency.domElement )
+
+    @errorStats = window.errorStats = new Stats()
+    @errorStats.setMode(1)
+
+    # Align top-right below fps
+    @errorStats.domElement.style.position = 'absolute'
+    @errorStats.domElement.style.right = '0px'
+    @errorStats.domElement.style.top = '100px'
+    @errorStats.domElement.style.zIndex = '10'
+
+    document.body.appendChild( @errorStats.domElement )
 
   # TODO: Use webgl text instead of element, faster?
   # TODO: Put in scene perhaps? Or a debug layer?
@@ -280,7 +299,6 @@ class Client
     graphics.drawRect(adjPoint.x, adjPoint.y, ship.w, ship.h)
 
     graphics.endFill()
-    debugger if @keys.debug
 
   objects: ->
     sum = 0

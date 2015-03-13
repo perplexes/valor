@@ -17,12 +17,14 @@ class Network
   # new WST("ws://#{host}:8080"
   constructor: (transport) ->
     @transport = transport
-    @serializer = new MessagePackSerializer
+    # @serializer = new MessagePackSerializer
+    @serializer = new JSONSerializer
 
     @on "open", =>
       @connected = true
 
     @on "close", =>
+      console.log("[Network] close")
       @connected = false
 
     @on "message", (raw) =>
@@ -67,6 +69,7 @@ class Network
       handler(data)
 
   enqueue: (data) ->
+    return null unless @connected
     # TODO: Does it matter if this is different than server time?
     unless data.timestamp?
       data.timestamp = Date.now() | 0
@@ -89,6 +92,7 @@ class Network
 
   # TODO: This could be a setInterval, too
   step: (game, timestamp, delta_s) ->
+    return null unless @connected
     # console.log("[Network] #step: ", timestamp, @lastFlush, timestamp - @lastFlush)
     if (timestamp - @lastFlush) < 32
       return null

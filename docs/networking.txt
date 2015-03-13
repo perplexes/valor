@@ -27,6 +27,9 @@ Determinism:
   Use stats.js or hack it to display error
   use client/server logs to replay and see error (expected vs actual)
 
+  msgpack results: it doesn't help and truncates the floats. so. and it's also a lot slower than json.
+  
+
 Debugging:
   Graph view from https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
 

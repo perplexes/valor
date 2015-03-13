@@ -20,20 +20,23 @@ class WebSocketServerTransport
       console.log("[WSST] Connected:", client, ws.upgradeReq.connection.remoteAddress)
 
       network.on "close", (data) =>
+        console.log("[WSST] Close")
         @clients.remove(client)
 
       @onConnectionCallback(network)
 
   step: (game, timestamp, delta_s) ->
     @clients.each (client) ->
-      client.dispatch("receive", client)
-      client.receiveBuffer.reset()
+      if client.connected
+        client.dispatch("receive", client)
+        client.receiveBuffer.reset()
 
     @clients.each (client) ->
-      client.dispatch("step", client)
-      # Don't use client#step
-      # it won't align perfectly with server tick
-      client.flush()
+      if client.connected
+        client.dispatch("step", client)
+        # Don't use client#step
+        # it won't align perfectly with server tick
+        client.flush()
 
   onConnection: (callback) ->
     @onConnectionCallback = callback

@@ -23,6 +23,13 @@ class Vector2d
     @y = @__y
     @
 
+  set: (v) ->
+    debugger if typeof v == 'undefined'
+    debugger if arguments.length != 1
+    @x = v.x
+    @y = v.y
+    @
+
   add: (v) ->
     debugger if typeof v == 'undefined'
     debugger if arguments.length != 1

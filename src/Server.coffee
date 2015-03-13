@@ -35,7 +35,7 @@ class Server
     wsst = new WebSocketServerTransport({port: 8080})
     wsst.onConnection (client) =>
       client.enqueue(type: "connected")
-      client.on "close", (client) =>
+      client.on "close", (data) =>
         console.log("[Server] Disconnected:", client)
         @disconnect(client)
 
@@ -54,6 +54,8 @@ class Server
           # TODO: adaptive jitter buffer
           # TODO: reorder packets
           client.on "receive", (client) =>
+            return unless client.connected
+
             client.receive (ev) =>
               # debugger
               # console.log("[Server] receive", ev)
@@ -61,6 +63,7 @@ class Server
               client.meta.ack = ev.timestamp
 
           client.on "step", (client) =>
+            return unless client.connected
             @sendGameState(client)
 
 
@@ -119,6 +122,8 @@ class Server
     # Handled by network code?
 
   sendGameState: (client) ->
+    return unless client.connected
+
     # console.log("[Server] sendGameState", client.meta.ack)
     output =
       shipHash: @entities[client].hash
