@@ -143,7 +143,7 @@ Okay: I want things to move pixel by pixel, so I need to get rid of floats entir
 
 Map sizes are ..
 
-Ah, we could have multiple 
+Ah, we could have multiple
 
 --
 3/5/2015
@@ -184,7 +184,7 @@ Slight bootstrapping problem - we need to know when to start the game.
 
 Previously we had a "joined" message that gave the first gamestate update, and that percolated through to receive, with the firstSync flag set. That would associate the client and the ship, set the player flag (which will soon become the role) and we tie the viewport's position to the ship's position so they update at the same time.
 
-Anyway, it's like we trade the cost of an assignment with the cost of an if statement. 
+Anyway, it's like we trade the cost of an assignment with the cost of an if statement.
 
 What I'm thinking now is that we have an event handler latch - that the first time we call receive for the client, it's going to be the sync...
 
@@ -194,3 +194,11 @@ nah. Let's do a "gameState" variable that will move through disconnected, connec
 3/12/2015
 
 Fix, run, fix, run, fix, run, fix, run
+
+--
+5/30/2016
+
+Switching to RBush, which allocates all over the place :(
+
+We'll see how it goes, may need to do some surgery.
+

@@ -2,6 +2,8 @@ DLinkedList = require("./models/DLinkedList")
 JSONSerializer = require("./network/JSONSerializer")
 MessagePackSerializer = require("./network/MessagePackSerializer")
 
+# TODO: This is a dumb name
+# This is a message queue
 class Network
   connected: false
   sendBuffer: new DLinkedList

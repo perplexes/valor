@@ -80,6 +80,7 @@ class Entity
     @_extent.lr.y = @pos.y + @hh
     @_extent
 
+
   # TODO: When do we put this back in the pool?
   expireNow: ->
     @lifetime = 0
@@ -88,7 +89,7 @@ class Entity
     delete @simulator if @simulator?
 
   onExpire: ->
-    
+
 
   alive: ->
     # There's no timer on this
@@ -104,7 +105,7 @@ class Entity
     obj.klass = @constructor.name
     obj
 
-  
+
   # TODO: The fixup is happening at the wrong point
   # sync happens first, when we receive the server data which is necessarily old
   # Then we roll forward all the client events that have happened since the server ack
