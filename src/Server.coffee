@@ -1,11 +1,12 @@
 restruct = require("restruct")
 jParser = require('jParser')
-RBTree = require('bintrees').RBTree
+# RBTree = require('bintrees').RBTree
 Vector2d = require("./models/Vector2d")
 DLinkedList = require("./models/DLinkedList")
 ArrayTree = require("./models/ArrayTree")
 Extent = require("./models/Extent")
-UBTree = require("./models/UBTree")
+# UBTree = require("./models/UBTree")
+RbushTree = require("./models/RbushTree")
 
 Entity = require("./models/Entity")
 Physics = require("./models/Physics")
@@ -57,14 +58,16 @@ class Server
             return unless client.connected
 
             client.receive (ev) =>
-              # debugger
               # console.log("[Server] receive", ev)
-              @entities[client].processInput(ev)
+              ship.processInput(ev)
               client.meta.ack = ev.timestamp
 
           client.on "step", (client) =>
-            return unless client.connected
-            @sendGameState(client)
+            if client.connected
+              @sendGameState(client, ship)
+            else
+              ship.expireNow()
+              delete @entities[client]
 
 
     @game = new Game
@@ -93,7 +96,7 @@ class Server
       for i in samples
         a += i
       avg = a/samples.length
-      
+
       samples = []
       console.log("[Server]", avg * 1000 | 0, "us")
     , 1000
@@ -121,24 +124,19 @@ class Server
   step: (game, timestamp, delta_s) ->
     # Handled by network code?
 
-  sendGameState: (client) ->
-    return unless client.connected
-
+  sendGameState: (client, ship) ->
     # console.log("[Server] sendGameState", client.meta.ack)
     output =
-      shipHash: @entities[client].hash
-      entities: @game.state(@entities[client])
+      shipHash: ship.hash
+      entities: @game.state(ship)
       ack: client.meta.ack
       type: "gamestate"
     client.enqueue(output)
 
   # TODO: Sweep the simulator and other trees here
   # Unless the simulator is responsible for that
-  disconnect: (client) ->
+  disconnect: (client, ship) ->
     console.log "[Server] Disconnecting:", client
-    entity = @entities[client]
-    if entity?
-      entity.expireNow()
-      delete @entities[client]
 
-new Server
+
+window.server = new Server

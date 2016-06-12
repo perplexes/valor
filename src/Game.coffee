@@ -15,11 +15,11 @@ class Game
   constructor: ->
     @simulator = new Simulator
 
+  # bulk insert for Rbush
   load: (callback) ->
     Map.load (bmpData, tiles) =>
       callback(bmpData, tiles)
-      for tile in tiles
-        @simulator.insertStatic(tile)
+      @simulator.insertStatic(tiles)
 
   register: (observer) ->
     @observers.push(observer)
@@ -27,6 +27,10 @@ class Game
   # All the state that this entity is interested in observing
   # TODO: This is probably the size of their minimap
   # - minus ships that are hidden from them (cloak)
+  # TODO: how big should this be?
+  # everyone should probably have the same viewport size
+  # i.e. no observe advantage from huge screen?
+  # ah, minimap size, yes (your quadrent)
   state: (entity) ->
     entities = []
     @simulator.dynamicTree.searchExpand(entity._extent, 1280, 800, (nearEntity) ->

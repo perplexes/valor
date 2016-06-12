@@ -1,11 +1,12 @@
-UBTree = require("./UBTree")
+# UBTree = require("./UBTree")
+RbushTree = require("./RbushTree")
 DLinkedList = require("./DLinkedList")
 Physics = require("./Physics")
 
 class Simulator
   constructor: ->
-    @staticTree = new UBTree
-    @dynamicTree = new UBTree
+    @staticTree = new RbushTree
+    @dynamicTree = new RbushTree
     @dynamicEntities = new DLinkedList
     @collisions = {}
     @collObjs = []
@@ -20,13 +21,15 @@ class Simulator
     @dynamicTree.remove(entity)
     @dynamicEntities.remove(entity.hash)
 
-  insertStatic: (entity) ->
-    @staticTree.insert(entity)
+  # TODO: Deformable map
+  insertStatic: (staticEntities) ->
+    @staticTree.load(staticEntities)
 
   # TODO: does it make more sense to partition this into
   # quadrants or something, and not search per-object, but just
   # do likely events?
   # Perf test - see if we're using the search too much.
+  # TODO: allocations
   step: (game, timestamp, delta_s) ->
     @collisions = {}
     @collObjs = []
