@@ -9,6 +9,7 @@ class Entity
   layer: null
   simulator: null
   pos: new Vector2d(0,0) # Vector2d
+  lastPos: new Vector2d
   vel: new Vector2d(0,0) # Vector2d, per second?
   scaledV: new Vector2d(0,0)
   doPos: new Vector2d(0,0)
@@ -79,13 +80,19 @@ class Entity
     @_extent.lr.y = @pos.y + @hh
     @_extent
 
+
   # TODO: When do we put this back in the pool?
-  expire: ->
+  expireNow: ->
     @lifetime = 0
+    # TODO: This should happen in the game loop
     @simulator.remove(@) if @simulator?
     delete @simulator if @simulator?
 
+  onExpire: ->
+
+
   alive: ->
+    # There's no timer on this
     return true if @lifetime == null
     @lifetime > 0
 
@@ -98,24 +105,32 @@ class Entity
     obj.klass = @constructor.name
     obj
 
-  diff = new Vector2d
+
+  # TODO: The fixup is happening at the wrong point
+  # sync happens first, when we receive the server data which is necessarily old
+  # Then we roll forward all the client events that have happened since the server ack
+  # *Then* we need to lerp between the old predicted position and the new corrected (and still predicted) position
+  # Smooth positional updates
+  # Derivatives are better to update in jumps
+  # TODO: Jump physics of pos if there's an error, but keep view the same
+  # then lerp between until alignment
+  # (but right now they're the same thing)
+  # TODO: Also only change Vel vector to get ship back on track after sync error
+      # if key == "pos"
+      #   diff.clear().add(@pos).sub(value)
+      #   distance = diff.length()
+      #   if distance > 2
+      #     @pos.clear().add(value)
+      #   else if distance > 0.1
+      #     diff.scaleXX(0.1)
+      #     @pos.add(diff)
   sync: (obj) ->
+    @lastPos.clear().add(@pos)
     for key, value of obj
-      # Smooth positional updates
-      # Derivatives are better to update in jumps
       if key == "pos"
-        diff.clear().add(@pos).sub(value)
-        distance = diff.length()
-
-        if distance > 2
-          @pos.clear().add(value)
-        else if distance > 0.1
-          diff.scaleXX(0.1)
-          @pos.add(diff)
-
+        @pos.set(value)
       else if key == "vel"
-        @vel.x = value.x
-        @vel.y = value.y
+        @vel.set(value)
       else
         @[key] = value
 

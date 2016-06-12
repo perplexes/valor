@@ -34,8 +34,10 @@ class Bullet extends Entity
 
     if object.constructor.name == "Ship" && object != @ship
       object.onDamage(@, @damage)
-      @expire()
-      Effect.create('explode0', @pos, null)
+      @expireNow()
+
+  onExpire: ->
+    Effect.create('explode0', @pos, null)
 
   simulate: (delta_s) ->
     @expire() if @ship.safe

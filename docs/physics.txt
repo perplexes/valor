@@ -1,0 +1,3 @@
+idea:
+make collision box bigger, but only use smaller one for actual movement
+maybe predict collision?

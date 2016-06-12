@@ -67,4 +67,7 @@ class DLinkedList
     @each -> count += 1
     count
 
+  reset: ->
+    @constructor()
+
 module.exports = DLinkedList

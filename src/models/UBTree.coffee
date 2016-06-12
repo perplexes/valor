@@ -33,6 +33,10 @@ class UBTree
       all.push entity
     all
 
+  load: (array) ->
+    array.each (entity) ->
+      @insert(entity)
+
   # Interleave lower 16 bits of x and y, so the bits of x
   # are in the even positions and bits from y in the odd
   # z gets the resulting 32-bit Morton Number.
@@ -112,7 +116,7 @@ class UBTree
     # # This can be simplified with fail-first
     # if x1 <= node.data.x <= x2 && y1 <= node.data.y <= y2
     #   result.push node.data
-      
+
     #   # Go left, then right, but how?
     #   cur = node.left
     #   maxz = z

@@ -23,6 +23,13 @@ class Vector2d
     @y = @__y
     @
 
+  set: (v) ->
+    debugger if typeof v == 'undefined'
+    debugger if arguments.length != 1
+    @x = v.x
+    @y = v.y
+    @
+
   add: (v) ->
     debugger if typeof v == 'undefined'
     debugger if arguments.length != 1
@@ -44,6 +51,7 @@ class Vector2d
     debugger if typeof y != 'number'
     @x += x
     @y += y
+    @floor()
     @
 
   addXX: (x) ->
@@ -80,6 +88,7 @@ class Vector2d
     debugger if y == NaN
     @x *= x
     @y *= y
+    @floor()
     @
 
   scaleXX: (x) ->
@@ -112,6 +121,14 @@ class Vector2d
     debugger if typeof y2 != 'number'
     @x = @x.clamp(x1, x2)
     @y = @y.clamp(y1, y2)
+    @floor()
+    @
+
+  floor: ->
+    @x = Math.floor(@x * 10) / 10
+    @y = Math.floor(@y * 10) / 10
+    # @x = Math.floor(@x)
+    # @y = Math.floor(@y)
     @
 
   isZero: ->

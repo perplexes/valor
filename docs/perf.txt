@@ -1,0 +1,8 @@
+http://blog.chromium.org/2010/12/new-crankshaft-for-v8.html
+http://floitsch.blogspot.co.uk/
+https://mkw.st/p/gdd11-berlin-v8-performance-tuning-tricks/#1
+http://mrale.ph/blog/
+http://n64js.blogspot.co.uk/2012/08/javascript-optimisation-primer.html
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --js-flags="--trace_opt --trace_deopt"
+
+see what the perf impact of stats.js and debugging messages are.

@@ -24,8 +24,12 @@ AI = require("./models/AI")
 Simulator = require("./models/Simulator")
 Game = require("./Game")
 
+WST = require("./network/WebSocketTransport")
+
 # TODO: Settings
 class Client
+  pendingEvents: new DLinkedList
+
   constructor: (game) ->
     @game = game
     @events = []
@@ -46,60 +50,72 @@ class Client
     @initStats()
 
     @keys = {debugMessages: false}
-    @pendingEvents = new DLinkedList
-    @serverEvents = []
 
-    @ws = new WebSocket("ws://#{window.location.hostname}:8080")
-    
-    times = {}
+    @network = WST.default("ws://#{window.location.hostname}:8080")
 
-    # TODO: Sort out chain of events here and use promises?
-    @connected = false
-    @ws.onopen = (evt) =>
-      @connected = true
-      @send(type: 'join', shipType: Math.random() * 8 | 0)
-      console.log("Sent join")
+    # connect
+    # -> join
+    # <- connected
+    # <- joined (with first ship event sync)
+    # -> keys keys keys
+    # <- gamestate gamestate gamestate
+    @network.on "open", =>
+      @network.enqueue(type: 'join', shipType: Math.random() * 8 | 0)
+      @network.flush()
+      console.log("[Client] Sent join")
       game.load (bmpData, tiles) =>
         TileView.load(bmpData)
-        # client.start()
 
-    @ws.onclose = (evt) =>
-      console.log("Disconnected")
-      @connected = false
+    @network.on "close", ->
+      console.log("[Client] Disconnected")
 
-    @ws.onmessage = (message) =>
-      # console.log("#{Date.now()} <-", message)
-      ev = JSON.parse(message.data)
-      if ev.type == 'connected'
-        console.log("connected")
-      else if ev.type == 'joined'
-        console.log("joined")
-        @receive([ev], true)
-        @start()
-      else
-        @serverEvents.push(ev)
+    @network.on "connected", ->
+      console.log("[Client] Connected")
+
+    @network.on "joined", (ev) =>
+      console.log("[Client] Joined")
+      @ship = Entity.deserialize(@game, ev.ship)
+      @ship.player = true
+      # TODO: Better way to do this
+      @scene.viewport.pos = @ship.pos
+      @start()
+      @network.enqueue(type: 'gamestart')
+
+    @network.on "pong", (ev) =>
+      # console.log("[Client] PONG", game.last, ev.ack, game.last - ev.ack, Date.now())
+      @latency.frame((game.last | 0) - ev.ack, Date.now())
+
+    # Then flush what's in the queue
+    game.register(@network)
+
+    setInterval =>
+      @network.enqueue(type: "ping", timestamp: game.last | 0)
+    , 1000
 
   start: ->
     @game.start(requestAnimationFrame)
 
   step: (game, timestamp, delta_s) ->
-    @receive(@serverEvents)
-    @serverEvents = []
+    if window.subspacePlaybacking
+      debugger;
+      while (window.subspacePlaybackLog[window.subspacePlaybackIndex].timestamp + window.subspacePlaybackOffset) < timestamp
+        pev = window.subspacePlaybackLog[window.subspacePlaybackIndex]
+        @ship.processInput(pev)
+        window.subspacePlaybackIndex++
+    else
+      @network.receive (ev) =>
+        @receive(ev)
 
-    # Events
-    # TODO: Clean this
-    ev = @newEvent(timestamp|0, delta_s)
-    # if @keys.listened
-    if @connected
-      @pendingEvents.insert(ev, timestamp|0)
-      @send(ev)
-      # @keys.listened = false
-    # console.log ev
+      # Events
+      ev = @newEvent(timestamp|0, delta_s)
+      @pendingEvents.insert(ev, ev.timestamp)
+      if window.subspaceRecording
+        window.subspaceRecordingLog.push(ev)
+      @network.enqueue(ev)
 
-    # TODO: Better name? Process events?
-    # TODO: When disconnected?
-    @ship.processInput(ev, game.simulator, delta_s)
-    
+      # TODO: Better name? Process events?
+      # TODO: When disconnected?
+      @ship.processInput(ev, game.simulator, delta_s)
 
     if @keys.debugCollisions
       @drawDebugCollisions(@ship, game.simulator.collObjs)
@@ -118,12 +134,21 @@ class Client
         keys: @keys,
         ev: ev,
         pending: @pendingEvents.count(),
+        lastEvent: @lastEvent,
         objects: @scene.objects(),
         collisions: game.simulator.collObjs.length,
         # children: @scene.stage.children.length,
         tiles: @scene.layers["Map"].children.length,
         # ships: @otherShipsLayer.entities,
         projectiles: @scene.layers["Projectiles"].children.length,
+        recording: window.subspaceRecording,
+        recordingL: window.subspaceRecordingLog?.length,
+        playbacking: window.subspacePlaybacking,
+        playbackL: window.subspacePlaybackLog?.length,
+        playbackIndex: window.subspacePlaybackIndex,
+        playbackOffset: window.subspacePlaybackOffset,
+        playbackFirst: window.subspacePlaybackLog?[0].timestamp,
+        playbackGameLast: window.subspacePlaybackGameLast
         # o: [@othership.pos.x, @othership.pos.y, @othership.rawAngle],
         # simulating: @simulator.objects.length
         # angle: angle
@@ -131,36 +156,28 @@ class Client
 
   # TODO: Lifecycle, server id vs local id (or always guid)
   # TODO: Event types, other entities
-  receive: (events, firstSync) ->
-    for ev in events
-      # TODO: Assumes it's *2 for RTT
-      @latency.frame((Date.now() - ev.timestamp) * 2, Date.now())
-      for entityData in ev.entities
-        entity = @game.simulator.dynamicEntities.at(entityData.hash)
-        if entity
-          entity.sync(entityData)
-        else
-          entity = Entity.deserialize(@game, entityData)
+  diff = new Vector2d
+  receive: (ev) ->
+    @lastEvent = ev
+    # console.log("[Client] ack:", ev.ack, ev.timestamp)
+    for entityData in ev.entities
+      entity = @game.simulator.dynamicEntities.at(entityData.hash)
+      if entity
+        entity.sync(entityData)
+      else
+        entity = Entity.deserialize(@game, entityData)
 
-        if entityData.hash == ev.shipHash
-          if firstSync
-            @ship = entity
-            @ship.player = true
-            # TODO: Better way to do this
-            @scene.viewport.pos = @ship.pos
-          # TODO: If we receive out of order?
-          @pendingEvents.each (pev) =>
-            if pev.timestamp <= ev.ack
-              @pendingEvents.remove(pev.timestamp)
-            else
-              @ship.processInput(pev)
-
-  send: (ev) ->
-    unless ev.timestamp?
-      ev.timestamp = Date.now() | 0
-    # console.log("#{Date.now()} ->", ev)
-    json = JSON.stringify(ev)
-    @ws.send(json)
+      if entityData.hash == ev.shipHash
+        # TODO: If we receive out of order?
+        @pendingEvents.each (pev) =>
+          if pev.timestamp <= ev.ack
+            @pendingEvents.remove(pev.timestamp)
+          else
+            @ship.processInput(pev)
+        diff.clear().add(@ship.lastPos).sub(@ship.pos)
+        debugger if @keys.debug;
+        err = Math.floor(diff.length() * 100)
+        @errorStats.frame(err, Date.now())
 
   # TODO: don't keep memory here, flip based on previous event
   keyListen: (e, set = true) ->
@@ -177,26 +194,80 @@ class Client
       when KeyEvent.DOM_VK_N then if set then @keys.noclip = !@keys.noclip
       when KeyEvent.DOM_VK_M then if set then @keys.debugMessages = !@keys.debugMessages
       when KeyEvent.DOM_VK_C then if set then @keys.debugCollisions = !@keys.debugCollisions
+      when KeyEvent.DOM_VK_R
+        if set
+          if window.subspaceRecording
+            window.subspaceRecordingLog.push({
+              type: "gamestate",
+              timestamp: @game.last,
+              entities: @game.state(@ship)
+            })
+            # Send this to the FS
+            window.subspaceRecording = false
+            blob = new Blob([JSON.stringify(window.subspaceRecordingLog)], {type: "text/json"})
+            saveAs(blob, "subspace_#{ @game.last }.log")
+          else
+            window.subspaceRecordingLog = [{
+              type: "gamestate",
+              timestamp: @game.last,
+              entities: @game.state(@ship)
+            }]
+            window.subspaceRecording = true
+      when KeyEvent.DOM_VK_P
+        game = @game
+        keys = @keys
+        if set
+          change = (e) ->
+            file = e.target.files[0]
+            reader = new FileReader()
+            reader.onload = (oe) ->
+              contents = oe.target.result
+              window.subspacePlaybackLog = JSON.parse(contents)
+              stateEv = window.subspacePlaybackLog[0]
+              window.subspacePlaybackGameLast = game.last
+              window.subspacePlaybackOffset = game.last - stateEv.timestamp
+              for entityData in stateEv.entities
+                entity = game.simulator.dynamicEntities.at(entityData.hash)
+                if entity
+                  entity.sync(entityData)
+                else
+                  entity = Entity.deserialize(game, entityData)
+
+              window.subspacePlaybackIndex = 1
+              window.subspacePlaybacking = true
+              keys.debugMessages = true
+            reader.readAsText(file)
+          document.getElementById("recording_log_input").addEventListener('change', change, false)
+          document.getElementById("recording_log_input").click()
+
       else @keys.listened = false
     if @keys.listened
       e.preventDefault()
       e.stopPropagation()
+      if @keys.debug
+        window.keysDebug = true
+      else
+        window.keysDebug = false
     # console.log @keys
 
   # TODO: Probably just have dt_s as a field
   newEvent: (timestamp, dt_s) ->
+
+    dt_s_r = Math.floor(dt_s * 1000)/1000
+
     ev =
       timestamp: timestamp | 0
+      type: "keys"
       x: 0
       y: 0
       fire: 0
 
-    ev.x -= dt_s if @keys.left
-    ev.x += dt_s if @keys.right
-    ev.y -= dt_s if @keys.down
-    ev.y += dt_s if @keys.up
+    ev.x -= dt_s_r if @keys.left
+    ev.x += dt_s_r if @keys.right
+    ev.y -= dt_s_r if @keys.down
+    ev.y += dt_s_r if @keys.up
 
-    ev.fire = dt_s if @keys.fire
+    ev.fire = dt_s_r if @keys.fire
 
     ev
 
@@ -225,6 +296,17 @@ class Client
     @latency.domElement.style.zIndex = '10'
 
     document.body.appendChild( @latency.domElement )
+
+    @errorStats = window.errorStats = new Stats()
+    @errorStats.setMode(1)
+
+    # Align top-right below fps
+    @errorStats.domElement.style.position = 'absolute'
+    @errorStats.domElement.style.right = '0px'
+    @errorStats.domElement.style.top = '100px'
+    @errorStats.domElement.style.zIndex = '10'
+
+    document.body.appendChild( @errorStats.domElement )
 
   # TODO: Use webgl text instead of element, faster?
   # TODO: Put in scene perhaps? Or a debug layer?
@@ -280,7 +362,6 @@ class Client
     graphics.drawRect(adjPoint.x, adjPoint.y, ship.w, ship.h)
 
     graphics.endFill()
-    debugger if @keys.debugger
 
   objects: ->
     sum = 0
@@ -289,11 +370,11 @@ class Client
 
 # TODO: Is this really the best place for this?
 document.addEventListener 'DOMContentLoaded', ->
-  console.log "DOMContentLoaded"
+  console.log "[Client] DOMContentLoaded"
   Asset.preload()
   game = new Game
   client = new Client(game)
-  console.log(client.scene)
+  console.log("[Client]", client.scene)
   # Moved to wait for server connection
   # client.start()
 

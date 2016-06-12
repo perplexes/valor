@@ -1,12 +1,13 @@
 restruct = require("restruct")
 jParser = require('jParser')
-RBTree = require('bintrees').RBTree
+# RBTree = require('bintrees').RBTree
 Vector2d = require("./models/Vector2d")
 DLinkedList = require("./models/DLinkedList")
 ArrayTree = require("./models/ArrayTree")
 Extent = require("./models/Extent")
-ZTree = require("./models/ZTree")
-        
+# UBTree = require("./models/UBTree")
+RbushTree = require("./models/RbushTree")
+
 Entity = require("./models/Entity")
 Physics = require("./models/Physics")
 Ship = require("./models/Ship")
@@ -17,9 +18,9 @@ AI = require("./models/AI")
 Simulator = require("./models/Simulator")
 Game = require("./Game")
 
-pnow = require("performance-now")
+WebSocketServerTransport = require("./network/WebSocketServerTransport")
 
-WebSocketServer = require('ws').Server
+pnow = require("performance-now")
 
 `
 Math.rand = function(min, max) {
@@ -30,40 +31,48 @@ Math.rand = function(min, max) {
 class Server
   frequency: 32 # ms
   constructor: ->
-    @clientEvents = []
-    @clients = new DLinkedList
-    console.log @clients
-    @clientCount = 0
     @entities = {}
-    @clientMeta = {}
 
-    @wss = new WebSocketServer({port: 8080});
-    @wss.on 'connection', (ws) =>
-      client = @clientCount++
-      @clients.insert(ws, client)
-      meta = @clientMeta[client] = {}
-      console.log("Connected:", client)
-      @send(ws, client, {type: 'connected'})
-
-      ws.on 'message', (json) =>
-        ev = JSON.parse(json)
-        ev.client = client
-        meta.ack = ev.timestamp
-        if ev.type == "join"
-          console.log("Join:", ev.shipType)
-          ship = new Ship(@game.simulator, false, {ship: ev.shipType || 0})
-          @entities[client] = ship
-          @sendGameState(ws, @game, client)
-        else
-          meta.joined = true
-          @clientEvents.push ev
-
-      ws.on 'close', =>
-        console.log("Disconnected:", client)
+    wsst = new WebSocketServerTransport({port: 8080})
+    wsst.onConnection (client) =>
+      client.enqueue(type: "connected")
+      client.on "close", (data) =>
+        console.log("[Server] Disconnected:", client)
         @disconnect(client)
+
+      client.on "ping", (data) =>
+        client.enqueue(type: "pong", ack: data.timestamp)
+
+      client.on "join", (ev) =>
+        console.log("[Server] Join:", ev.shipType)
+        ship = new Ship(@game.simulator, false, {ship: ev.shipType || 0})
+        @entities[client] = ship
+        client.meta.joined = true
+        client.enqueue(type: "joined", ship: ship.serialize())
+        client.flush()
+
+        client.on "gamestart", (ev) =>
+          # TODO: adaptive jitter buffer
+          # TODO: reorder packets
+          client.on "receive", (client) =>
+            return unless client.connected
+
+            client.receive (ev) =>
+              # console.log("[Server] receive", ev)
+              ship.processInput(ev)
+              client.meta.ack = ev.timestamp
+
+          client.on "step", (client) =>
+            if client.connected
+              @sendGameState(client, ship)
+            else
+              ship.expireNow()
+              delete @entities[client]
+
 
     @game = new Game
     @game.register(@)
+    @game.register(wsst)
 
     # for i in [0..400]
     #   ship = new Ship(@game.simulator, false, {ship: 0})
@@ -87,13 +96,13 @@ class Server
       for i in samples
         a += i
       avg = a/samples.length
-      
+
       samples = []
-      console.log(avg * 1000 | 0, "us")
+      console.log("[Server]", avg * 1000 | 0, "us")
     , 1000
 
     @game.load (bmpData, tiles) =>
-      console.log("@game.load")
+      console.log("[Server] @game.load")
       @start()
 
   requestServerTick: (next) =>
@@ -113,42 +122,21 @@ class Server
     @game.start(@requestServerTick)
 
   step: (game, timestamp, delta_s) ->
-    @receive(@clientEvents)
-    @clientEvents = []
-    @clients.each (ws, client) =>
-      if @clientMeta[client] && @clientMeta[client].joined
-        @sendGameState(ws, game, client)
+    # Handled by network code?
 
-  # TODO: a receive on a WS should verify client_id belongs to it
-  receive: (events) ->
-    for ev in events
-      if @clients.at(ev.client)
-        # console.log "#{Date.now()} <-", ev
-        @entities[ev.client].processInput(ev)
-      # switch on type? handlers?
-
-  sendGameState: (ws, game, client) ->
-    type = if @clientMeta[client].joined then 'update' else 'joined'
+  sendGameState: (client, ship) ->
+    # console.log("[Server] sendGameState", client.meta.ack)
     output =
-      shipHash: @entities[client].hash
-      entities: game.state(@entities[client])
-      ack: @clientMeta[client].ack
-      type: type
-    @send(ws, client, output)
+      shipHash: ship.hash
+      entities: @game.state(ship)
+      ack: client.meta.ack
+      type: "gamestate"
+    client.enqueue(output)
 
-  send: (ws, client, obj) ->
-    return @disconnect(client) unless ws.readyState == 1
-    obj.timestamp = Date.now()
-    json = JSON.stringify(obj)
-    # console.log("#{Date.now()} ->", json)
-    ws.send(json)
+  # TODO: Sweep the simulator and other trees here
+  # Unless the simulator is responsible for that
+  disconnect: (client, ship) ->
+    console.log "[Server] Disconnecting:", client
 
-  disconnect: (client) ->
-    return unless @clients.at(client)
-    @clients.remove(client)
-    delete @clientMeta[client]
-    entity = @entities[client]
-    entity.expire()
-    delete @entities[client]
 
-new Server
+window.server = new Server

@@ -143,4 +143,62 @@ Okay: I want things to move pixel by pixel, so I need to get rid of floats entir
 
 Map sizes are ..
 
-Ah, we could have multiple 
+Ah, we could have multiple
+
+--
+3/5/2015
+
+Ragalie had a good idea for objects that spawn other objects: their id could be #{id of parent}.#{timestamp of event that created it}
+that way it's deterministic and syncronized across clients
+
+So we need now: an object pool (how?), and an object spawner that will do the id trick.
+
+bullets:
+  spawned when the player presses fire (space)
+    and they have enough energy
+    and it's been enough time since the last time they fired (if they fired)
+  it removes that much energy from their ship's energy
+  it spawns a new bullet object that moves in the vector of the ship + angle of ship
+  will travel until:
+    it hits a ship (and plays a bullet explode effect)
+      somehow decreases that ship's energy by (??) only on the authority (server) side
+    it hits a wall and is not bouncy
+  if bouncy:
+    will bounce off walls 5? times, then turn not bouncy
+  once expired:
+    gets cleaned up by object sweeper every tick
+
+Vector2d should also have a pool
+
+--
+3/9/2015
+
+Maybe should split assets into their own repo since it's huge, then do git submodule or something
+
+--
+3/11/2015
+
+Happy 311 day!
+
+Slight bootstrapping problem - we need to know when to start the game.
+
+Previously we had a "joined" message that gave the first gamestate update, and that percolated through to receive, with the firstSync flag set. That would associate the client and the ship, set the player flag (which will soon become the role) and we tie the viewport's position to the ship's position so they update at the same time.
+
+Anyway, it's like we trade the cost of an assignment with the cost of an if statement.
+
+What I'm thinking now is that we have an event handler latch - that the first time we call receive for the client, it's going to be the sync...
+
+nah. Let's do a "gameState" variable that will move through disconnected, connecting, joining, playing, disconnecting, disconnected. Then if we're joining, do the initial sync... maybe.
+
+--
+3/12/2015
+
+Fix, run, fix, run, fix, run, fix, run
+
+--
+5/30/2016
+
+Switching to RBush, which allocates all over the place :(
+
+We'll see how it goes, may need to do some surgery.
+

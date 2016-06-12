@@ -1,0 +1,35 @@
+need to separate model & view - does that mean I need a controller? I guess the main object (Subspace) is the controller
+
+Entities have a simulate step, a collision notification, a draw step (really just adjusting the display object's position)
+
+we also have these layers which are linked lists of display objects.
+
+Each entity type has a display object that knows how to draw itself which is based on an object's properties
+
+one way to do it is observer/message based where when an entity is created, we can grab a DO from the pool and put it into a layer if it's in the viewport. that's the game graph/scene graph crossover
+
+objects that aren't in the scene anymore are released to the pool.
+
+we hold display objects in a hash with key: entity.hash, value: do
+
+(do we need to keep track of the reverse?)
+
+so we need a (game object? scenegraph? game graph?) for the map (since it's static, it can be an AVL later), and a graph for everything else.
+
+I guess the objects are the ones that tell us what they're interested in. but - should they know about each other? like: if a bomb goes off near a ship, then it'll take damage proportional to how close it is. but how does that collision happen? is it on the bomb's collision method, and it says - ah, this is a tile, so draw a circle from me and find the objects in it - they're going to take damage. taking damage for a mine means that it explodes, which triggers other mines, etc. but would that happen all on one physics step?
+
+the scene is client-side only.
+layers are inappropriate. the objects inside them just have a certain drawing order. but pixi might force us to use certain display object containers within the scene to separate the layers.
+
+so I want to construct a scene that:
+  creates a bunch of layers for the right entities
+  scans for what is in-frame (or a little beyond)
+    if it doesn't exist already, creates the appropriate DO for it and inserts it in the right layer {Type: Layer} hash somewhere
+    call step on each (move the DO to where the entity says it is + viewport adj)
+
+^^ Maybe there's like a ShipView that does all the asset/DO shit?
+so the scene knows about the static/dynamic trees - do the layers know? are the layers responsible for anything or are they just DOCs?
+they do GC, too.. but we can do that on the scene's update step.
+
+the starfield is also just browser - so put that in scene
+fuck, even the map and tile parsing stuff needs to be broken out into data/view

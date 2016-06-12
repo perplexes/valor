@@ -1,4 +1,4 @@
 web: make web
 watch: make watch
-server: make server
+server: sleep 3; make server_debug
 client: make client
