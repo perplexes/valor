@@ -2,3 +2,4 @@ node_modules
 build/*
 reference/*
 Subspace.js
+*.sublime-workspace
