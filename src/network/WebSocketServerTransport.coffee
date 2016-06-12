@@ -11,17 +11,17 @@ class WebSocketServerTransport
   constructor: (options) ->
     @wss = new WebSocketServer(port: 8080)
     @wss.on "connection", (ws) =>
-      client = @clientCount++
+      clientId = @clientCount++
       wst = new WebSocketTransport(ws)
       network = wst.network
       network.connected = true
-      @clients.insert(network, client)
+      @clients.insert(network, clientId)
 
-      console.log("[WSST] Connected:", client, ws.upgradeReq.connection.remoteAddress)
+      console.log("[WSST] Connected:", clientId, ws.upgradeReq.connection.remoteAddress)
 
       network.on "close", (data) =>
         console.log("[WSST] Close")
-        @clients.remove(client)
+        @clients.remove(clientId)
 
       @onConnectionCallback(network)
 
