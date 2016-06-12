@@ -96,17 +96,26 @@ class Client
     @game.start(requestAnimationFrame)
 
   step: (game, timestamp, delta_s) ->
-    @network.receive (ev) =>
-      @receive(ev)
+    if window.subspacePlaybacking
+      debugger;
+      while (window.subspacePlaybackLog[window.subspacePlaybackIndex].timestamp + window.subspacePlaybackOffset) < timestamp
+        pev = window.subspacePlaybackLog[window.subspacePlaybackIndex]
+        @ship.processInput(pev)
+        window.subspacePlaybackIndex++
+    else
+      @network.receive (ev) =>
+        @receive(ev)
 
-    # Events
-    ev = @newEvent(timestamp|0, delta_s)
-    @pendingEvents.insert(ev, ev.timestamp)
-    @network.enqueue(ev)
+      # Events
+      ev = @newEvent(timestamp|0, delta_s)
+      @pendingEvents.insert(ev, ev.timestamp)
+      if window.subspaceRecording
+        window.subspaceRecordingLog.push(ev)
+      @network.enqueue(ev)
 
-    # TODO: Better name? Process events?
-    # TODO: When disconnected?
-    @ship.processInput(ev, game.simulator, delta_s)
+      # TODO: Better name? Process events?
+      # TODO: When disconnected?
+      @ship.processInput(ev, game.simulator, delta_s)
 
     if @keys.debugCollisions
       @drawDebugCollisions(@ship, game.simulator.collObjs)
@@ -132,6 +141,14 @@ class Client
         tiles: @scene.layers["Map"].children.length,
         # ships: @otherShipsLayer.entities,
         projectiles: @scene.layers["Projectiles"].children.length,
+        recording: window.subspaceRecording,
+        recordingL: window.subspaceRecordingLog?.length,
+        playbacking: window.subspacePlaybacking,
+        playbackL: window.subspacePlaybackLog?.length,
+        playbackIndex: window.subspacePlaybackIndex,
+        playbackOffset: window.subspacePlaybackOffset,
+        playbackFirst: window.subspacePlaybackLog?[0].timestamp,
+        playbackGameLast: window.subspacePlaybackGameLast
         # o: [@othership.pos.x, @othership.pos.y, @othership.rawAngle],
         # simulating: @simulator.objects.length
         # angle: angle
@@ -177,6 +194,52 @@ class Client
       when KeyEvent.DOM_VK_N then if set then @keys.noclip = !@keys.noclip
       when KeyEvent.DOM_VK_M then if set then @keys.debugMessages = !@keys.debugMessages
       when KeyEvent.DOM_VK_C then if set then @keys.debugCollisions = !@keys.debugCollisions
+      when KeyEvent.DOM_VK_R
+        if set
+          if window.subspaceRecording
+            window.subspaceRecordingLog.push({
+              type: "gamestate",
+              timestamp: @game.last,
+              entities: @game.state(@ship)
+            })
+            # Send this to the FS
+            window.subspaceRecording = false
+            blob = new Blob([JSON.stringify(window.subspaceRecordingLog)], {type: "text/json"})
+            saveAs(blob, "subspace_#{ @game.last }.log")
+          else
+            window.subspaceRecordingLog = [{
+              type: "gamestate",
+              timestamp: @game.last,
+              entities: @game.state(@ship)
+            }]
+            window.subspaceRecording = true
+      when KeyEvent.DOM_VK_P
+        game = @game
+        keys = @keys
+        if set
+          change = (e) ->
+            file = e.target.files[0]
+            reader = new FileReader()
+            reader.onload = (oe) ->
+              contents = oe.target.result
+              window.subspacePlaybackLog = JSON.parse(contents)
+              stateEv = window.subspacePlaybackLog[0]
+              window.subspacePlaybackGameLast = game.last
+              window.subspacePlaybackOffset = game.last - stateEv.timestamp
+              for entityData in stateEv.entities
+                entity = game.simulator.dynamicEntities.at(entityData.hash)
+                if entity
+                  entity.sync(entityData)
+                else
+                  entity = Entity.deserialize(game, entityData)
+
+              window.subspacePlaybackIndex = 1
+              window.subspacePlaybacking = true
+              keys.debugMessages = true
+            reader.readAsText(file)
+          document.getElementById("recording_log_input").addEventListener('change', change, false)
+          document.getElementById("recording_log_input").click()
+
       else @keys.listened = false
     if @keys.listened
       e.preventDefault()
