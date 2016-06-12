@@ -3,3 +3,4 @@ build/*
 reference/*
 Subspace.js
 *.sublime-workspace
+npm-debug.log
