@@ -1,0 +1,12 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+  "folder_exclude_patterns": [".svn", ".git", ".hg", "CVS", "build"],
+    "CoffeeScript": {
+      "binDir": "./node_modules/.bin"
+    }
+}
