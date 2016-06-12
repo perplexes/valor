@@ -1,0 +1,23 @@
+We have a:
+message queue
+  serialize/deserialize data
+  enqueue messages to/from server
+    sync (connected, join, part)
+    async (gamestate, keys)
+
+transport
+  has a raw device (like "WebSocket")
+  ??
+  it's like a bridge between the game and the networking device? at least for the server it is
+
+there are a bunch of events we're interested in, and it's somewhat tied to the game loop.
+
+Need to have a delay play buffer thing like that gafferongames. Need to test that inputs received will result in the same state later between server and client. To do that we can make a recording of moving around and shooting stuff, and then pausing the simulation to check on the final state of the ship(s).
+
+tick
+--
+
+
+
+--
+tick
