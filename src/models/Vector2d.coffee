@@ -125,8 +125,10 @@ class Vector2d
     @
 
   floor: ->
-    @x = Math.floor(@x * 100) / 100
-    @y = Math.floor(@y * 100) / 100
+    @x = Math.floor(@x * 10) / 10
+    @y = Math.floor(@y * 10) / 10
+    # @x = Math.floor(@x)
+    # @y = Math.floor(@y)
     @
 
   isZero: ->
