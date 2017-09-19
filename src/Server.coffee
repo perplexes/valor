@@ -139,4 +139,4 @@ class Server
     console.log "[Server] Disconnecting:", client
 
 
-window.server = new Server
+server = new Server
