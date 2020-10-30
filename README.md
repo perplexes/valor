@@ -11,6 +11,18 @@ Subspace-alike game written in CoffeeScript/HTML5.
 * [ASSS](http://asss.minegoboom.com/)
 * [Continuum](http://www.getcontinuum.com/)
 
+## Development Setup
+
+After cloning, run the following commands:
+
+    yarn install
+    make setup # fetch dependencies
+    make compile # build
+    make server & # start the game server
+    make # start the web server
+    
+Now you can navigate to http://localhost:8000/Subspace.html to join the game.
+
 ## Contributing
 
 * Fork the project.
